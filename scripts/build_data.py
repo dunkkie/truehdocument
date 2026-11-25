@@ -2,7 +2,10 @@
 
 Usage:
     pip install pyxlsb pandas
-    python scripts/build_data.py "DPS_01Oct - 17Nov 2026 sent 25.11.26.xlsb" data/
+    python scripts/build_data.py "DPS_xxx.xlsb" docs/data [private/staff_names.csv]
+
+The optional third path writes a staff_id -> name list for loading in the
+browser. Keep it on your own computer: private/ is in .gitignore.
 
 Reads the 'Detail' sheet of the DPS export and writes only aggregated counts.
 No customer data (name, phone, BAN, SIM) and no employee names are written:
@@ -76,5 +79,13 @@ d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'result']).size().reset
 d.groupby(['month', 'rr', 'region', 'auditor', 'result']).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index().to_csv(f'{out}/auditors.csv', index=False)
 d.groupby(['month', 'rr', 'region', 'tat_bucket']).size().reset_index(name='n').to_csv(f'{out}/tat.csv', index=False)
 d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n').to_csv(f'{out}/staff.csv', index=False)
+
+if len(sys.argv) > 3:
+    names = d[['staff_id', 'Sales Name']].rename(columns={'Sales Name': 'staff'})
+    names['staff'] = names['staff'].fillna('').astype(str).str.strip()
+    names = names[names.staff != ''].drop_duplicates('staff_id').sort_values('staff_id')
+    os.makedirs(os.path.dirname(sys.argv[3]) or '.', exist_ok=True)
+    names.to_csv(sys.argv[3], index=False, encoding='utf-8-sig')
+    print('staff names:', len(names), '->', sys.argv[3], '(do not commit)')
 
 print('rows checked:', len(d), '->', out)

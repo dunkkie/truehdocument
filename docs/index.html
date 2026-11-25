@@ -240,8 +240,11 @@ html,body{margin:0;background:var(--color-bg)}
       <label>สาขา
         <select class="dash-select" id="f-shop" data-draw="shopsel" data-source="shopList" aria-label="สาขา"></select>
       </label>
-      <label>ค้นหารหัส Staff หรือชื่อสาขา
-        <input class="srch" id="f-q" type="search" placeholder="เช่น 12703490 หรือ เซ็นทรัล" aria-label="ค้นหา">
+      <label>ค้นหา
+        <input class="srch" id="f-q" type="search" placeholder="รหัส ชื่อ Staff หรือชื่อสาขา" aria-label="ค้นหา">
+      </label>
+      <label>รายชื่อพนักงาน (ไฟล์ในเครื่อง)
+        <input class="srch" id="f-names" type="file" accept=".csv,text/csv" aria-label="โหลดไฟล์รายชื่อพนักงาน">
       </label>
       <label>จำนวนเอกสารขั้นต่ำ
         <select class="dash-select" id="f-min" aria-label="จำนวนเอกสารขั้นต่ำ">
@@ -252,11 +255,12 @@ html,body{margin:0;background:var(--color-bg)}
         </select>
       </label>
     </div>
+    <p class="sub" id="names-status">ยังไม่ได้โหลดรายชื่อ: เลือกไฟล์ staff_names.csv เพื่อแสดงชื่อพนักงาน ไฟล์จะถูกอ่านในเครื่องคุณเท่านั้น ไม่ถูกส่งขึ้นเว็บ</p>
     <p class="sub">แสดง <b data-draw="staffcount" data-k="shown">—</b> จาก <b data-draw="staffcount" data-k="all">—</b> Staff ที่ตรงเงื่อนไข</p>
     <div class="tw">
       <table data-source="staffStats" data-row-key="shop_code,staff_id" id="staff-table">
         <thead><tr>
-          <th data-field="shop_code">รหัสสาขา</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th>
+          <th data-field="shop_code">รหัสสาขา</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th><th>ชื่อ Staff</th>
           <th class="num" data-field="total">ทั้งหมด</th><th class="num" data-field="complete">สมบูรณ์</th>
           <th class="num" data-field="incomplete">ไม่สมบูรณ์</th><th class="num" data-field="xflag">X Flag</th>
           <th class="num" data-field="pct_complete">% สมบูรณ์</th><th data-field="top_reason">สาเหตุหลัก</th>
@@ -515,7 +519,20 @@ dash.calc('staffStats', {
 </script>
 <script>
 (function () {
-  window.TMS = { limit: 50 };
+  window.TMS = { limit: 50, names: {} };
+  const setNames = (text, from) => {
+    const rows = d3.csvParse(text.replace(/^\ufeff/, '')); const m = {};
+    rows.forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); });
+    window.TMS.names = m;
+    document.querySelectorAll('#names-status').forEach((el) => { el.hidden = true; });
+    document.querySelectorAll('#f-names').forEach((el) => { el.title = 'โหลดแล้ว ' + Object.keys(m).length + ' คน (' + from + ')'; });
+    return Object.keys(m).length;
+  };
+  try { const saved = localStorage.getItem('tmh_staff_names'); if (saved) setNames(saved, 'จำไว้ในเครื่องนี้'); } catch (e) {}
+  document.querySelectorAll('#f-names').forEach((i) => i.addEventListener('change', () => {
+    const f = i.files && i.files[0]; if (!f) return;
+    f.text().then((t) => { setNames(t, f.name); try { localStorage.setItem('tmh_staff_names', t); } catch (e) {} dash.draw('stafftable'); dash.draw('staffcount'); });
+  }));
   const redraw = () => { dash.draw('stafftable'); dash.draw('staffcount'); };
   document.querySelectorAll('#f-q').forEach((i) => i.addEventListener('input', () => { window.TMS.limit = 50; redraw(); }));
   document.querySelectorAll('#f-min').forEach((s) => s.addEventListener('change', () => { window.TMS.limit = 50; redraw(); }));
@@ -524,7 +541,8 @@ dash.calc('staffStats', {
     const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) return null;
     const qi = document.querySelector('#f-q'); const mi = document.querySelector('#f-min');
     const q = (qi ? qi.value : '').trim().toLowerCase(); const min = mi ? +mi.value : 1;
-    return d.data.filter((r) => r.total >= min && (!q || r.staff_id.toLowerCase().includes(q) || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)));
+    const nm = window.TMS.names;
+    return d.data.filter((r) => r.total >= min && (!q || r.staff_id.toLowerCase().includes(q) || (nm[r.staff_id] || '').toLowerCase().includes(q) || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)));
   };
   dash.onData(() => { const rows = window.TMS.rows(); document.querySelectorAll('#f-more').forEach((b) => { b.hidden = !rows || rows.length <= window.TMS.limit; }); });
 })();
@@ -725,13 +743,13 @@ dash.calc('staffStats', {
     el.textContent = T.num(el.dataset.k === 'all' ? rows.length : Math.min(rows.length, window.TMS.limit));
   });
   dash.draw('stafftable', (tb) => {
-    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 9; td.textContent = d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—'; if (d.status === 'error') td.className = 'err'; tr.appendChild(td); tb.replaceChildren(tr); return; }
+    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 10; td.textContent = d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—'; if (d.status === 'error') td.className = 'err'; tr.appendChild(td); tb.replaceChildren(tr); return; }
     const rows = window.TMS.rows().slice(0, window.TMS.limit);
     document.querySelectorAll('#f-more').forEach((b) => { b.hidden = window.TMS.rows().length <= window.TMS.limit; });
-    if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 9; td.textContent = 'ไม่พบ Staff ตามเงื่อนไข'; tr.appendChild(td); tb.replaceChildren(tr); return; }
+    if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 10; td.textContent = 'ไม่พบ Staff ตามเงื่อนไข'; tr.appendChild(td); tb.replaceChildren(tr); return; }
     tb.replaceChildren(...rows.map((r) => { const tr = document.createElement('tr');
       const c = (t, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = t; tr.appendChild(td); };
-      c(r.shop_code); c(r.shop); c(r.staff_id); c(T.num(r.total), 'num'); c(T.num(r.complete), 'num'); c(T.num(r.incomplete), 'num'); c(T.num(r.xflag), 'num');
+      c(r.shop_code); c(r.shop); c(r.staff_id); c(window.TMS.names[r.staff_id] || '—'); c(T.num(r.total), 'num'); c(T.num(r.complete), 'num'); c(T.num(r.incomplete), 'num'); c(T.num(r.xflag), 'num');
       c(T.pct(r.pct_complete), r.pct_complete < 80 ? 'num bad' : 'num'); c(r.top_reason || '—');
       return tr; }));
   });
