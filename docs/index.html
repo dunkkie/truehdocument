@@ -309,7 +309,7 @@ const sgn = (v, unit = '') => (v == null || isNaN(v) ? '—' : (v > 0 ? '+' : ''
 const arrow = (v) => (v > 0 ? '▲' : v < 0 ? '▼' : '■');
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 function filt(rows, p, o = {}) {
-  return rows.filter((r) => (!p.rr || r.rr === p.rr) && (o.noRegion || !p.region || r.region === p.region) && (!o.shop || !p.shop || r.shop_code === p.shop));
+  return rows.filter((r) => (!p.rr || r.rr === p.rr) && (o.noRegion || !p.region || r.region === p.region) && (o.noShop || !p.shop || r.shop_code === p.shop));
 }
 function tally(rows) {
   const o = { total: 0, complete: 0, incomplete: 0, xflag: 0, tat: 0 };
@@ -330,29 +330,28 @@ function tip(box) {
 }
 
 /* ---------- calcs ---------- */
-dash.calc('M', { inputs: ['cube'], fn: (cube) => monthsOf(cube) });
+dash.calc('M', { inputs: ['facts'], fn: (facts) => monthsOf(facts) });
 
-dash.calc('kpi', { inputs: ['cube', 'tat', 'M'], fn: (cube, tat, M) => {
-  const p = dash.params(); const rows = filt(cube, p);
-  const one = (m) => { const o = tally(rows.filter((r) => r.month === m));
-    const tb = filt(tat, p).filter((r) => r.month === m); const tt = d3.sum(tb, (r) => +r.n) || 1;
-    const late = d3.sum(tb.filter((r) => r.tat_bucket === '8-14 วัน' || r.tat_bucket === '15+ วัน'), (r) => +r.n);
+dash.calc('kpi', { inputs: ['facts', 'M'], fn: (facts, M) => {
+  const p = dash.params(); const rows = filt(facts, p);
+  const one = (m) => { const mr = rows.filter((r) => r.month === m); const o = tally(mr); const tt = o.total || 1;
+    const late = d3.sum(mr.filter((r) => r.tat_bucket === '8-14 วัน' || r.tat_bucket === '15+ วัน'), (r) => +r.n);
     return Object.assign(o, { pct_x: o.total ? r1(100 * o.xflag / o.total) : null, pct_inc: o.total ? r1(100 * o.incomplete / o.total) : null,
       avg_tat: o.total ? r1(o.tat / o.total) : null, late: r1(100 * late / tt) }); };
   return { prev: one(M.prev), cur: one(M.cur) };
 } });
 
-dash.calc('regionCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
-  const rows = filt(cube, dash.params(), { noRegion: true });
+dash.calc('regionCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
+  const rows = filt(facts, dash.params(), { noRegion: true, noShop: true });
   return [...d3.group(rows, (r) => r.region)].map(([region, g]) => {
     const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
     return { key: region, label: region, sub: g[0].rr, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
   }).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
 } });
 
-dash.calc('rrCmp', { inputs: ['cube', 'staff', 'M'], fn: (cube, staff, M) => {
+dash.calc('rrCmp', { inputs: ['facts', 'staff', 'M'], fn: (facts, staff, M) => {
   return ['BMA', 'UPC1', 'UPC2'].map((rr) => {
-    const g = cube.filter((r) => r.rr === rr);
+    const g = facts.filter((r) => r.rr === rr);
     const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
     const areas = [...d3.group(g, (r) => r.region)].map(([, h]) => { const x = tally(h.filter((r) => r.month === M.prev)), y = tally(h.filter((r) => r.month === M.cur)); return x.pct != null && y.pct != null ? y.pct - x.pct : 0; });
     const shops = compare(staff.filter((r) => r.rr === rr), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M);
@@ -363,13 +362,13 @@ dash.calc('rrCmp', { inputs: ['cube', 'staff', 'M'], fn: (cube, staff, M) => {
   });
 } });
 
-dash.calc('dimCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
-  const rows = filt(cube, dash.params()); const out = {};
+dash.calc('dimCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
+  const rows = filt(facts, dash.params()); const out = {};
   ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => {
     out[k] = [...d3.group(rows, (r) => r[k])].map(([v, g]) => {
       const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
       return { key: v, label: v, sub: num(b.total) + ' ฉบับ', prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
-    }).filter((r) => r.cur_n + r.prev_n >= 30).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
+    }).filter((r) => r.cur_n + r.prev_n >= (dash.params().shop ? 5 : 30)).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
   });
   return out;
 } });
@@ -382,17 +381,17 @@ function rateCmp(src, key, kpi, M, p) {
     return { key: k, prev_n: a, cur_n: b, prev: ra, cur: rb, delta: r1(rb - ra) };
   });
 }
-dash.calc('reasonCmp', { inputs: ['reasons_main', 'kpi', 'M'], fn: (rm, kpi, M) => rateCmp(rm, 'reason', kpi, M, dash.params()).sort((a, b) => b.cur - a.cur) });
+dash.calc('reasonCmp', { inputs: ['facts', 'kpi', 'M'], fn: (facts, kpi, M) => rateCmp(facts.filter((r) => r.result !== 'complete'), 'reason', kpi, M, dash.params()).sort((a, b) => b.cur - a.cur) });
 dash.calc('itemCmp', { inputs: ['reasons_detail', 'kpi', 'M'], fn: (rd, kpi, M) => rateCmp(rd, 'item', kpi, M, dash.params()).filter((r) => r.key !== 'อื่นๆ').sort((a, b) => b.cur - a.cur).slice(0, 12) });
 
-dash.calc('daily', { inputs: ['cube'], fn: (cube) => {
+dash.calc('daily', { inputs: ['facts'], fn: (facts) => {
   const m = new Map();
-  filt(cube, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
+  filt(facts, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
   return [...m.values()].sort((a, b) => (a.date < b.date ? -1 : 1)).map((o) => Object.assign(o, { pct: r1(100 * o.complete / o.total) }));
 } });
 
-dash.calc('tatCmp', { inputs: ['tat', 'M'], fn: (tat, M) => {
-  const order = ['0-1 วัน', '2-3 วัน', '4-7 วัน', '8-14 วัน', '15+ วัน']; const rows = filt(tat, dash.params());
+dash.calc('tatCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
+  const order = ['0-1 วัน', '2-3 วัน', '4-7 วัน', '8-14 วัน', '15+ วัน']; const rows = filt(facts, dash.params());
   const one = (m) => { const g = d3.rollup(rows.filter((r) => r.month === m), (v) => d3.sum(v, (r) => +r.n), (r) => r.tat_bucket); const t = d3.sum([...g.values()]) || 1;
     return order.map((b) => ({ bucket: b, n: g.get(b) || 0, share: r1(100 * (g.get(b) || 0) / t) })); };
   return { prev: one(M.prev), cur: one(M.cur) };
@@ -419,10 +418,10 @@ function compare(rows, keyFn, info, min, M) {
     o.tag = tagOf(o, min); o.rank = TAGS.indexOf(o.tag); return o;
   }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
 }
-dash.calc('shopCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params()), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M) });
-dash.calc('staffCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params(), { shop: true }), (r) => r.shop_code + '|' + r.staff_id, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region, staff_id: r.staff_id }), MIN_STAFF, M) });
-dash.calc('shopList', { inputs: ['staff'], fn: (staff) => { const m = new Map(); filt(staff, dash.params()).forEach((r) => m.set(r.shop_code, r.shop)); return [...m].sort((a, b) => a[1].localeCompare(b[1], 'th')); } });
-dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube, dash.params(), { noRegion: true }).map((r) => r.region))].sort() });
+dash.calc('shopCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params(), { noShop: true }), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M) });
+dash.calc('staffCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params()), (r) => r.shop_code + '|' + r.staff_id, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region, staff_id: r.staff_id }), MIN_STAFF, M) });
+dash.calc('shopList', { inputs: ['staff'], fn: (staff) => { const m = new Map(); filt(staff, dash.params(), { noShop: true }).forEach((r) => m.set(r.shop_code, r.shop)); return [...m].sort((a, b) => a[1].localeCompare(b[1], 'th')); } });
+dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(facts, dash.params(), { noRegion: true, noShop: true }).map((r) => r.region))].sort() });
 </script>
 
 <script>
@@ -430,7 +429,7 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
 (function () {
   const ok = (...ids) => ids.map((id) => dash.data(id)).every((d) => d.status === 'ok' && d.data);
   const D = (id) => dash.data(id).data;
-  const scope = () => { const p = dash.params(); return p.shop ? 'สาขาที่เลือก' : p.region ? p.region : p.rr ? p.rr : 'ทุก Region'; };
+  const scope = () => { const p = dash.params(); const sl = dash.data('shopList'); const sn = p.shop && sl.status === 'ok' ? (sl.data.find((x) => x[0] === p.shop) || [])[1] : null; return p.shop ? (sn || 'สาขา ' + p.shop) : p.region ? p.region : p.rr ? p.rr : 'ทุก Region'; };
 
   /* filters */
   const P = (k) => document.getElementById(k);
@@ -551,9 +550,19 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
         `เกิด ${top.prev.toFixed(1)} → ${top.cur.toFixed(1)} ครั้งต่อ 100 ฉบับ` + (worst && worst.delta > 0 && worst.key !== top.key ? ` · ที่เพิ่มมากสุดคือ ${worst.key} (${sgn(worst.delta)})` : ''),
         'ให้ระบบขายบังคับแนบเอกสารหลักก่อนส่ง (hard stop) และแจ้งหน้าร้านทันทีที่ถูก Flag');
     }
-    if (ok('regionCmp')) {
-      const rg = D('regionCmp').filter((r) => r.cur_n >= 30); const drop = [...rg].sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0]; const best = [...rg].sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
-      if (drop) add(drop.delta < 0 ? 'bad' : 'good', `Area ที่แย่ลงมากสุด: ${drop.key}`,
+    const pr = dash.params();
+    if (pr.shop && ok('staffCmp')) {
+      const st = D('staffCmp').filter((r) => r.cur_total >= MIN_STAFF && r.delta != null).sort((x, y) => x.delta - y.delta);
+      const w = st[0], urgent = D('staffCmp').filter((r) => r.tag === 'เร่งด่วน').length;
+      if (w) add(w.delta < 0 ? 'bad' : 'good', `Staff ที่แย่ลงมากสุดในสาขา: ${NAMES[w.staff_id] || w.staff_id}`, `${pct(w.prev_pct)} → ${pct(w.cur_pct)} (${sgn(w.delta, ' จุด')}) · สาเหตุหลัก ${w.top_reason || '—'} · Staff เร่งด่วนในสาขา ${urgent} คน`, 'หัวหน้าสาขา coach รายคนตามสาเหตุหลักในตาราง Staff');
+      else add('warn', 'Staff ในสาขานี้', 'ไม่มี Staff ที่มีเอกสารพอจะเทียบสองเดือน', null);
+    } else if (pr.region && ok('shopCmp')) {
+      const sh = D('shopCmp').filter((r) => r.cur_total >= MIN_SHOP && r.delta != null).sort((x, y) => x.delta - y.delta);
+      const w = sh[0], urgent = D('shopCmp').filter((r) => r.tag === 'เร่งด่วน').length;
+      if (w) add(w.delta < 0 ? 'bad' : 'good', `Shop ที่แย่ลงมากสุดใน ${pr.region}: ${w.shop}`, `${pct(w.prev_pct)} → ${pct(w.cur_pct)} (${sgn(w.delta, ' จุด')}) · สาเหตุหลัก ${w.top_reason || '—'} · Shop เร่งด่วนใน Area ${urgent} สาขา`, 'คลิก Shop ในตารางด้านล่างเพื่อดูว่า Staff คนไหนต้อง coach');
+    } else if (ok('regionCmp')) {
+      const rg = D('regionCmp').filter((r) => r.cur_n >= 30); const drop = [...rg].sort((x, y) => (x.delta ?? 0) - (y.delta ?? 0))[0]; const best = [...rg].sort((x, y) => (y.delta ?? 0) - (x.delta ?? 0))[0];
+      if (drop) add(drop.delta < 0 ? 'bad' : 'good', `Area ที่แย่ลงมากสุด${pr.rr ? 'ใน ' + pr.rr : ''}: ${drop.key}`,
         `${pct(drop.prev)} → ${pct(drop.cur)} (${sgn(drop.delta, ' จุด')})` + (best && best.delta > 0 ? ` · ดีขึ้นมากสุดคือ ${best.key} (${sgn(best.delta, ' จุด')})` : ''),
         'ให้ Area Manager ของ Area ที่แย่ลงดูราย Shop สถานะ "เร่งด่วน" และ "แย่ลง" ในตารางด้านล่าง');
     }

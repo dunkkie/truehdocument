@@ -55,23 +55,20 @@ reason = d['เหตุผลการตรวจสอบ'].fillna('').str.re
 d['reason'] = reason.where(reason.str.match(r'^(เอกสารหลัก|ใบสมัคร)_'), '')
 d.loc[(d.result != 'complete') & (d.reason == ''), 'reason'] = 'อื่นๆ'
 
-dims = ['month', 'rr', 'region', 'date', 'channel', 'order_type', 'smartdoc', 'delivery', 'result']
-d.groupby(dims).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index().to_csv(f'{out}/cube.csv', index=False)
+# one fact table: every filter (Region, Area, Shop) applies to every chart
+facts = ['month', 'rr', 'region', 'shop_code', 'date', 'channel', 'order_type', 'smartdoc', 'delivery', 'result', 'reason', 'tat_bucket']
+d.groupby(facts).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index().to_csv(f'{out}/facts.csv', index=False)
 
 bad = d[d.result != 'complete']
-bad.groupby(['month', 'rr', 'region', 'result', 'reason']).size().reset_index(name='n').to_csv(f'{out}/reasons_main.csv', index=False)
-
-it = bad[['month', 'rr', 'region', 'เหตุผลการตรวจสอบ อื่นๆ']].copy()
+it = bad[['month', 'rr', 'region', 'shop_code', 'เหตุผลการตรวจสอบ อื่นๆ']].copy()
 it['item'] = it['เหตุผลการตรวจสอบ อื่นๆ'].fillna('').str.split(',')
 it = it.explode('item'); it['item'] = it['item'].str.strip()
 it = it[it.item != '']
 it['item'] = it['item'].replace({'ขาด Workpermit': 'ขาด Work Permit'})
 top = it.item.value_counts().head(20).index
 it['item'] = it.item.where(it.item.isin(top), 'อื่นๆ')
-it.groupby(['month', 'rr', 'region', 'item']).size().reset_index(name='n').to_csv(f'{out}/reasons_detail.csv', index=False)
+it.groupby(['month', 'rr', 'region', 'shop_code', 'item']).size().reset_index(name='n').to_csv(f'{out}/reasons_detail.csv', index=False)
 
-d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'result']).size().reset_index(name='n').to_csv(f'{out}/shops.csv', index=False)
-d.groupby(['month', 'rr', 'region', 'tat_bucket']).size().reset_index(name='n').to_csv(f'{out}/tat.csv', index=False)
 d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n').to_csv(f'{out}/staff.csv', index=False)
 
 if len(sys.argv) > 3:
