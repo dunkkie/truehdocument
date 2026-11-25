@@ -1,0 +1,4 @@
+*.xlsb
+*.xlsx
+*.pkl
+__pycache__/

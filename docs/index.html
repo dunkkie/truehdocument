@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard ตรวจสอบเอกสาร TMH Postpaid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500&family=Noto+Serif+Thai:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="dash-runtime.js"></script>
+<style>
+:root{
+  --color-fg:#1f1e1d;--color-fg-muted:#6b6a68;--color-bg:#f5f4ef;--color-panel:#ffffff;--color-border-line:#e3e1da;
+  --color-ok:#2f7d4f;--color-warn:#c98a12;--color-bad:#c2412d;
+  --font-anthropic-sans:"Noto Sans Thai",system-ui,sans-serif;--font-anthropic-serif:"Noto Serif Thai",Georgia,serif;
+  --cds-font-size-caption:13px;--cds-font-size-body:15px;--cds-font-size-heading:18px;--cds-font-size-title:34px;--cds-font-weight-medium:500;
+  --cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:12px;--cds-gap-lg:16px;--cds-gap-xl:28px;--cds-pad-lg:18px;--cds-radius:10px;
+  --cds-chart-muted:#b9c4d0;--cds-chart-grid:#ecebe6;--cds-chart-axis:#cfcdc6;--cds-chart-reference:#8a8984;
+  --cds-surface-popover:#ffffff;--cds-border:#e3e1da;--cds-shadow-popover:0 4px 16px rgba(0,0,0,.12);--cds-text-secondary:#6b6a68;
+  --c1:#3b6fb6;--c2:#c2412d;--c3:#c98a12;--c4:#2f7d4f;--c5:#7a5cb8;--c6:#2a9d9d;--c7:#8a8984;
+}
+@media (prefers-color-scheme: dark){:root{
+  --color-fg:#ecebe6;--color-fg-muted:#a6a5a0;--color-bg:#1c1b1a;--color-panel:#262523;--color-border-line:#3a3936;
+  --color-ok:#5fbf86;--color-warn:#e0a83a;--color-bad:#e66a55;
+  --cds-chart-muted:#5d6b7a;--cds-chart-grid:#33322f;--cds-chart-axis:#4a4945;--cds-chart-reference:#9a9994;
+  --cds-surface-popover:#2e2d2b;--cds-border:#44433f;--cds-text-secondary:#a6a5a0;
+  --c1:#6c9be0;--c2:#e66a55;--c3:#e0a83a;--c4:#5fbf86;--c5:#a78be0;--c6:#4fc0c0;--c7:#9a9994;
+}}
+html,body{margin:0;background:var(--color-bg)}
+#dash-root{max-width:1200px;margin:0 auto;padding:24px 16px 48px}
+.dash-select{font:inherit;font-size:13px;padding:6px 28px 6px 10px;border:1px solid var(--color-border-line);border-radius:8px;background-color:var(--color-panel);color:var(--color-fg)}
+.dash-skeleton{color:transparent!important;background:var(--cds-chart-grid);border-radius:4px}
+.foot{font-family:var(--font-anthropic-sans);font-size:12px;color:var(--color-fg-muted);margin-top:32px}
+</style>
+</head>
+<body>
+<div id="dash-root">
+<style>
+.tx{font-family:var(--font-anthropic-sans),"Noto Sans Thai","Sarabun",sans-serif;color:var(--color-fg);display:flex;flex-direction:column;gap:var(--cds-gap-xl)}
+.tx h1{font-family:var(--font-anthropic-serif),"Noto Serif Thai",serif;font-weight:400;font-size:var(--cds-font-size-title);margin:0}
+.tx h2{font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium);margin:0 0 var(--cds-gap-xs)}
+.tx h3{font-size:var(--cds-font-size-body);font-weight:var(--cds-font-weight-medium);margin:0 0 var(--cds-gap-xs)}
+.tx .sub{color:var(--color-fg-muted);font-size:var(--cds-font-size-caption);margin:var(--cds-gap-xs) 0 var(--cds-gap-sm)}
+.tx .lead{font-size:var(--cds-font-size-body);margin:var(--cds-gap-sm) 0 0;line-height:1.7}
+.tx .lead b{font-weight:var(--cds-font-weight-medium)}
+.tx .filters{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:end}
+.tx .filters label{display:flex;flex-direction:column;gap:var(--cds-gap-xs);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.tx .btn{font:inherit;font-size:var(--cds-font-size-caption);background:var(--color-panel);color:var(--color-fg);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:6px 12px;cursor:pointer}
+.tx .card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);min-width:0}
+.tx .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--cds-gap-lg)}
+.tx .big{font-family:var(--font-anthropic-serif),serif;font-weight:400;font-size:var(--cds-font-size-title);font-variant-numeric:tabular-nums;line-height:1.1;}
+.tx .lbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.tx .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--cds-gap-md)}
+.tx .stat .v{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-heading);font-variant-numeric:tabular-nums}
+.tx .ok{color:var(--color-ok)}.tx .bad{color:var(--color-bad)}
+.tx .strip{display:flex;height:16px;border-radius:3px;overflow:hidden;margin:var(--cds-gap-sm) 0;background:var(--cds-chart-grid);position:relative}
+.tx .strip>div{height:100%}
+.tx .keys{display:flex;flex-direction:column;gap:4px;font-size:var(--cds-font-size-caption);position:relative}
+.tx .keys .k{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:var(--cds-gap-sm);align-items:center}
+.tx .keys .k .s{width:10px;height:10px;border-radius:2px}
+.tx .keys .k .nn{font-variant-numeric:tabular-nums;text-align:right;color:var(--color-fg-muted)}
+.tx .keys .k .pp{font-variant-numeric:tabular-nums;text-align:right;min-width:52px;font-weight:var(--cds-font-weight-medium)}
+.tx .rrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--cds-gap-md)}
+.tx .rr{cursor:pointer;text-align:left;font:inherit;color:inherit}
+.tx .rr.on{outline:2px solid var(--color-fg);outline-offset:-2px}
+.tx .rr .v{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-title);font-variant-numeric:tabular-nums;color:var(--color-ok)}
+.tx .chart{position:relative;min-height:260px;width:100%}
+.tx .legend{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.tx .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.tx .tt{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);box-shadow:var(--cds-shadow-popover);border-radius:var(--cds-radius);padding:8px 10px;font-size:var(--cds-font-size-caption);line-height:1.5;white-space:nowrap;z-index:5;display:none}
+.tx .tt .m{color:var(--cds-text-secondary)}
+.tx svg text{font-size:var(--cds-font-size-caption);fill:var(--cds-text-secondary)}
+.tx .axis line,.tx .axis path{stroke:var(--cds-chart-axis)}
+.tx .gridl line{stroke:var(--cds-chart-grid)}.tx .gridl path{display:none}
+.tx .rb{display:flex;flex-direction:column;gap:6px;position:relative}
+.tx .rb .r{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr) 56px;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption);cursor:pointer;padding:2px 0;border-radius:3px}
+.tx .rb .r.sel{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
+.tx .rb .bar{display:flex;height:14px;border-radius:2px;overflow:hidden}
+.tx .rb .p{text-align:right;font-variant-numeric:tabular-nums}
+.tx .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--cds-gap-lg)}
+.tx .hb{display:flex;flex-direction:column;gap:6px;position:relative}
+.tx .hb .r{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption)}
+.tx .hb .r .l{overflow-wrap:anywhere}
+.tx .hb .r .t{background:var(--cds-chart-grid);border-radius:2px;height:12px;overflow:hidden}
+.tx .hb .r .f{height:100%;border-radius:2px}
+.tx .hb .r .n{font-variant-numeric:tabular-nums;text-align:right;min-width:60px}
+.tx .dots{display:flex;flex-direction:column;gap:8px;position:relative}
+.tx .dots .g{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:var(--cds-gap-sm)}
+.tx .dots .r{display:grid;grid-template-columns:minmax(0,90px) minmax(0,1fr) 92px;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption)}
+.tx .dots .lane{position:relative;height:16px;border-bottom:1px solid var(--cds-chart-grid)}
+.tx .dots .lane .avg{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--cds-chart-reference)}
+.tx .dots .lane .d{position:absolute;top:3px;width:10px;height:10px;border-radius:50%;margin-left:-5px}
+.tx .dots .p{text-align:right;font-variant-numeric:tabular-nums}
+.tx .tw{overflow-x:auto}
+.tx table{border-collapse:collapse;width:100%;font-size:var(--cds-font-size-caption);font-variant-numeric:tabular-nums}
+.tx th{text-align:left;font-weight:var(--cds-font-weight-medium);color:var(--color-fg-muted);border-bottom:1px solid var(--color-border-line);padding:6px 8px;white-space:nowrap}
+.tx td{border-bottom:1px solid var(--color-border-line);padding:6px 8px}
+.tx td.num,.tx th.num{text-align:right}
+.tx .err{color:var(--color-bad);font-size:var(--cds-font-size-caption)}
+.tx .sg{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:var(--cds-gap-md);font-size:var(--cds-font-size-body);line-height:1.7}
+.tx .sg .act{display:block;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)}
+.tx .srch{font:inherit;font-size:var(--cds-font-size-caption);padding:6px 10px;border:1px solid var(--color-border-line);border-radius:var(--cds-radius);background:var(--color-bg);color:var(--color-fg);min-width:200px}
+.tx tr.click{cursor:pointer}.tx tr.click:hover td{background:var(--color-bg)}
+.tx tr.sel td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
+.tx details{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.7}
+.tx details summary{cursor:pointer;color:var(--color-fg)}
+</style>
+
+<div class="tx">
+  <header id="top">
+    <h1>Dashboard ตรวจสอบเอกสาร TMH Postpaid</h1>
+    <p class="sub">ผลตรวจเอกสาร DPS ตามวันที่ทำรายการ 1 ต.ค. – 17 พ.ย. 2026</p>
+    <p class="lead" id="takeaway">เอกสารสมบูรณ์ <b class="dash-skeleton" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</b> จาก <b class="dash-skeleton" data-draw="kpi" data-source="kpi" data-field="total" data-row="0">—</b> ฉบับ · % สมบูรณ์เดือน พ.ย. เปลี่ยน <b data-draw="mdelta" data-source="mdelta">—</b> จุดจาก ต.ค. · ภาคที่ % สมบูรณ์ต่ำสุดคือ <b class="dash-skeleton" data-draw="toprg" data-source="regionStats" data-field="region" data-row="0">—</b> ที่ <b class="dash-skeleton" data-draw="toprg" data-source="regionStats" data-field="pct_complete" data-row="0">—</b></p>
+  </header>
+
+  <div class="filters" id="filters">
+    <label>เดือน
+      <select class="dash-select" id="f-month" aria-label="เดือน">
+        <option value="">ทั้งหมด</option>
+        <option value="2026-10">ต.ค. 26</option>
+        <option value="2026-11">พ.ย. 26 (1–17)</option>
+      </select>
+    </label>
+    <label>RR
+      <select class="dash-select" id="f-rr" aria-label="RR">
+        <option value="">ทั้งหมด</option>
+        <option value="BMA">BMA</option>
+        <option value="UPC1">UPC1</option>
+        <option value="UPC2">UPC2</option>
+      </select>
+    </label>
+    <label>ภาค (Region)
+      <select class="dash-select" id="f-region" data-draw="regionsel" data-source="regionStats" aria-label="ภาค"></select>
+    </label>
+    <button class="btn" id="f-reset" type="button">ล้างตัวกรอง</button>
+  </div>
+
+  <section class="hero" id="hero">
+    <div class="card" id="hero-bad">
+      <div class="lbl">% เอกสารสมบูรณ์</div>
+      <div class="big ok dash-skeleton" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</div>
+      <div class="lbl">ไม่สมบูรณ์รวม <span class="bad" data-draw="kpi" data-source="kpi" data-field="pct_bad" data-row="0">—</span> (<span data-draw="kpi" data-source="kpi" data-field="bad" data-row="0">—</span> ฉบับ)</div>
+      <div class="strip" data-draw="split" data-source="kpi" role="img" aria-label="สัดส่วนผลตรวจ"></div>
+      <div class="keys">
+        <div class="k"><i class="s" data-draw="sw" data-k="complete"></i><span>สมบูรณ์</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="complete" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</span></div>
+        <div class="k"><i class="s" data-draw="sw" data-k="incomplete"></i><span>ไม่สมบูรณ์ (ไม่ผ่านเงื่อนไข)</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="incomplete" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_incomplete" data-row="0">—</span></div>
+        <div class="k"><i class="s" data-draw="sw" data-k="xflag"></i><span>ไม่สมบูรณ์ (X Flag)</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="xflag" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_xflag" data-row="0">—</span></div>
+      </div>
+    </div>
+    <div class="card stats" id="hero-stats">
+      <div class="stat"><div class="lbl">เอกสารที่ตรวจ</div><div class="v dash-skeleton" data-draw="kpi" data-source="kpi" data-field="total" data-row="0">—</div></div>
+      <div class="stat"><div class="lbl">วันตรวจเฉลี่ย (นับจากวันทำรายการ)</div><div class="v dash-skeleton" data-draw="kpi" data-source="kpi" data-field="avg_tat" data-row="0">—</div></div>
+      <div class="stat"><div class="lbl">% สมบูรณ์ ต.ค. 26</div><div class="v" data-draw="bm" data-source="bymonth" data-field="pct_complete" data-where="month=2026-10">—</div></div>
+      <div class="stat"><div class="lbl">% สมบูรณ์ พ.ย. 26 (1–17)</div><div class="v" data-draw="bm" data-source="bymonth" data-field="pct_complete" data-where="month=2026-11">—</div></div>
+    </div>
+  </section>
+
+  <section class="card" id="suggest">
+    <h2>วิเคราะห์และข้อเสนอแนะ</h2>
+    <p class="sub">ตัวเลขในแต่ละข้อเปลี่ยนตามตัวกรอง</p>
+    <ol class="sg">
+      <li id="sg-1"><b>ลด X Flag ก่อน เพราะเป็นก้อนใหญ่ที่สุด</b> X Flag คิดเป็น <b data-draw="ins" data-source="insights" data-field="xflag_share_of_bad" data-row="0">—</b> ของเอกสารไม่สมบูรณ์ และสาเหตุอันดับหนึ่งคือ <b data-draw="topreason" data-source="reasonsMain" data-field="reason" data-row="0">—</b> (<b data-draw="topreason" data-source="reasonsMain" data-field="share" data-row="0">—</b>) <span class="act">→ ให้ระบบขายบังคับแนบเอกสารหลักก่อนกดส่ง (hard stop) และเตือนหน้าร้านทันทีที่เอกสารถูก Flag</span></li>
+      <li id="sg-2"><b>ทำ checklist ตามประเภทลูกค้า</b> สาเหตุย่อยที่พบบ่อยสุด 3 อันดับคือ <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="0">—</b>, <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="1">—</b> และ <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="2">—</b> <span class="act">→ แยก checklist คนไทย / ต่างชาติ (Passport, Work Permit, VISA อายุเหลือ ≥ 6 เดือน) / นิติบุคคล / ผู้เยาว์ และใส่ใบสัญญาบริการพยากรณ์เลขหมายเป็นเอกสารบังคับสำหรับเบอร์มงคล</span></li>
+      <li id="sg-3"><b>โฟกัสภาคและสาขาที่ต่ำสุด</b> <b data-draw="toprg" data-source="regionStats" data-field="region" data-row="0">—</b> มี % สมบูรณ์ <b data-draw="toprg" data-source="regionStats" data-field="pct_complete" data-row="0">—</b> เทียบภาพรวม <b data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</b> และมีสาขาที่ % สมบูรณ์ต่ำกว่า 80% อยู่ <b data-draw="ins" data-source="insights" data-field="shops_below80" data-row="0">—</b> จาก <b data-draw="ins" data-source="insights" data-field="shops_watched" data-row="0">—</b> สาขาที่มีเอกสาร 30 ฉบับขึ้นไป <span class="act">→ ส่งรายชื่อสาขาในตารางด้านล่างให้ Area Manager ทำ coaching รายสัปดาห์ และติดตาม % สมบูรณ์รายสาขา</span></li>
+      <li id="sg-4"><b>ดู Channel ที่ต่างกันมาก</b> <b data-draw="ins" data-source="insights" data-field="worst_channel" data-row="0">—</b> มี % สมบูรณ์ <b data-draw="ins" data-source="insights" data-field="worst_channel_pct" data-row="0">—</b> ขณะที่ <b data-draw="ins" data-source="insights" data-field="best_channel" data-row="0">—</b> อยู่ที่ <b data-draw="ins" data-source="insights" data-field="best_channel_pct" data-row="0">—</b> <span class="act">→ ทบทวนขั้นตอนการรับเอกสารของ Channel ที่ต่ำ และนำวิธีของ Channel ที่ดีที่สุดไปใช้</span></li>
+      <li id="sg-5"><b>ตรวจคุณภาพ Smart Doc</b> เอกสารที่ทำ Smart Doc สมบูรณ์ <b data-draw="ins" data-source="insights" data-field="smart_yes_pct" data-row="0">—</b> เทียบกับที่ไม่ได้ทำ <b data-draw="ins" data-source="insights" data-field="smart_no_pct" data-row="0">—</b> <span class="act">→ ถ้า Smart Doc ต่ำกว่า ให้ตรวจความชัดของภาพสแกนและการแนบไฟล์ครบหน้าในขั้นตอน Upload</span></li>
+      <li id="sg-6"><b>ตั้ง SLA การตรวจ</b> เอกสาร <b data-draw="ins" data-source="insights" data-field="late_share" data-row="0">—</b> ใช้เวลาเกิน 7 วันนับจากวันทำรายการ <span class="act">→ ตั้งเป้าตรวจเสร็จภายใน 7 วัน และเร่งการส่งซองเอกสารจากหน้าร้าน โดยเฉพาะรายการประเภทนำส่งแบบ "ปรับปรุง"</span></li>
+    </ol>
+  </section>
+
+  <section id="rr">
+    <h2>เทียบตาม RR</h2>
+    <p class="sub">% สมบูรณ์ · กดการ์ดเพื่อกรองตาม RR</p>
+    <div class="rrs">
+      <button type="button" class="card rr" data-rr="BMA" id="rr-bma"><div class="lbl">BMA</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=BMA">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=BMA">—</span> ฉบับ</div></button>
+      <button type="button" class="card rr" data-rr="UPC1" id="rr-upc1"><div class="lbl">UPC1</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=UPC1">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=UPC1">—</span> ฉบับ</div></button>
+      <button type="button" class="card rr" data-rr="UPC2" id="rr-upc2"><div class="lbl">UPC2</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=UPC2">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=UPC2">—</span> ฉบับ</div></button>
+    </div>
+  </section>
+
+  <section class="card" id="trend">
+    <h2>ปริมาณเอกสารและ % ไม่สมบูรณ์รายวัน</h2>
+    <div class="legend"><span><i class="sw" data-draw="sw" data-k="complete"></i>จำนวนเอกสาร (แกนซ้าย)</span><span><i class="sw" data-draw="sw" data-k="xflag"></i>% ไม่สมบูรณ์รวม (แกนขวา)</span></div>
+    <div class="chart" id="combo-chart" data-draw="combo" data-source="daily kpi"></div>
+  </section>
+
+  <section class="card" id="regions">
+    <h2>สัดส่วนผลตรวจรายภาค</h2>
+    <p class="sub">ตัวเลขขวาคือ % สมบูรณ์ เรียงจากต่ำสุด · คลิกภาคเพื่อกรองทั้งหน้า</p>
+    <div class="rb" data-draw="regionbars" data-source="regionStats"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" id="reasons-main">
+      <h2>สาเหตุหลักที่ไม่สมบูรณ์</h2>
+      <p class="sub">สัดส่วนจากผล Upload Verification</p>
+      <div class="strip" data-draw="rstrip" data-source="reasonsMain" role="img" aria-label="สัดส่วนสาเหตุหลัก"></div>
+      <div class="keys" data-draw="rkeys" data-source="reasonsMain"></div>
+    </section>
+    <section class="card" id="reasons-detail">
+      <h2>รายละเอียดสาเหตุ 20 อันดับแรก</h2>
+      <p class="sub">นับทีละรายการ เอกสาร 1 ฉบับอาจมีหลายสาเหตุ</p>
+      <div class="hb" data-draw="reasonsdetail" data-source="reasonsDetail"></div>
+    </section>
+  </div>
+
+  <div class="grid2">
+    <section class="card" id="dims">
+      <h2>% ไม่สมบูรณ์รวม แยกตามมิติ</h2>
+      <p class="sub">เส้นประคือค่าเฉลี่ยของช่วงที่เลือก</p>
+      <div class="dots" data-draw="dots" data-source="dims kpi"></div>
+    </section>
+    <section class="card" id="tat">
+      <h2>ระยะเวลาตั้งแต่ทำรายการถึงตรวจเสร็จ</h2>
+      <p class="sub">สัดส่วนเอกสารตามจำนวนวัน</p>
+      <div class="strip" data-draw="tstrip" data-source="tatDist" role="img" aria-label="สัดส่วนระยะเวลาตรวจ"></div>
+      <div class="keys" data-draw="tkeys" data-source="tatDist"></div>
+    </section>
+  </div>
+
+  <section class="card" id="shops">
+    <h2>สาขาที่ % สมบูรณ์ต่ำสุด 15 อันดับ</h2>
+    <p class="sub">เฉพาะสาขาที่มีเอกสารอย่างน้อย 30 ฉบับในช่วงที่เลือก · คลิกแถวเพื่อดูราย Staff ของสาขานั้น</p>
+    <div class="tw">
+      <table data-source="shopTop" data-row-key="shop_code" id="shop-table">
+        <thead><tr>
+          <th data-field="shop_code">รหัส</th><th data-field="shop">สาขา</th><th data-field="region">ภาค</th>
+          <th class="num" data-field="total">ทั้งหมด</th><th class="num" data-field="incomplete">ไม่สมบูรณ์</th>
+          <th class="num" data-field="xflag">X Flag</th><th class="num" data-field="pct_complete">% สมบูรณ์</th><th class="num" data-field="pct_bad">% ไม่สมบูรณ์รวม</th>
+        </tr></thead>
+        <tbody data-draw="shoptable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="staff">
+    <h2>รายละเอียดรายสาขา ราย Staff</h2>
+    <p class="sub">แสดงรหัส Staff (Sales ID) เรียงจาก % สมบูรณ์ต่ำสุด · ใช้ตัวกรองด้านบน เลือกสาขา หรือคลิกแถวในตารางสาขาด้านบน</p>
+    <div class="filters">
+      <label>สาขา
+        <select class="dash-select" id="f-shop" data-draw="shopsel" data-source="shopList" aria-label="สาขา"></select>
+      </label>
+      <label>ค้นหารหัส Staff หรือชื่อสาขา
+        <input class="srch" id="f-q" type="search" placeholder="เช่น 12703490 หรือ เซ็นทรัล" aria-label="ค้นหา">
+      </label>
+      <label>จำนวนเอกสารขั้นต่ำ
+        <select class="dash-select" id="f-min" aria-label="จำนวนเอกสารขั้นต่ำ">
+          <option value="1">ทุก Staff</option>
+          <option value="5" selected>5 ฉบับขึ้นไป</option>
+          <option value="10">10 ฉบับขึ้นไป</option>
+          <option value="20">20 ฉบับขึ้นไป</option>
+        </select>
+      </label>
+    </div>
+    <p class="sub">แสดง <b data-draw="staffcount" data-k="shown">—</b> จาก <b data-draw="staffcount" data-k="all">—</b> Staff ที่ตรงเงื่อนไข</p>
+    <div class="tw">
+      <table data-source="staffStats" data-row-key="shop_code,staff_id" id="staff-table">
+        <thead><tr>
+          <th data-field="shop_code">รหัสสาขา</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th>
+          <th class="num" data-field="total">ทั้งหมด</th><th class="num" data-field="complete">สมบูรณ์</th>
+          <th class="num" data-field="incomplete">ไม่สมบูรณ์</th><th class="num" data-field="xflag">X Flag</th>
+          <th class="num" data-field="pct_complete">% สมบูรณ์</th><th data-field="top_reason">สาเหตุหลัก</th>
+        </tr></thead>
+        <tbody data-draw="stafftable"></tbody>
+      </table>
+    </div>
+    <p><button class="btn" id="f-more" type="button">แสดงเพิ่มอีก 50 แถว</button></p>
+  </section>
+
+  <section class="card" id="auditors">
+    <h2>ผู้ตรวจสอบ</h2>
+    <p class="sub">E-sig Tracker คือการยืนยันอัตโนมัติจากระบบขาย (E-Signature) · ผู้ตรวจแสดงเป็นรหัส</p>
+    <div class="tw">
+      <table data-source="auditorStats" data-row-key="auditor" id="auditor-table">
+        <thead><tr>
+          <th data-field="auditor">ผู้ตรวจสอบ</th><th class="num" data-field="total">ตรวจ</th>
+          <th class="num" data-field="pct_complete">% สมบูรณ์</th><th class="num" data-field="pct_bad">% ไม่สมบูรณ์</th><th class="num" data-field="avg_tat">วันเฉลี่ย</th>
+        </tr></thead>
+        <tbody data-draw="auditortable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details id="defs">
+    <summary>นิยามและที่มาของตัวเลข</summary>
+    <p><b>ไม่สมบูรณ์รวม</b> = ไม่สมบูรณ์ + ไม่สมบูรณ์ (X Flag) ตามตาราง Region ในไฟล์ต้นฉบับ · ส่วนใหญ่ของ X Flag มาจากเอกสารหลักไม่แนบ ส่วน "ไม่สมบูรณ์" ส่วนใหญ่มาจากเอกสารหลักไม่ผ่านเงื่อนไข</p>
+    <p><b>วันตรวจ</b> = วันที่ตรวจเรียบร้อยแล้ว ลบ Order Date · ข้อมูลจากไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26) สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้ารายบุคคล</p>
+  </details>
+</div>
+
+<script>
+window.TM = (function () {
+  const COLORS = { complete: 'var(--cds-chart-muted)', incomplete: 'var(--color-warn)', xflag: 'var(--color-bad)' };
+  const num = d3.format(',');
+  const pct = (v) => (v == null || isNaN(v) ? '—' : v.toFixed(1) + '%');
+  const r1 = (v) => Math.round(v * 10) / 10;
+  function filt(rows, p, skip) {
+    skip = skip || {};
+    return rows.filter((r) => (skip.month || !p.month || r.month === p.month) && (skip.rr || !p.rr || r.rr === p.rr) && (skip.region || !p.region || r.region === p.region));
+  }
+  function tally(rows) {
+    const o = { total: 0, complete: 0, incomplete: 0, xflag: 0, tat: 0 };
+    rows.forEach((r) => { const n = +r.n; o.total += n; o[r.result] += n; o.tat += +(r.tat_sum || 0); });
+    o.bad = o.incomplete + o.xflag;
+    return o;
+  }
+  function tip(el) {
+    let t = el.querySelector(':scope > .tt');
+    if (!t) { t = document.createElement('div'); t.className = 'tt'; el.appendChild(t); }
+    return {
+      show(ev, lines) {
+        t.replaceChildren(...lines.map(([a, b]) => { const d = document.createElement('div'); if (b !== undefined) { const s = document.createElement('span'); s.className = 'm'; s.textContent = a + ' '; d.append(s, document.createTextNode(b)); } else d.textContent = a; return d; }));
+        t.style.display = 'block';
+        const box = el.getBoundingClientRect(); let x = ev.clientX - box.left + 12, y = ev.clientY - box.top + 12;
+        if (x + t.offsetWidth > box.width) x = Math.max(0, ev.clientX - box.left - t.offsetWidth - 12);
+        t.style.left = x + 'px'; t.style.top = y + 'px';
+      },
+      hide() { t.style.display = 'none'; }
+    };
+  }
+  function placeholder(el, d, label) {
+    if (d.status === 'error') { const p = document.createElement('p'); p.className = 'err'; p.textContent = label || 'โหลดข้อมูลส่วนนี้ไม่สำเร็จ'; el.replaceChildren(p); return true; }
+    if (d.status !== 'ok' || !d.data) { el.replaceChildren(document.createTextNode('—')); return true; }
+    return false;
+  }
+  function hbars(el, rows, o) {
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
+    const tp = tip(el);
+    const max = d3.max(rows, (r) => r[o.value]) || 1;
+    rows.forEach((r, i) => {
+      const row = document.createElement('div'); row.className = 'r';
+      const l = document.createElement('div'); l.className = 'l'; l.textContent = r[o.label];
+      const t = document.createElement('div'); t.className = 't';
+      const f = document.createElement('div'); f.className = 'f'; f.style.width = (100 * r[o.value] / max) + '%'; f.style.background = o.color || dash.colors[0];
+      t.appendChild(f);
+      const n = document.createElement('div'); n.className = 'n';
+      const v = document.createElement('span'); v.textContent = o.main(r);
+      v.setAttribute('data-source', o.src); v.setAttribute('data-field', o.field); v.setAttribute('data-row', String(o.rowIndex ? o.rowIndex(r, i) : i));
+      n.appendChild(v);
+      if (o.extra) n.appendChild(document.createTextNode(' ' + o.extra(r)));
+      row.append(l, t, n);
+      row.addEventListener('mousemove', (ev) => tp.show(ev, o.tip(r)));
+      row.addEventListener('mouseleave', () => tp.hide());
+      el.appendChild(row);
+    });
+  }
+  function unskel(el, d) { if (d.status !== 'loading') el.classList.remove('dash-skeleton'); }
+  return { COLORS, num, pct, r1, filt, tally, tip, placeholder, hbars, unskel };
+})();
+</script>
+
+<script>
+const T = window.TM;
+dash.calc('kpi', {
+  title: 'สรุปผลตรวจ (ตามตัวกรอง)', description: 'รวมจำนวนเอกสารแต่ละผลตรวจและคิดเป็น %',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const o = window.TM.tally(window.TM.filt(cube, dash.params())); const r1 = window.TM.r1; const t = o.total || 1;
+    return [{ total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag, bad: o.bad,
+      pct_complete: r1(100 * o.complete / t), pct_bad: r1(100 * o.bad / t), pct_incomplete: r1(100 * o.incomplete / t), pct_xflag: r1(100 * o.xflag / t), avg_tat: r1(o.tat / t) }];
+  }
+});
+dash.calc('bymonth', {
+  title: '% สมบูรณ์รายเดือน', description: 'ตามตัวกรอง RR และภาค ไม่ขึ้นกับตัวกรองเดือน',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const p = dash.params(); const rows = window.TM.filt(cube, p, { month: true });
+    return ['2026-10', '2026-11'].map((m) => { const o = window.TM.tally(rows.filter((r) => r.month === m)); const t = o.total || 1;
+      return { month: m, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t) }; });
+  }
+});
+dash.calc('mdelta', {
+  title: 'ส่วนต่าง % สมบูรณ์ พ.ย. เทียบ ต.ค.', description: 'จุดเปอร์เซ็นต์',
+  inputs: ['bymonth'],
+  fn: (bymonth) => Math.round((bymonth[1].pct_complete - bymonth[0].pct_complete) * 10) / 10
+});
+dash.calc('daily', {
+  title: 'ผลตรวจรายวัน', description: 'จำนวนเอกสารต่อวันตาม Order Date',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const m = new Map();
+    window.TM.filt(cube, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, complete: 0, incomplete: 0, xflag: 0 }; m.set(r.date, o); } o[r.result] += +r.n; });
+    return [...m.values()].sort((a, b) => a.date < b.date ? -1 : 1).map((o) => { o.total = o.complete + o.incomplete + o.xflag; o.pct_bad = window.TM.r1(100 * (o.incomplete + o.xflag) / (o.total || 1)); return o; });
+  }
+});
+dash.calc('regionStats', {
+  title: 'ผลตรวจรายภาค', description: 'ตามตัวกรองเดือนและ RR',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const g = d3.group(window.TM.filt(cube, dash.params(), { region: true }), (r) => r.region);
+    return [...g].map(([region, rows]) => { const o = window.TM.tally(rows); const t = o.total || 1;
+      return { region, rr: rows[0].rr, total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t), avg_tat: window.TM.r1(o.tat / t) }; })
+      .sort((a, b) => b.pct_bad - a.pct_bad);
+  }
+});
+dash.calc('reasonsMain', {
+  title: 'สาเหตุหลัก', description: 'จำนวนเอกสารไม่สมบูรณ์ต่อสาเหตุหลัก และสัดส่วน',
+  inputs: ['reasons_main'],
+  fn: (reasons_main) => {
+    const g = d3.rollup(window.TM.filt(reasons_main, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
+    const tot = d3.sum([...g.values()]) || 1;
+    return [...g].map(([reason, n]) => ({ reason, n, share: window.TM.r1(100 * n / tot) })).sort((a, b) => b.n - a.n);
+  }
+});
+dash.calc('reasonsDetail', {
+  title: 'รายละเอียดสาเหตุ', description: 'นับรายการสาเหตุย่อย 20 อันดับแรก ที่เหลือรวมเป็น อื่นๆ',
+  inputs: ['reasons_detail'],
+  fn: (reasons_detail) => {
+    const g = d3.rollup(window.TM.filt(reasons_detail, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.item);
+    const tot = d3.sum([...g.values()]) || 1;
+    return [...g].map(([item, n]) => ({ item, n, share: window.TM.r1(100 * n / tot) }))
+      .sort((a, b) => (a.item === 'อื่นๆ') - (b.item === 'อื่นๆ') || b.n - a.n);
+  }
+});
+dash.calc('dims', {
+  title: '% ไม่สมบูรณ์ตามมิติ', description: 'Channel, Order Type, Smart Doc และประเภทการนำส่ง',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const rows = window.TM.filt(cube, dash.params()); const out = [];
+    ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((dim) => {
+      d3.group(rows, (r) => r[dim]).forEach((v, value) => { const o = window.TM.tally(v);
+        out.push({ key: dim + ':' + value, dim, value, total: o.total, bad: o.bad, pct_bad: window.TM.r1(100 * o.bad / (o.total || 1)) }); });
+    });
+    return out.sort((a, b) => b.pct_bad - a.pct_bad);
+  }
+});
+dash.calc('shopTop', {
+  title: 'สาขา % ไม่สมบูรณ์สูงสุด', description: '15 สาขาแรก เฉพาะที่มีเอกสาร 30 ฉบับขึ้นไป',
+  inputs: ['shops'],
+  fn: (shops) => {
+    const g = d3.group(window.TM.filt(shops, dash.params()), (r) => r.shop_code);
+    return [...g].map(([shop_code, v]) => { const o = window.TM.tally(v);
+      return { shop_code, shop: v[0].shop, region: v[0].region, total: o.total, incomplete: o.incomplete, xflag: o.xflag, pct_complete: window.TM.r1(100 * o.complete / (o.total || 1)), pct_bad: window.TM.r1(100 * o.bad / (o.total || 1)) }; })
+      .filter((r) => r.total >= 30).sort((a, b) => b.pct_bad - a.pct_bad || b.total - a.total).slice(0, 15);
+  }
+});
+dash.calc('auditorStats', {
+  title: 'สถิติผู้ตรวจสอบ', description: 'จำนวนที่ตรวจ % ไม่สมบูรณ์ และวันเฉลี่ย',
+  inputs: ['auditors'],
+  fn: (auditors) => {
+    const g = d3.group(window.TM.filt(auditors, dash.params()), (r) => r.auditor);
+    return [...g].map(([auditor, v]) => { const o = window.TM.tally(v); const t = o.total || 1;
+      return { auditor, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t), avg_tat: window.TM.r1(o.tat / t) }; })
+      .sort((a, b) => b.total - a.total);
+  }
+});
+dash.calc('tatDist', {
+  title: 'การกระจายระยะเวลาตรวจ', description: 'สัดส่วนเอกสารตามช่วงวัน',
+  inputs: ['tat'],
+  fn: (tat) => {
+    const order = ['0-1 วัน', '2-3 วัน', '4-7 วัน', '8-14 วัน', '15+ วัน'];
+    const g = d3.rollup(window.TM.filt(tat, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.tat_bucket);
+    const tot = d3.sum([...g.values()]) || 1;
+    return order.map((bucket) => ({ bucket, n: g.get(bucket) || 0, share: window.TM.r1(100 * (g.get(bucket) || 0) / tot) }));
+  }
+});
+</script>
+
+<script>
+dash.calc('rrStats', {
+  title: 'ผลตรวจตาม RR', description: 'ตามตัวกรองเดือน ไม่ขึ้นกับตัวกรอง RR และภาค',
+  inputs: ['cube'],
+  fn: (cube) => {
+    const rows = window.TM.filt(cube, dash.params(), { rr: true, region: true });
+    return ['BMA', 'UPC1', 'UPC2'].map((rr) => { const o = window.TM.tally(rows.filter((r) => r.rr === rr)); const t = o.total || 1;
+      return { rr, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t) }; });
+  }
+});
+dash.calc('insights', {
+  title: 'ตัวเลขประกอบข้อเสนอแนะ', description: 'Channel และ Smart Doc ที่ต่างกันมากที่สุด สัดส่วน X Flag ในเอกสารไม่สมบูรณ์ สัดส่วนที่ตรวจเกิน 7 วัน และจำนวนสาขาที่ % สมบูรณ์ต่ำกว่า 80%',
+  inputs: ['cube', 'shops', 'tatDist'],
+  fn: (cube, shops, tatDist) => {
+    const p = dash.params(); const TM = window.TM; const rows = TM.filt(cube, p);
+    const by = (k) => [...d3.group(rows, (r) => r[k])].map(([v, g]) => { const o = TM.tally(g); return { v, total: o.total, pct_complete: TM.r1(100 * o.complete / (o.total || 1)) }; }).filter((x) => x.total >= 100);
+    const ch = by('channel').sort((a, b) => a.pct_complete - b.pct_complete);
+    const sd = by('smartdoc'); const yes = sd.find((x) => x.v === 'Yes'); const no = sd.find((x) => x.v === 'No');
+    const all = TM.tally(rows);
+    const late = TM.r1(d3.sum(tatDist.filter((x) => x.bucket === '8-14 วัน' || x.bucket === '15+ วัน'), (x) => x.share));
+    const sh = [...d3.group(TM.filt(shops, p), (r) => r.shop_code)].map(([, g]) => TM.tally(g)).filter((o) => o.total >= 30);
+    return [{
+      worst_channel: ch.length ? ch[0].v : null, worst_channel_pct: ch.length ? ch[0].pct_complete : null,
+      best_channel: ch.length ? ch[ch.length - 1].v : null, best_channel_pct: ch.length ? ch[ch.length - 1].pct_complete : null,
+      smart_yes_pct: yes ? yes.pct_complete : null, smart_no_pct: no ? no.pct_complete : null,
+      shops_below80: sh.filter((o) => o.complete / o.total < 0.8).length, shops_watched: sh.length,
+      xflag_share_of_bad: TM.r1(100 * all.xflag / (all.bad || 1)), late_share: late
+    }];
+  }
+});
+</script>
+<script>
+dash.calc('shopList', {
+  title: 'รายชื่อสาขา', description: 'สาขาที่มีเอกสารตามตัวกรองเดือน RR และภาค',
+  inputs: ['staff'],
+  fn: (staff) => {
+    const m = new Map(); window.TM.filt(staff, dash.params()).forEach((r) => m.set(r.shop_code, r.shop));
+    return [...m].map(([shop_code, shop]) => ({ shop_code, shop })).sort((a, b) => a.shop.localeCompare(b.shop, 'th'));
+  }
+});
+dash.calc('staffStats', {
+  title: 'ผลตรวจรายสาขา ราย Staff', description: 'จำนวนเอกสารและ % สมบูรณ์ต่อ Staff ในแต่ละสาขา พร้อมสาเหตุหลักที่พบบ่อยที่สุด',
+  inputs: ['staff'],
+  fn: (staff) => {
+    const p = dash.params(); const TM = window.TM;
+    const rows = TM.filt(staff, p).filter((r) => !p.shop || r.shop_code === p.shop);
+    return [...d3.group(rows, (r) => r.shop_code + '|' + r.staff_id)].map(([, g]) => {
+      const o = TM.tally(g);
+      const rs = d3.rollup(g.filter((r) => r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
+      const top = [...rs].sort((a, b) => b[1] - a[1])[0];
+      return { shop_code: g[0].shop_code, shop: g[0].shop, region: g[0].region, staff_id: g[0].staff_id, total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag,
+        pct_complete: TM.r1(100 * o.complete / (o.total || 1)), top_reason: top ? top[0] + ' (' + top[1] + ')' : '' };
+    }).sort((a, b) => a.pct_complete - b.pct_complete || b.total - a.total);
+  }
+});
+</script>
+<script>
+(function () {
+  window.TMS = { limit: 50 };
+  const redraw = () => { dash.draw('stafftable'); dash.draw('staffcount'); };
+  document.querySelectorAll('#f-q').forEach((i) => i.addEventListener('input', () => { window.TMS.limit = 50; redraw(); }));
+  document.querySelectorAll('#f-min').forEach((s) => s.addEventListener('change', () => { window.TMS.limit = 50; redraw(); }));
+  document.querySelectorAll('#f-more').forEach((b) => b.addEventListener('click', () => { window.TMS.limit += 50; redraw(); }));
+  window.TMS.rows = () => {
+    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) return null;
+    const qi = document.querySelector('#f-q'); const mi = document.querySelector('#f-min');
+    const q = (qi ? qi.value : '').trim().toLowerCase(); const min = mi ? +mi.value : 1;
+    return d.data.filter((r) => r.total >= min && (!q || r.staff_id.toLowerCase().includes(q) || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)));
+  };
+  dash.onData(() => { const rows = window.TMS.rows(); document.querySelectorAll('#f-more').forEach((b) => { b.hidden = !rows || rows.length <= window.TMS.limit; }); });
+})();
+</script>
+<script>
+(function () {
+  const T = window.TM;
+  const SEG = (i) => dash.colors[i % dash.colors.length];
+  document.querySelectorAll('#f-month').forEach((s) => s.addEventListener('change', () => dash.setParams({ month: s.value })));
+  document.querySelectorAll('#f-rr').forEach((s) => s.addEventListener('change', () => dash.setParams({ rr: s.value, region: '', shop: '' })));
+  document.querySelectorAll('#f-reset').forEach((b) => b.addEventListener('click', () => dash.resetParams()));
+  document.querySelectorAll('.rr[data-rr]').forEach((b) => b.addEventListener('click', () => { const p = dash.params(); dash.setParams({ rr: p.rr === b.dataset.rr ? '' : b.dataset.rr, region: '', shop: '' }); }));
+  dash.onData(() => {
+    const p = dash.params();
+    document.querySelectorAll('#f-month').forEach((s) => { s.value = p.month || ''; });
+    document.querySelectorAll('#f-rr').forEach((s) => { s.value = p.rr || ''; });
+    document.querySelectorAll('.rr[data-rr]').forEach((b) => { b.classList.toggle('on', p.rr === b.dataset.rr); b.setAttribute('aria-pressed', String(p.rr === b.dataset.rr)); });
+  });
+
+  dash.draw('regionsel', (sel) => {
+    const g = dash.data('regionStats'); const p = dash.params();
+    const names = g.status === 'ok' && g.data ? g.data.map((r) => r.region).sort() : [];
+    sel.replaceChildren(new Option('ทั้งหมด', ''), ...names.map((n) => new Option(n, n)));
+    sel.value = p.region || '';
+    sel.onchange = () => dash.setParams({ region: sel.value, shop: '' });
+  });
+
+  dash.draw('sw', (el) => { el.style.background = T.COLORS[el.dataset.k]; });
+
+  dash.draw('kpi', (el) => {
+    const k = dash.data('kpi'); T.unskel(el, k);
+    if (k.status !== 'ok' || !k.data) { el.textContent = '—'; return; }
+    const f = el.dataset.field; const v = k.data[0][f];
+    el.textContent = f.startsWith('pct') ? T.pct(v) : f === 'avg_tat' ? v.toFixed(1) : T.num(v);
+  });
+
+  dash.draw('topreason', (el) => {
+    const d = dash.data('reasonsMain'); T.unskel(el, d);
+    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
+    const r = d.data[0]; el.textContent = el.dataset.field === 'share' ? T.pct(r.share) : r.reason;
+  });
+  dash.draw('topitem', (el) => {
+    const d = dash.data('reasonsDetail');
+    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
+    const r = d.data[+el.dataset.row]; el.textContent = r ? r.item : '—';
+  });
+  dash.draw('toprg', (el) => {
+    const d = dash.data('regionStats'); T.unskel(el, d);
+    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
+    const r = d.data[0]; const f = el.dataset.field; el.textContent = f.startsWith('pct') ? T.pct(r[f]) : r[f];
+  });
+  dash.draw('ins', (el) => {
+    const d = dash.data('insights');
+    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
+    const f = el.dataset.field; const v = d.data[0][f];
+    el.textContent = v == null ? '—' : /pct|share/.test(f) ? T.pct(v) : typeof v === 'number' ? T.num(v) : v;
+  });
+
+  dash.draw('bm', (el) => {
+    const d = dash.data('bymonth');
+    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
+    const m = el.dataset.where.split('=')[1]; const r = d.data.find((x) => x.month === m);
+    el.textContent = r && r.total ? T.pct(r.pct_complete) : '—';
+  });
+  dash.draw('mdelta', (el) => {
+    const d = dash.data('mdelta');
+    if (d.status !== 'ok' || d.data == null || isNaN(d.data)) { el.textContent = '—'; el.className = ''; return; }
+    el.textContent = (d.data > 0 ? '+' : '') + d.data.toFixed(1);
+    el.className = d.data > 0 ? 'ok' : d.data < 0 ? 'bad' : '';
+  });
+  dash.draw('rrv', (el) => {
+    const d = dash.data('rrStats');
+    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
+    const rr = el.dataset.where.split('=')[1]; const r = d.data.find((x) => x.rr === rr); const f = el.dataset.field;
+    el.textContent = !r || !r.total ? '—' : f.startsWith('pct') ? T.pct(r[f]) : T.num(r[f]);
+  });
+
+  function strip(el, segs) {
+    el.replaceChildren(); const tp = T.tip(el);
+    segs.forEach((s) => { const d = document.createElement('div'); d.style.width = s.share + '%'; d.style.background = s.color;
+      d.addEventListener('mousemove', (ev) => tp.show(ev, s.tip)); d.addEventListener('mouseleave', () => tp.hide()); el.appendChild(d); });
+  }
+  function keys(el, rows, o) {
+    el.replaceChildren();
+    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
+    rows.forEach((r, i) => {
+      const k = document.createElement('div'); k.className = 'k';
+      const s = document.createElement('i'); s.className = 's'; s.style.background = SEG(i);
+      const l = document.createElement('span'); l.textContent = r[o.label];
+      const n = document.createElement('span'); n.className = 'nn'; n.textContent = T.num(r.n);
+      n.setAttribute('data-source', o.src); n.setAttribute('data-field', 'n'); n.setAttribute('data-row', String(i));
+      const p = document.createElement('span'); p.className = 'pp'; p.textContent = T.pct(r.share);
+      p.setAttribute('data-source', o.src); p.setAttribute('data-field', 'share'); p.setAttribute('data-row', String(i));
+      k.append(s, l, n, p); el.appendChild(k);
+    });
+  }
+
+  dash.draw('split', (el) => {
+    const k = dash.data('kpi'); if (k.status !== 'ok' || !k.data) { el.replaceChildren(); return; }
+    const r = k.data[0];
+    strip(el, [['complete', 'สมบูรณ์', r.pct_complete, r.complete], ['incomplete', 'ไม่สมบูรณ์', r.pct_incomplete, r.incomplete], ['xflag', 'X Flag', r.pct_xflag, r.xflag]]
+      .map(([key, name, share, n]) => ({ share, color: T.COLORS[key], tip: [[name], ['จำนวน', T.num(n)], ['สัดส่วน', T.pct(share)]] })));
+  });
+  dash.draw('rstrip', (el) => {
+    const d = dash.data('reasonsMain'); if (d.status !== 'ok' || !d.data) { el.replaceChildren(); return; }
+    strip(el, d.data.map((r, i) => ({ share: r.share, color: SEG(i), tip: [[r.reason], ['จำนวน', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] })));
+  });
+  dash.draw('rkeys', (el) => { const d = dash.data('reasonsMain'); if (T.placeholder(el, d)) return; keys(el, d.data, { label: 'reason', src: 'reasonsMain' }); });
+  dash.draw('tstrip', (el) => {
+    const d = dash.data('tatDist'); if (d.status !== 'ok' || !d.data) { el.replaceChildren(); return; }
+    strip(el, d.data.map((r, i) => ({ share: r.share, color: SEG(i), tip: [[r.bucket], ['เอกสาร', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] })));
+  });
+  dash.draw('tkeys', (el) => { const d = dash.data('tatDist'); if (T.placeholder(el, d)) return; keys(el, d.data, { label: 'bucket', src: 'tatDist' }); });
+
+  dash.draw('combo', (el) => {
+    const d = dash.data('daily'); if (T.placeholder(el, d)) return;
+    const rows = d.data; el.replaceChildren(); const tp = T.tip(el);
+    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
+    const W = el.clientWidth || 600, H = 260, m = { t: 10, r: 44, b: 24, l: 44 };
+    const parse = d3.utcParse('%Y-%m-%d'); const pf = d3.utcFormat('%d/%m');
+    const x = d3.scaleBand().domain(rows.map((r) => r.date)).range([m.l, W - m.r]).padding(0.2);
+    const y = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.total)]).nice().range([H - m.b, m.t]);
+    const y2 = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.pct_bad)]).nice().range([H - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', 'จำนวนเอกสารรายวันเป็นแท่ง และเปอร์เซ็นต์ไม่สมบูรณ์รวมเป็นเส้น');
+    svg.append('g').attr('class', 'gridl').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)).tickFormat(''));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('~s')));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(${W - m.r},0)`).call(d3.axisRight(y2).ticks(5).tickFormat((v) => v + '%'));
+    const step = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((W - 90) / 48))));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(rows.filter((_, i) => i % step === 0).map((r) => r.date)).tickFormat((s) => pf(parse(s))));
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.total)).attr('height', (r) => y(0) - y(r.total)).style('fill', T.COLORS.complete);
+    const cx = (r) => x(r.date) + x.bandwidth() / 2;
+    svg.append('path').datum(rows).attr('fill', 'none').style('stroke', 'var(--color-bad)').attr('stroke-width', 2).attr('d', d3.line().x(cx).y((r) => y2(r.pct_bad)));
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', cx).attr('cy', (r) => y2(r.pct_bad)).attr('r', 2.5).style('fill', 'var(--color-bad)');
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date) - x.step() * x.padding() / 2).attr('width', x.step()).attr('y', m.t).attr('height', H - m.b - m.t).style('fill', 'transparent')
+      .on('mousemove', (ev, r) => tp.show(ev, [[d3.utcFormat('%d/%m/%Y')(parse(r.date))], ['เอกสาร', T.num(r.total)], ['สมบูรณ์', T.num(r.complete)], ['ไม่สมบูรณ์', T.num(r.incomplete)], ['X Flag', T.num(r.xflag)], ['% ไม่สมบูรณ์รวม', T.pct(r.pct_bad)]]))
+      .on('mouseleave', () => tp.hide());
+  });
+
+  dash.draw('regionbars', (el) => {
+    const d = dash.data('regionStats'); if (T.placeholder(el, d)) return;
+    el.replaceChildren(); const p = dash.params();
+    if (!d.data.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
+    const tp = T.tip(el);
+    d.data.forEach((r, i) => {
+      const row = document.createElement('div'); row.className = 'r' + (p.region === r.region ? ' sel' : '');
+      const l = document.createElement('div'); l.textContent = r.region;
+      const bar = document.createElement('div'); bar.className = 'bar';
+      [['complete', r.complete], ['incomplete', r.incomplete], ['xflag', r.xflag]].forEach(([k, n]) => { const s = document.createElement('div'); s.style.width = (100 * n / (r.total || 1)) + '%'; s.style.background = T.COLORS[k]; bar.appendChild(s); });
+      const v = document.createElement('div'); v.className = 'p'; v.textContent = T.pct(r.pct_complete);
+      v.setAttribute('data-source', 'regionStats'); v.setAttribute('data-field', 'pct_complete'); v.setAttribute('data-row', String(i));
+      row.append(l, bar, v);
+      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.region + ' (' + r.rr + ')'], ['เอกสาร', T.num(r.total)], ['% สมบูรณ์', T.pct(r.pct_complete)], ['ไม่สมบูรณ์', T.num(r.incomplete)], ['X Flag', T.num(r.xflag)], ['วันตรวจเฉลี่ย', r.avg_tat.toFixed(1)]]));
+      row.addEventListener('mouseleave', () => tp.hide());
+      row.addEventListener('click', () => dash.setParams({ region: p.region === r.region ? '' : r.region, shop: '' }));
+      el.appendChild(row);
+    });
+  });
+
+  dash.draw('reasonsdetail', (el) => {
+    const d = dash.data('reasonsDetail'); if (T.placeholder(el, d)) return;
+    T.hbars(el, d.data, { label: 'item', value: 'n', color: 'var(--color-warn)', src: 'reasonsDetail', field: 'n', main: (r) => T.num(r.n), tip: (r) => [[r.item], ['จำนวนรายการ', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] });
+  });
+
+  dash.draw('dots', (el) => {
+    const d = dash.data('dims'); const k = dash.data('kpi'); if (T.placeholder(el, d)) return;
+    el.replaceChildren(); const tp = T.tip(el);
+    const max = Math.max(5, Math.ceil((d3.max(d.data, (r) => r.pct_bad) || 0) / 5) * 5);
+    const avg = k.status === 'ok' && k.data ? k.data[0].pct_bad : null;
+    [['channel', 'Channel'], ['order_type', 'Order Type'], ['smartdoc', 'Smart Doc'], ['delivery', 'ประเภทการนำส่ง']].forEach(([dim, name]) => {
+      const g = document.createElement('div'); g.className = 'g'; g.textContent = name; el.appendChild(g);
+      d.data.forEach((r, i) => {
+        if (r.dim !== dim) return;
+        const row = document.createElement('div'); row.className = 'r';
+        const l = document.createElement('div'); l.textContent = r.value;
+        const lane = document.createElement('div'); lane.className = 'lane';
+        if (avg != null) { const a = document.createElement('div'); a.className = 'avg'; a.style.left = (100 * avg / max) + '%'; lane.appendChild(a); }
+        const dot = document.createElement('div'); dot.className = 'd'; dot.style.left = (100 * r.pct_bad / max) + '%'; dot.style.background = avg != null && r.pct_bad > avg ? 'var(--color-bad)' : dash.colors[0]; lane.appendChild(dot);
+        const v = document.createElement('div'); v.className = 'p';
+        const vs = document.createElement('span'); vs.textContent = T.pct(r.pct_bad); vs.setAttribute('data-source', 'dims'); vs.setAttribute('data-field', 'pct_bad'); vs.setAttribute('data-row', String(i));
+        v.append(vs, document.createTextNode(' (' + T.num(r.total) + ')'));
+        row.append(l, lane, v);
+        row.addEventListener('mousemove', (ev) => tp.show(ev, [[name + ': ' + r.value], ['เอกสาร', T.num(r.total)], ['ไม่สมบูรณ์รวม', T.num(r.bad)], ['%', T.pct(r.pct_bad)]]));
+        row.addEventListener('mouseleave', () => tp.hide());
+        el.appendChild(row);
+      });
+    });
+  });
+
+  dash.draw('shopsel', (sel) => {
+    const g = dash.data('shopList'); const p = dash.params();
+    const list = g.status === 'ok' && g.data ? g.data : [];
+    sel.replaceChildren(new Option('ทุกสาขา', ''), ...list.map((r) => new Option(r.shop + ' (' + r.shop_code + ')', r.shop_code)));
+    sel.value = p.shop || '';
+    sel.onchange = () => dash.setParams({ shop: sel.value });
+  });
+  dash.draw('staffcount', (el) => {
+    const rows = window.TMS.rows(); if (!rows) { el.textContent = '—'; return; }
+    el.textContent = T.num(el.dataset.k === 'all' ? rows.length : Math.min(rows.length, window.TMS.limit));
+  });
+  dash.draw('stafftable', (tb) => {
+    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 9; td.textContent = d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—'; if (d.status === 'error') td.className = 'err'; tr.appendChild(td); tb.replaceChildren(tr); return; }
+    const rows = window.TMS.rows().slice(0, window.TMS.limit);
+    document.querySelectorAll('#f-more').forEach((b) => { b.hidden = window.TMS.rows().length <= window.TMS.limit; });
+    if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 9; td.textContent = 'ไม่พบ Staff ตามเงื่อนไข'; tr.appendChild(td); tb.replaceChildren(tr); return; }
+    tb.replaceChildren(...rows.map((r) => { const tr = document.createElement('tr');
+      const c = (t, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = t; tr.appendChild(td); };
+      c(r.shop_code); c(r.shop); c(r.staff_id); c(T.num(r.total), 'num'); c(T.num(r.complete), 'num'); c(T.num(r.incomplete), 'num'); c(T.num(r.xflag), 'num');
+      c(T.pct(r.pct_complete), r.pct_complete < 80 ? 'num bad' : 'num'); c(r.top_reason || '—');
+      return tr; }));
+  });
+
+  function cell(tr, text, cls) { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.appendChild(td); return td; }
+  function tableMsg(tb, d, cols) {
+    if (d.status === 'ok' && d.data) return false;
+    const tr = document.createElement('tr'); const td = cell(tr, d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—', d.status === 'error' ? 'err' : ''); td.colSpan = cols; tb.replaceChildren(tr); return true;
+  }
+  dash.draw('shoptable', (tb) => {
+    const d = dash.data('shopTop'); if (tableMsg(tb, d, 8)) return;
+    if (!d.data.length) { const tr = document.createElement('tr'); cell(tr, 'ไม่มีสาขาที่มีเอกสารถึง 30 ฉบับในช่วงที่เลือก').colSpan = 8; tb.replaceChildren(tr); return; }
+    const ps = dash.params();
+    tb.replaceChildren(...d.data.map((r) => { const tr = document.createElement('tr'); tr.className = 'click' + (ps.shop === r.shop_code ? ' sel' : '');
+      tr.addEventListener('click', () => { dash.setParams({ shop: ps.shop === r.shop_code ? '' : r.shop_code }); document.querySelectorAll('#staff').forEach((s) => s.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
+      cell(tr, r.shop_code); cell(tr, r.shop); cell(tr, r.region); cell(tr, T.num(r.total), 'num'); cell(tr, T.num(r.incomplete), 'num'); cell(tr, T.num(r.xflag), 'num'); cell(tr, T.pct(r.pct_complete), 'num'); cell(tr, T.pct(r.pct_bad), 'num bad'); return tr; }));
+  });
+  dash.draw('auditortable', (tb) => {
+    const d = dash.data('auditorStats'); if (tableMsg(tb, d, 5)) return;
+    tb.replaceChildren(...d.data.map((r) => { const tr = document.createElement('tr');
+      cell(tr, r.auditor); cell(tr, T.num(r.total), 'num'); cell(tr, T.pct(r.pct_complete), 'num'); cell(tr, T.pct(r.pct_bad), 'num'); cell(tr, r.avg_tat.toFixed(1), 'num'); return tr; }));
+  });
+})();
+</script>
+<p class="foot">ข้อมูล: ไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26) · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน · สร้างด้วย scripts/build_data.py</p>
+</div>
+</body>
+</html>

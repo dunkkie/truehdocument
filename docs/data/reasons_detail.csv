@@ -1,0 +1,544 @@
+month,rr,region,item,n
+2026-10,BMA,BMA I - North West,VISAเหลือน้อยกว่า6เดือน,2
+2026-10,BMA,BMA I - North West,Workpermitเหลือน้อยกว่า6เดือน,11
+2026-10,BMA,BMA I - North West,ขาด Work Permit,67
+2026-10,BMA,BMA I - North West,ขาดPassport,11
+2026-10,BMA,BMA I - North West,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,2
+2026-10,BMA,BMA I - North West,ขาดตราประทับในเอกสารประกอบการสมัคร,9
+2026-10,BMA,BMA I - North West,ขาดตราประทับในใบสมัคร,16
+2026-10,BMA,BMA I - North West,ขาดทะเบียนบ้าน,1
+2026-10,BMA,BMA I - North West,ขาดบัตรประชาชน,8
+2026-10,BMA,BMA I - North West,ขาดลายเซ็นในใบสมัคร,27
+2026-10,BMA,BMA I - North West,ขาดหนังสือมอบอำนาจ,2
+2026-10,BMA,BMA I - North West,ขาดหนังสือรับรอง,10
+2026-10,BMA,BMA I - North West,ขาดอากรแสตมป์,44
+2026-10,BMA,BMA I - North West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,60
+2026-10,BMA,BMA I - North West,ลายเซ็นไม่ตรง/ไม่เหมือน,25
+2026-10,BMA,BMA I - North West,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,2
+2026-10,BMA,BMA I - North West,อายุไม่ครบ18ปี,2
+2026-10,BMA,BMA I - North West,อื่นๆ,125
+2026-10,BMA,BMA I - North West,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,6
+2026-10,BMA,BMA I - North West,ไม่แนบเอกสาร PDS,16
+2026-10,BMA,BMA II - South West,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,3
+2026-10,BMA,BMA II - South West,VISAเหลือน้อยกว่า6เดือน,4
+2026-10,BMA,BMA II - South West,Workpermitเหลือน้อยกว่า6เดือน,21
+2026-10,BMA,BMA II - South West,ขาด Work Permit,59
+2026-10,BMA,BMA II - South West,ขาดPassport,8
+2026-10,BMA,BMA II - South West,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,2
+2026-10,BMA,BMA II - South West,ขาดตราประทับในเอกสารประกอบการสมัคร,6
+2026-10,BMA,BMA II - South West,ขาดตราประทับในใบสมัคร,13
+2026-10,BMA,BMA II - South West,ขาดทะเบียนบ้าน,1
+2026-10,BMA,BMA II - South West,ขาดบัตรประชาชน,2
+2026-10,BMA,BMA II - South West,ขาดลายเซ็นในใบสมัคร,4
+2026-10,BMA,BMA II - South West,ขาดหนังสือมอบอำนาจ,6
+2026-10,BMA,BMA II - South West,ขาดหนังสือรับรอง,10
+2026-10,BMA,BMA II - South West,ขาดอากรแสตมป์,6
+2026-10,BMA,BMA II - South West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,45
+2026-10,BMA,BMA II - South West,ลายเซ็นไม่ตรง/ไม่เหมือน,13
+2026-10,BMA,BMA II - South West,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,1
+2026-10,BMA,BMA II - South West,อายุไม่ครบ18ปี,2
+2026-10,BMA,BMA II - South West,อื่นๆ,42
+2026-10,BMA,BMA II - South West,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,5
+2026-10,BMA,BMA III - North East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,2
+2026-10,BMA,BMA III - North East,VISAเหลือน้อยกว่า6เดือน,5
+2026-10,BMA,BMA III - North East,Workpermitเหลือน้อยกว่า6เดือน,8
+2026-10,BMA,BMA III - North East,ขาด Work Permit,49
+2026-10,BMA,BMA III - North East,ขาดPassport,6
+2026-10,BMA,BMA III - North East,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,4
+2026-10,BMA,BMA III - North East,ขาดตราประทับในเอกสารประกอบการสมัคร,16
+2026-10,BMA,BMA III - North East,ขาดตราประทับในใบสมัคร,15
+2026-10,BMA,BMA III - North East,ขาดทะเบียนบ้าน,2
+2026-10,BMA,BMA III - North East,ขาดบัตรประชาชน,17
+2026-10,BMA,BMA III - North East,ขาดลายเซ็นในใบสมัคร,21
+2026-10,BMA,BMA III - North East,ขาดหนังสือมอบอำนาจ,8
+2026-10,BMA,BMA III - North East,ขาดหนังสือรับรอง,18
+2026-10,BMA,BMA III - North East,ขาดอากรแสตมป์,28
+2026-10,BMA,BMA III - North East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,56
+2026-10,BMA,BMA III - North East,ลายเซ็นไม่ตรง/ไม่เหมือน,15
+2026-10,BMA,BMA III - North East,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,3
+2026-10,BMA,BMA III - North East,อายุไม่ครบ18ปี,4
+2026-10,BMA,BMA III - North East,อื่นๆ,60
+2026-10,BMA,BMA III - North East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,13
+2026-10,BMA,BMA IV - South East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,5
+2026-10,BMA,BMA IV - South East,VISAเหลือน้อยกว่า6เดือน,13
+2026-10,BMA,BMA IV - South East,Workpermitเหลือน้อยกว่า6เดือน,67
+2026-10,BMA,BMA IV - South East,ขาด Work Permit,116
+2026-10,BMA,BMA IV - South East,ขาดPassport,23
+2026-10,BMA,BMA IV - South East,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,3
+2026-10,BMA,BMA IV - South East,ขาดตราประทับในเอกสารประกอบการสมัคร,6
+2026-10,BMA,BMA IV - South East,ขาดตราประทับในใบสมัคร,29
+2026-10,BMA,BMA IV - South East,ขาดทะเบียนบ้าน,4
+2026-10,BMA,BMA IV - South East,ขาดบัตรประชาชน,21
+2026-10,BMA,BMA IV - South East,ขาดลายเซ็นในใบสมัคร,11
+2026-10,BMA,BMA IV - South East,ขาดหนังสือมอบอำนาจ,13
+2026-10,BMA,BMA IV - South East,ขาดหนังสือรับรอง,30
+2026-10,BMA,BMA IV - South East,ขาดอากรแสตมป์,7
+2026-10,BMA,BMA IV - South East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,106
+2026-10,BMA,BMA IV - South East,ลายเซ็นไม่ตรง/ไม่เหมือน,16
+2026-10,BMA,BMA IV - South East,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,1
+2026-10,BMA,BMA IV - South East,อายุไม่ครบ18ปี,4
+2026-10,BMA,BMA IV - South East,อื่นๆ,83
+2026-10,BMA,BMA IV - South East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,7
+2026-10,BMA,BMA V - Central,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,10
+2026-10,BMA,BMA V - Central,VISAเหลือน้อยกว่า6เดือน,18
+2026-10,BMA,BMA V - Central,Workpermitเหลือน้อยกว่า6เดือน,15
+2026-10,BMA,BMA V - Central,ขาด Work Permit,110
+2026-10,BMA,BMA V - Central,ขาดPassport,12
+2026-10,BMA,BMA V - Central,ขาดตราประทับในเอกสารประกอบการสมัคร,15
+2026-10,BMA,BMA V - Central,ขาดตราประทับในใบสมัคร,17
+2026-10,BMA,BMA V - Central,ขาดทะเบียนบ้าน,1
+2026-10,BMA,BMA V - Central,ขาดบัตรประชาชน,15
+2026-10,BMA,BMA V - Central,ขาดลายเซ็นในใบสมัคร,17
+2026-10,BMA,BMA V - Central,ขาดหนังสือมอบอำนาจ,10
+2026-10,BMA,BMA V - Central,ขาดหนังสือรับรอง,19
+2026-10,BMA,BMA V - Central,ขาดอากรแสตมป์,11
+2026-10,BMA,BMA V - Central,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,60
+2026-10,BMA,BMA V - Central,ลายเซ็นไม่ตรง/ไม่เหมือน,29
+2026-10,BMA,BMA V - Central,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,1
+2026-10,BMA,BMA V - Central,อายุไม่ครบ18ปี,1
+2026-10,BMA,BMA V - Central,อื่นๆ,100
+2026-10,BMA,BMA V - Central,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,10
+2026-10,BMA,BMA V - Central,ไม่แนบเอกสาร PDS,2
+2026-10,UPC1,UPC - Central Northeast,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,1
+2026-10,UPC1,UPC - Central Northeast,Workpermitเหลือน้อยกว่า6เดือน,1
+2026-10,UPC1,UPC - Central Northeast,ขาด Work Permit,7
+2026-10,UPC1,UPC - Central Northeast,ขาดPassport,2
+2026-10,UPC1,UPC - Central Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,9
+2026-10,UPC1,UPC - Central Northeast,ขาดตราประทับในใบสมัคร,1
+2026-10,UPC1,UPC - Central Northeast,ขาดทะเบียนบ้าน,1
+2026-10,UPC1,UPC - Central Northeast,ขาดบัตรประชาชน,22
+2026-10,UPC1,UPC - Central Northeast,ขาดลายเซ็นในใบสมัคร,11
+2026-10,UPC1,UPC - Central Northeast,ขาดหนังสือมอบอำนาจ,6
+2026-10,UPC1,UPC - Central Northeast,ขาดหนังสือรับรอง,3
+2026-10,UPC1,UPC - Central Northeast,ขาดอากรแสตมป์,4
+2026-10,UPC1,UPC - Central Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,55
+2026-10,UPC1,UPC - Central Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,5
+2026-10,UPC1,UPC - Central Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,7
+2026-10,UPC1,UPC - Central Northeast,อายุไม่ครบ18ปี,10
+2026-10,UPC1,UPC - Central Northeast,อื่นๆ,29
+2026-10,UPC1,UPC - Central Northeast,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-10,UPC1,UPC - Lower North,ขาด Work Permit,3
+2026-10,UPC1,UPC - Lower North,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,8
+2026-10,UPC1,UPC - Lower North,ขาดตราประทับในเอกสารประกอบการสมัคร,3
+2026-10,UPC1,UPC - Lower North,ขาดตราประทับในใบสมัคร,1
+2026-10,UPC1,UPC - Lower North,ขาดทะเบียนบ้าน,5
+2026-10,UPC1,UPC - Lower North,ขาดหนังสือรับรอง,1
+2026-10,UPC1,UPC - Lower North,ขาดอากรแสตมป์,3
+2026-10,UPC1,UPC - Lower North,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,21
+2026-10,UPC1,UPC - Lower North,ลายเซ็นไม่ตรง/ไม่เหมือน,6
+2026-10,UPC1,UPC - Lower North,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,10
+2026-10,UPC1,UPC - Lower North,อายุไม่ครบ18ปี,11
+2026-10,UPC1,UPC - Lower North,อื่นๆ,37
+2026-10,UPC1,UPC - Lower North,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,4
+2026-10,UPC1,UPC - Lower Northeast,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,4
+2026-10,UPC1,UPC - Lower Northeast,VISAเหลือน้อยกว่า6เดือน,1
+2026-10,UPC1,UPC - Lower Northeast,Workpermitเหลือน้อยกว่า6เดือน,4
+2026-10,UPC1,UPC - Lower Northeast,ขาด Work Permit,62
+2026-10,UPC1,UPC - Lower Northeast,ขาดPassport,19
+2026-10,UPC1,UPC - Lower Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,26
+2026-10,UPC1,UPC - Lower Northeast,ขาดตราประทับในเอกสารประกอบการสมัคร,5
+2026-10,UPC1,UPC - Lower Northeast,ขาดตราประทับในใบสมัคร,1
+2026-10,UPC1,UPC - Lower Northeast,ขาดทะเบียนบ้าน,25
+2026-10,UPC1,UPC - Lower Northeast,ขาดบัตรประชาชน,48
+2026-10,UPC1,UPC - Lower Northeast,ขาดลายเซ็นในใบสมัคร,117
+2026-10,UPC1,UPC - Lower Northeast,ขาดหนังสือมอบอำนาจ,1
+2026-10,UPC1,UPC - Lower Northeast,ขาดหนังสือรับรอง,5
+2026-10,UPC1,UPC - Lower Northeast,ขาดอากรแสตมป์,3
+2026-10,UPC1,UPC - Lower Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,112
+2026-10,UPC1,UPC - Lower Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,20
+2026-10,UPC1,UPC - Lower Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,29
+2026-10,UPC1,UPC - Lower Northeast,อายุไม่ครบ18ปี,40
+2026-10,UPC1,UPC - Lower Northeast,อื่นๆ,161
+2026-10,UPC1,UPC - Lower Northeast,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,12
+2026-10,UPC1,UPC - Lower Northeast,ไม่แนบเอกสาร PDS,39
+2026-10,UPC1,UPC - Upper North,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,2
+2026-10,UPC1,UPC - Upper North,VISAเหลือน้อยกว่า6เดือน,8
+2026-10,UPC1,UPC - Upper North,Workpermitเหลือน้อยกว่า6เดือน,6
+2026-10,UPC1,UPC - Upper North,ขาด Work Permit,74
+2026-10,UPC1,UPC - Upper North,ขาดPassport,25
+2026-10,UPC1,UPC - Upper North,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,17
+2026-10,UPC1,UPC - Upper North,ขาดตราประทับในเอกสารประกอบการสมัคร,10
+2026-10,UPC1,UPC - Upper North,ขาดตราประทับในใบสมัคร,5
+2026-10,UPC1,UPC - Upper North,ขาดทะเบียนบ้าน,10
+2026-10,UPC1,UPC - Upper North,ขาดบัตรประชาชน,9
+2026-10,UPC1,UPC - Upper North,ขาดลายเซ็นในใบสมัคร,12
+2026-10,UPC1,UPC - Upper North,ขาดหนังสือมอบอำนาจ,1
+2026-10,UPC1,UPC - Upper North,ขาดหนังสือรับรอง,15
+2026-10,UPC1,UPC - Upper North,ขาดอากรแสตมป์,1
+2026-10,UPC1,UPC - Upper North,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,86
+2026-10,UPC1,UPC - Upper North,ลายเซ็นไม่ตรง/ไม่เหมือน,9
+2026-10,UPC1,UPC - Upper North,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,13
+2026-10,UPC1,UPC - Upper North,อายุไม่ครบ18ปี,18
+2026-10,UPC1,UPC - Upper North,อื่นๆ,63
+2026-10,UPC1,UPC - Upper North,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-10,UPC1,UPC - Upper Northeast,VISAเหลือน้อยกว่า6เดือน,1
+2026-10,UPC1,UPC - Upper Northeast,Workpermitเหลือน้อยกว่า6เดือน,4
+2026-10,UPC1,UPC - Upper Northeast,ขาด Work Permit,31
+2026-10,UPC1,UPC - Upper Northeast,ขาดPassport,2
+2026-10,UPC1,UPC - Upper Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,20
+2026-10,UPC1,UPC - Upper Northeast,ขาดตราประทับในเอกสารประกอบการสมัคร,5
+2026-10,UPC1,UPC - Upper Northeast,ขาดตราประทับในใบสมัคร,5
+2026-10,UPC1,UPC - Upper Northeast,ขาดทะเบียนบ้าน,12
+2026-10,UPC1,UPC - Upper Northeast,ขาดบัตรประชาชน,18
+2026-10,UPC1,UPC - Upper Northeast,ขาดลายเซ็นในใบสมัคร,41
+2026-10,UPC1,UPC - Upper Northeast,ขาดหนังสือรับรอง,6
+2026-10,UPC1,UPC - Upper Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,87
+2026-10,UPC1,UPC - Upper Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,25
+2026-10,UPC1,UPC - Upper Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,14
+2026-10,UPC1,UPC - Upper Northeast,อายุไม่ครบ18ปี,23
+2026-10,UPC1,UPC - Upper Northeast,อื่นๆ,82
+2026-10,UPC1,UPC - Upper Northeast,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,6
+2026-10,UPC1,UPC - Upper Northeast,ไม่แนบเอกสาร PDS,7
+2026-10,UPC2,UPC - Central,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,9
+2026-10,UPC2,UPC - Central,Workpermitเหลือน้อยกว่า6เดือน,10
+2026-10,UPC2,UPC - Central,ขาด Work Permit,57
+2026-10,UPC2,UPC - Central,ขาดPassport,23
+2026-10,UPC2,UPC - Central,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,2
+2026-10,UPC2,UPC - Central,ขาดตราประทับในเอกสารประกอบการสมัคร,1
+2026-10,UPC2,UPC - Central,ขาดตราประทับในใบสมัคร,4
+2026-10,UPC2,UPC - Central,ขาดทะเบียนบ้าน,2
+2026-10,UPC2,UPC - Central,ขาดบัตรประชาชน,13
+2026-10,UPC2,UPC - Central,ขาดลายเซ็นในใบสมัคร,18
+2026-10,UPC2,UPC - Central,ขาดหนังสือรับรอง,1
+2026-10,UPC2,UPC - Central,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,20
+2026-10,UPC2,UPC - Central,ลายเซ็นไม่ตรง/ไม่เหมือน,6
+2026-10,UPC2,UPC - Central,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,3
+2026-10,UPC2,UPC - Central,อายุไม่ครบ18ปี,4
+2026-10,UPC2,UPC - Central,อื่นๆ,65
+2026-10,UPC2,UPC - Central,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-10,UPC2,UPC - Central,ไม่แนบเอกสาร PDS,6
+2026-10,UPC2,UPC - East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,2
+2026-10,UPC2,UPC - East,VISAเหลือน้อยกว่า6เดือน,6
+2026-10,UPC2,UPC - East,Workpermitเหลือน้อยกว่า6เดือน,15
+2026-10,UPC2,UPC - East,ขาด Work Permit,32
+2026-10,UPC2,UPC - East,ขาดPassport,7
+2026-10,UPC2,UPC - East,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,5
+2026-10,UPC2,UPC - East,ขาดตราประทับในเอกสารประกอบการสมัคร,4
+2026-10,UPC2,UPC - East,ขาดตราประทับในใบสมัคร,6
+2026-10,UPC2,UPC - East,ขาดทะเบียนบ้าน,2
+2026-10,UPC2,UPC - East,ขาดบัตรประชาชน,32
+2026-10,UPC2,UPC - East,ขาดลายเซ็นในใบสมัคร,39
+2026-10,UPC2,UPC - East,ขาดหนังสือมอบอำนาจ,3
+2026-10,UPC2,UPC - East,ขาดหนังสือรับรอง,3
+2026-10,UPC2,UPC - East,ขาดอากรแสตมป์,4
+2026-10,UPC2,UPC - East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,23
+2026-10,UPC2,UPC - East,ลายเซ็นไม่ตรง/ไม่เหมือน,4
+2026-10,UPC2,UPC - East,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,4
+2026-10,UPC2,UPC - East,อายุไม่ครบ18ปี,5
+2026-10,UPC2,UPC - East,อื่นๆ,61
+2026-10,UPC2,UPC - East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,12
+2026-10,UPC2,UPC - East,ไม่แนบเอกสาร PDS,30
+2026-10,UPC2,UPC - Lower South,VISAเหลือน้อยกว่า6เดือน,1
+2026-10,UPC2,UPC - Lower South,ขาด Work Permit,5
+2026-10,UPC2,UPC - Lower South,ขาดPassport,3
+2026-10,UPC2,UPC - Lower South,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,5
+2026-10,UPC2,UPC - Lower South,ขาดทะเบียนบ้าน,3
+2026-10,UPC2,UPC - Lower South,ขาดบัตรประชาชน,8
+2026-10,UPC2,UPC - Lower South,ขาดลายเซ็นในใบสมัคร,11
+2026-10,UPC2,UPC - Lower South,ขาดหนังสือมอบอำนาจ,3
+2026-10,UPC2,UPC - Lower South,ขาดหนังสือรับรอง,3
+2026-10,UPC2,UPC - Lower South,ขาดอากรแสตมป์,1
+2026-10,UPC2,UPC - Lower South,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,7
+2026-10,UPC2,UPC - Lower South,ลายเซ็นไม่ตรง/ไม่เหมือน,2
+2026-10,UPC2,UPC - Lower South,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,3
+2026-10,UPC2,UPC - Lower South,อายุไม่ครบ18ปี,6
+2026-10,UPC2,UPC - Lower South,อื่นๆ,23
+2026-10,UPC2,UPC - Lower South,ไม่แนบเอกสาร PDS,3
+2026-10,UPC2,UPC - Upper South,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,18
+2026-10,UPC2,UPC - Upper South,VISAเหลือน้อยกว่า6เดือน,18
+2026-10,UPC2,UPC - Upper South,Workpermitเหลือน้อยกว่า6เดือน,10
+2026-10,UPC2,UPC - Upper South,ขาด Work Permit,126
+2026-10,UPC2,UPC - Upper South,ขาดPassport,29
+2026-10,UPC2,UPC - Upper South,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,10
+2026-10,UPC2,UPC - Upper South,ขาดตราประทับในเอกสารประกอบการสมัคร,4
+2026-10,UPC2,UPC - Upper South,ขาดตราประทับในใบสมัคร,6
+2026-10,UPC2,UPC - Upper South,ขาดทะเบียนบ้าน,4
+2026-10,UPC2,UPC - Upper South,ขาดบัตรประชาชน,10
+2026-10,UPC2,UPC - Upper South,ขาดลายเซ็นในใบสมัคร,21
+2026-10,UPC2,UPC - Upper South,ขาดหนังสือมอบอำนาจ,9
+2026-10,UPC2,UPC - Upper South,ขาดหนังสือรับรอง,15
+2026-10,UPC2,UPC - Upper South,ขาดอากรแสตมป์,1
+2026-10,UPC2,UPC - Upper South,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,42
+2026-10,UPC2,UPC - Upper South,ลายเซ็นไม่ตรง/ไม่เหมือน,13
+2026-10,UPC2,UPC - Upper South,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,5
+2026-10,UPC2,UPC - Upper South,อายุไม่ครบ18ปี,9
+2026-10,UPC2,UPC - Upper South,อื่นๆ,34
+2026-10,UPC2,UPC - Upper South,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-10,UPC2,UPC - Upper South,ไม่แนบเอกสาร PDS,3
+2026-10,UPC2,UPC - West,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,3
+2026-10,UPC2,UPC - West,VISAเหลือน้อยกว่า6เดือน,2
+2026-10,UPC2,UPC - West,Workpermitเหลือน้อยกว่า6เดือน,31
+2026-10,UPC2,UPC - West,ขาด Work Permit,43
+2026-10,UPC2,UPC - West,ขาดPassport,4
+2026-10,UPC2,UPC - West,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,3
+2026-10,UPC2,UPC - West,ขาดตราประทับในเอกสารประกอบการสมัคร,3
+2026-10,UPC2,UPC - West,ขาดตราประทับในใบสมัคร,15
+2026-10,UPC2,UPC - West,ขาดทะเบียนบ้าน,1
+2026-10,UPC2,UPC - West,ขาดบัตรประชาชน,13
+2026-10,UPC2,UPC - West,ขาดลายเซ็นในใบสมัคร,10
+2026-10,UPC2,UPC - West,ขาดหนังสือมอบอำนาจ,6
+2026-10,UPC2,UPC - West,ขาดหนังสือรับรอง,22
+2026-10,UPC2,UPC - West,ขาดอากรแสตมป์,7
+2026-10,UPC2,UPC - West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,22
+2026-10,UPC2,UPC - West,ลายเซ็นไม่ตรง/ไม่เหมือน,5
+2026-10,UPC2,UPC - West,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,4
+2026-10,UPC2,UPC - West,อายุไม่ครบ18ปี,3
+2026-10,UPC2,UPC - West,อื่นๆ,47
+2026-10,UPC2,UPC - West,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,3
+2026-11,BMA,BMA I - North West,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,3
+2026-11,BMA,BMA I - North West,VISAเหลือน้อยกว่า6เดือน,2
+2026-11,BMA,BMA I - North West,Workpermitเหลือน้อยกว่า6เดือน,11
+2026-11,BMA,BMA I - North West,ขาด Work Permit,39
+2026-11,BMA,BMA I - North West,ขาดPassport,5
+2026-11,BMA,BMA I - North West,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,1
+2026-11,BMA,BMA I - North West,ขาดตราประทับในเอกสารประกอบการสมัคร,3
+2026-11,BMA,BMA I - North West,ขาดตราประทับในใบสมัคร,8
+2026-11,BMA,BMA I - North West,ขาดทะเบียนบ้าน,1
+2026-11,BMA,BMA I - North West,ขาดบัตรประชาชน,8
+2026-11,BMA,BMA I - North West,ขาดลายเซ็นในใบสมัคร,20
+2026-11,BMA,BMA I - North West,ขาดหนังสือมอบอำนาจ,2
+2026-11,BMA,BMA I - North West,ขาดหนังสือรับรอง,7
+2026-11,BMA,BMA I - North West,ขาดอากรแสตมป์,6
+2026-11,BMA,BMA I - North West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,59
+2026-11,BMA,BMA I - North West,ลายเซ็นไม่ตรง/ไม่เหมือน,11
+2026-11,BMA,BMA I - North West,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,2
+2026-11,BMA,BMA I - North West,อายุไม่ครบ18ปี,2
+2026-11,BMA,BMA I - North West,อื่นๆ,62
+2026-11,BMA,BMA I - North West,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-11,BMA,BMA I - North West,ไม่แนบเอกสาร PDS,4
+2026-11,BMA,BMA II - South West,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,1
+2026-11,BMA,BMA II - South West,Workpermitเหลือน้อยกว่า6เดือน,19
+2026-11,BMA,BMA II - South West,ขาด Work Permit,30
+2026-11,BMA,BMA II - South West,ขาดPassport,10
+2026-11,BMA,BMA II - South West,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,3
+2026-11,BMA,BMA II - South West,ขาดตราประทับในเอกสารประกอบการสมัคร,2
+2026-11,BMA,BMA II - South West,ขาดตราประทับในใบสมัคร,4
+2026-11,BMA,BMA II - South West,ขาดทะเบียนบ้าน,4
+2026-11,BMA,BMA II - South West,ขาดบัตรประชาชน,3
+2026-11,BMA,BMA II - South West,ขาดลายเซ็นในใบสมัคร,10
+2026-11,BMA,BMA II - South West,ขาดหนังสือมอบอำนาจ,9
+2026-11,BMA,BMA II - South West,ขาดหนังสือรับรอง,10
+2026-11,BMA,BMA II - South West,ขาดอากรแสตมป์,3
+2026-11,BMA,BMA II - South West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,26
+2026-11,BMA,BMA II - South West,ลายเซ็นไม่ตรง/ไม่เหมือน,2
+2026-11,BMA,BMA II - South West,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,1
+2026-11,BMA,BMA II - South West,อายุไม่ครบ18ปี,5
+2026-11,BMA,BMA II - South West,อื่นๆ,29
+2026-11,BMA,BMA II - South West,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-11,BMA,BMA III - North East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,1
+2026-11,BMA,BMA III - North East,VISAเหลือน้อยกว่า6เดือน,13
+2026-11,BMA,BMA III - North East,Workpermitเหลือน้อยกว่า6เดือน,9
+2026-11,BMA,BMA III - North East,ขาด Work Permit,39
+2026-11,BMA,BMA III - North East,ขาดPassport,5
+2026-11,BMA,BMA III - North East,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,1
+2026-11,BMA,BMA III - North East,ขาดตราประทับในเอกสารประกอบการสมัคร,6
+2026-11,BMA,BMA III - North East,ขาดตราประทับในใบสมัคร,7
+2026-11,BMA,BMA III - North East,ขาดบัตรประชาชน,6
+2026-11,BMA,BMA III - North East,ขาดลายเซ็นในใบสมัคร,8
+2026-11,BMA,BMA III - North East,ขาดหนังสือมอบอำนาจ,1
+2026-11,BMA,BMA III - North East,ขาดหนังสือรับรอง,7
+2026-11,BMA,BMA III - North East,ขาดอากรแสตมป์,3
+2026-11,BMA,BMA III - North East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,41
+2026-11,BMA,BMA III - North East,ลายเซ็นไม่ตรง/ไม่เหมือน,5
+2026-11,BMA,BMA III - North East,อายุไม่ครบ18ปี,1
+2026-11,BMA,BMA III - North East,อื่นๆ,26
+2026-11,BMA,BMA III - North East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-11,BMA,BMA IV - South East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,2
+2026-11,BMA,BMA IV - South East,VISAเหลือน้อยกว่า6เดือน,11
+2026-11,BMA,BMA IV - South East,Workpermitเหลือน้อยกว่า6เดือน,73
+2026-11,BMA,BMA IV - South East,ขาด Work Permit,55
+2026-11,BMA,BMA IV - South East,ขาดPassport,26
+2026-11,BMA,BMA IV - South East,ขาดตราประทับในเอกสารประกอบการสมัคร,6
+2026-11,BMA,BMA IV - South East,ขาดตราประทับในใบสมัคร,11
+2026-11,BMA,BMA IV - South East,ขาดบัตรประชาชน,12
+2026-11,BMA,BMA IV - South East,ขาดลายเซ็นในใบสมัคร,12
+2026-11,BMA,BMA IV - South East,ขาดหนังสือมอบอำนาจ,9
+2026-11,BMA,BMA IV - South East,ขาดหนังสือรับรอง,18
+2026-11,BMA,BMA IV - South East,ขาดอากรแสตมป์,5
+2026-11,BMA,BMA IV - South East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,43
+2026-11,BMA,BMA IV - South East,ลายเซ็นไม่ตรง/ไม่เหมือน,21
+2026-11,BMA,BMA IV - South East,อื่นๆ,79
+2026-11,BMA,BMA IV - South East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-11,BMA,BMA V - Central,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,6
+2026-11,BMA,BMA V - Central,VISAเหลือน้อยกว่า6เดือน,11
+2026-11,BMA,BMA V - Central,Workpermitเหลือน้อยกว่า6เดือน,8
+2026-11,BMA,BMA V - Central,ขาด Work Permit,59
+2026-11,BMA,BMA V - Central,ขาดPassport,7
+2026-11,BMA,BMA V - Central,ขาดตราประทับในเอกสารประกอบการสมัคร,4
+2026-11,BMA,BMA V - Central,ขาดตราประทับในใบสมัคร,8
+2026-11,BMA,BMA V - Central,ขาดบัตรประชาชน,3
+2026-11,BMA,BMA V - Central,ขาดลายเซ็นในใบสมัคร,5
+2026-11,BMA,BMA V - Central,ขาดหนังสือมอบอำนาจ,3
+2026-11,BMA,BMA V - Central,ขาดหนังสือรับรอง,6
+2026-11,BMA,BMA V - Central,ขาดอากรแสตมป์,8
+2026-11,BMA,BMA V - Central,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,19
+2026-11,BMA,BMA V - Central,ลายเซ็นไม่ตรง/ไม่เหมือน,15
+2026-11,BMA,BMA V - Central,อื่นๆ,45
+2026-11,UPC1,UPC - Central Northeast,ขาด Work Permit,3
+2026-11,UPC1,UPC - Central Northeast,ขาดPassport,2
+2026-11,UPC1,UPC - Central Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,4
+2026-11,UPC1,UPC - Central Northeast,ขาดตราประทับในเอกสารประกอบการสมัคร,2
+2026-11,UPC1,UPC - Central Northeast,ขาดตราประทับในใบสมัคร,1
+2026-11,UPC1,UPC - Central Northeast,ขาดทะเบียนบ้าน,1
+2026-11,UPC1,UPC - Central Northeast,ขาดบัตรประชาชน,8
+2026-11,UPC1,UPC - Central Northeast,ขาดลายเซ็นในใบสมัคร,5
+2026-11,UPC1,UPC - Central Northeast,ขาดอากรแสตมป์,2
+2026-11,UPC1,UPC - Central Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,30
+2026-11,UPC1,UPC - Central Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,4
+2026-11,UPC1,UPC - Central Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,3
+2026-11,UPC1,UPC - Central Northeast,อายุไม่ครบ18ปี,4
+2026-11,UPC1,UPC - Central Northeast,อื่นๆ,22
+2026-11,UPC1,UPC - Lower North,ขาด Work Permit,3
+2026-11,UPC1,UPC - Lower North,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,5
+2026-11,UPC1,UPC - Lower North,ขาดทะเบียนบ้าน,3
+2026-11,UPC1,UPC - Lower North,ขาดบัตรประชาชน,1
+2026-11,UPC1,UPC - Lower North,ขาดลายเซ็นในใบสมัคร,3
+2026-11,UPC1,UPC - Lower North,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,19
+2026-11,UPC1,UPC - Lower North,ลายเซ็นไม่ตรง/ไม่เหมือน,2
+2026-11,UPC1,UPC - Lower North,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,5
+2026-11,UPC1,UPC - Lower North,อายุไม่ครบ18ปี,8
+2026-11,UPC1,UPC - Lower North,อื่นๆ,29
+2026-11,UPC1,UPC - Lower Northeast,VISAเหลือน้อยกว่า6เดือน,2
+2026-11,UPC1,UPC - Lower Northeast,Workpermitเหลือน้อยกว่า6เดือน,3
+2026-11,UPC1,UPC - Lower Northeast,ขาด Work Permit,37
+2026-11,UPC1,UPC - Lower Northeast,ขาดPassport,16
+2026-11,UPC1,UPC - Lower Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,8
+2026-11,UPC1,UPC - Lower Northeast,ขาดตราประทับในเอกสารประกอบการสมัคร,3
+2026-11,UPC1,UPC - Lower Northeast,ขาดตราประทับในใบสมัคร,1
+2026-11,UPC1,UPC - Lower Northeast,ขาดทะเบียนบ้าน,7
+2026-11,UPC1,UPC - Lower Northeast,ขาดบัตรประชาชน,18
+2026-11,UPC1,UPC - Lower Northeast,ขาดลายเซ็นในใบสมัคร,59
+2026-11,UPC1,UPC - Lower Northeast,ขาดหนังสือมอบอำนาจ,2
+2026-11,UPC1,UPC - Lower Northeast,ขาดหนังสือรับรอง,3
+2026-11,UPC1,UPC - Lower Northeast,ขาดอากรแสตมป์,1
+2026-11,UPC1,UPC - Lower Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,72
+2026-11,UPC1,UPC - Lower Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,8
+2026-11,UPC1,UPC - Lower Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,5
+2026-11,UPC1,UPC - Lower Northeast,อายุไม่ครบ18ปี,6
+2026-11,UPC1,UPC - Lower Northeast,อื่นๆ,83
+2026-11,UPC1,UPC - Lower Northeast,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,4
+2026-11,UPC1,UPC - Lower Northeast,ไม่แนบเอกสาร PDS,13
+2026-11,UPC1,UPC - Upper North,VISAเหลือน้อยกว่า6เดือน,4
+2026-11,UPC1,UPC - Upper North,Workpermitเหลือน้อยกว่า6เดือน,10
+2026-11,UPC1,UPC - Upper North,ขาด Work Permit,17
+2026-11,UPC1,UPC - Upper North,ขาดPassport,16
+2026-11,UPC1,UPC - Upper North,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,4
+2026-11,UPC1,UPC - Upper North,ขาดตราประทับในเอกสารประกอบการสมัคร,2
+2026-11,UPC1,UPC - Upper North,ขาดตราประทับในใบสมัคร,2
+2026-11,UPC1,UPC - Upper North,ขาดทะเบียนบ้าน,3
+2026-11,UPC1,UPC - Upper North,ขาดบัตรประชาชน,5
+2026-11,UPC1,UPC - Upper North,ขาดลายเซ็นในใบสมัคร,15
+2026-11,UPC1,UPC - Upper North,ขาดหนังสือมอบอำนาจ,2
+2026-11,UPC1,UPC - Upper North,ขาดหนังสือรับรอง,2
+2026-11,UPC1,UPC - Upper North,ขาดอากรแสตมป์,1
+2026-11,UPC1,UPC - Upper North,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,55
+2026-11,UPC1,UPC - Upper North,ลายเซ็นไม่ตรง/ไม่เหมือน,1
+2026-11,UPC1,UPC - Upper North,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,3
+2026-11,UPC1,UPC - Upper North,อายุไม่ครบ18ปี,5
+2026-11,UPC1,UPC - Upper North,อื่นๆ,37
+2026-11,UPC1,UPC - Upper North,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-11,UPC1,UPC - Upper Northeast,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,6
+2026-11,UPC1,UPC - Upper Northeast,Workpermitเหลือน้อยกว่า6เดือน,3
+2026-11,UPC1,UPC - Upper Northeast,ขาด Work Permit,41
+2026-11,UPC1,UPC - Upper Northeast,ขาดPassport,6
+2026-11,UPC1,UPC - Upper Northeast,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,8
+2026-11,UPC1,UPC - Upper Northeast,ขาดตราประทับในเอกสารประกอบการสมัคร,2
+2026-11,UPC1,UPC - Upper Northeast,ขาดตราประทับในใบสมัคร,1
+2026-11,UPC1,UPC - Upper Northeast,ขาดทะเบียนบ้าน,2
+2026-11,UPC1,UPC - Upper Northeast,ขาดบัตรประชาชน,6
+2026-11,UPC1,UPC - Upper Northeast,ขาดลายเซ็นในใบสมัคร,18
+2026-11,UPC1,UPC - Upper Northeast,ขาดหนังสือมอบอำนาจ,1
+2026-11,UPC1,UPC - Upper Northeast,ขาดอากรแสตมป์,5
+2026-11,UPC1,UPC - Upper Northeast,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,61
+2026-11,UPC1,UPC - Upper Northeast,ลายเซ็นไม่ตรง/ไม่เหมือน,10
+2026-11,UPC1,UPC - Upper Northeast,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,6
+2026-11,UPC1,UPC - Upper Northeast,อายุไม่ครบ18ปี,10
+2026-11,UPC1,UPC - Upper Northeast,อื่นๆ,57
+2026-11,UPC1,UPC - Upper Northeast,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-11,UPC1,UPC - Upper Northeast,ไม่แนบเอกสาร PDS,9
+2026-11,UPC2,UPC - Central,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,5
+2026-11,UPC2,UPC - Central,VISAเหลือน้อยกว่า6เดือน,3
+2026-11,UPC2,UPC - Central,Workpermitเหลือน้อยกว่า6เดือน,11
+2026-11,UPC2,UPC - Central,ขาด Work Permit,41
+2026-11,UPC2,UPC - Central,ขาดPassport,26
+2026-11,UPC2,UPC - Central,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,1
+2026-11,UPC2,UPC - Central,ขาดตราประทับในใบสมัคร,1
+2026-11,UPC2,UPC - Central,ขาดทะเบียนบ้าน,1
+2026-11,UPC2,UPC - Central,ขาดบัตรประชาชน,5
+2026-11,UPC2,UPC - Central,ขาดลายเซ็นในใบสมัคร,14
+2026-11,UPC2,UPC - Central,ขาดหนังสือมอบอำนาจ,1
+2026-11,UPC2,UPC - Central,ขาดหนังสือรับรอง,2
+2026-11,UPC2,UPC - Central,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,11
+2026-11,UPC2,UPC - Central,ลายเซ็นไม่ตรง/ไม่เหมือน,1
+2026-11,UPC2,UPC - Central,อายุไม่ครบ18ปี,1
+2026-11,UPC2,UPC - Central,อื่นๆ,30
+2026-11,UPC2,UPC - Central,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,1
+2026-11,UPC2,UPC - Central,ไม่แนบเอกสาร PDS,4
+2026-11,UPC2,UPC - East,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,5
+2026-11,UPC2,UPC - East,VISAเหลือน้อยกว่า6เดือน,4
+2026-11,UPC2,UPC - East,Workpermitเหลือน้อยกว่า6เดือน,3
+2026-11,UPC2,UPC - East,ขาด Work Permit,25
+2026-11,UPC2,UPC - East,ขาดPassport,4
+2026-11,UPC2,UPC - East,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,1
+2026-11,UPC2,UPC - East,ขาดตราประทับในเอกสารประกอบการสมัคร,9
+2026-11,UPC2,UPC - East,ขาดตราประทับในใบสมัคร,2
+2026-11,UPC2,UPC - East,ขาดทะเบียนบ้าน,1
+2026-11,UPC2,UPC - East,ขาดบัตรประชาชน,47
+2026-11,UPC2,UPC - East,ขาดลายเซ็นในใบสมัคร,53
+2026-11,UPC2,UPC - East,ขาดหนังสือมอบอำนาจ,2
+2026-11,UPC2,UPC - East,ขาดหนังสือรับรอง,5
+2026-11,UPC2,UPC - East,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,30
+2026-11,UPC2,UPC - East,ลายเซ็นไม่ตรง/ไม่เหมือน,3
+2026-11,UPC2,UPC - East,อายุไม่ครบ18ปี,1
+2026-11,UPC2,UPC - East,อื่นๆ,43
+2026-11,UPC2,UPC - East,ไม่ผ่านเงื่อนไขการขายผ่าน LINE OA /P2P ไม่สามารถขายผ่าน LINE OA,2
+2026-11,UPC2,UPC - East,ไม่แนบเอกสาร PDS,47
+2026-11,UPC2,UPC - Lower South,VISAเหลือน้อยกว่า6เดือน,1
+2026-11,UPC2,UPC - Lower South,ขาด Work Permit,1
+2026-11,UPC2,UPC - Lower South,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,4
+2026-11,UPC2,UPC - Lower South,ขาดตราประทับในใบสมัคร,1
+2026-11,UPC2,UPC - Lower South,ขาดทะเบียนบ้าน,1
+2026-11,UPC2,UPC - Lower South,ขาดบัตรประชาชน,16
+2026-11,UPC2,UPC - Lower South,ขาดลายเซ็นในใบสมัคร,15
+2026-11,UPC2,UPC - Lower South,ขาดหนังสือมอบอำนาจ,3
+2026-11,UPC2,UPC - Lower South,ขาดหนังสือรับรอง,2
+2026-11,UPC2,UPC - Lower South,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,9
+2026-11,UPC2,UPC - Lower South,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,4
+2026-11,UPC2,UPC - Lower South,อายุไม่ครบ18ปี,4
+2026-11,UPC2,UPC - Lower South,อื่นๆ,17
+2026-11,UPC2,UPC - Lower South,ไม่แนบเอกสาร PDS,8
+2026-11,UPC2,UPC - Upper South,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,30
+2026-11,UPC2,UPC - Upper South,VISAเหลือน้อยกว่า6เดือน,18
+2026-11,UPC2,UPC - Upper South,Workpermitเหลือน้อยกว่า6เดือน,11
+2026-11,UPC2,UPC - Upper South,ขาด Work Permit,75
+2026-11,UPC2,UPC - Upper South,ขาดPassport,21
+2026-11,UPC2,UPC - Upper South,ขาดข้อความยืนยันการเปิดจดทะเบียนผู้ปกครอง,4
+2026-11,UPC2,UPC - Upper South,ขาดตราประทับในเอกสารประกอบการสมัคร,8
+2026-11,UPC2,UPC - Upper South,ขาดตราประทับในใบสมัคร,3
+2026-11,UPC2,UPC - Upper South,ขาดทะเบียนบ้าน,4
+2026-11,UPC2,UPC - Upper South,ขาดบัตรประชาชน,3
+2026-11,UPC2,UPC - Upper South,ขาดลายเซ็นในใบสมัคร,25
+2026-11,UPC2,UPC - Upper South,ขาดหนังสือมอบอำนาจ,1
+2026-11,UPC2,UPC - Upper South,ขาดหนังสือรับรอง,7
+2026-11,UPC2,UPC - Upper South,ขาดอากรแสตมป์,2
+2026-11,UPC2,UPC - Upper South,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,33
+2026-11,UPC2,UPC - Upper South,ลายเซ็นไม่ตรง/ไม่เหมือน,4
+2026-11,UPC2,UPC - Upper South,สำเนาบัตรประชาชนผู้ปกครองขาดลายเซ็นผู้จดทะเบียน,1
+2026-11,UPC2,UPC - Upper South,อายุไม่ครบ18ปี,5
+2026-11,UPC2,UPC - Upper South,อื่นๆ,30
+2026-11,UPC2,UPC - Upper South,ไม่แนบเอกสาร PDS,3
+2026-11,UPC2,UPC - West,Passportรายละเอียดไม่ชัดเจน-ครบถ้วน,4
+2026-11,UPC2,UPC - West,Workpermitเหลือน้อยกว่า6เดือน,8
+2026-11,UPC2,UPC - West,ขาด Work Permit,22
+2026-11,UPC2,UPC - West,ขาดPassport,1
+2026-11,UPC2,UPC - West,ขาดตราประทับในเอกสารประกอบการสมัคร,1
+2026-11,UPC2,UPC - West,ขาดตราประทับในใบสมัคร,3
+2026-11,UPC2,UPC - West,ขาดบัตรประชาชน,8
+2026-11,UPC2,UPC - West,ขาดลายเซ็นในใบสมัคร,4
+2026-11,UPC2,UPC - West,ขาดหนังสือมอบอำนาจ,7
+2026-11,UPC2,UPC - West,ขาดหนังสือรับรอง,12
+2026-11,UPC2,UPC - West,ขาดอากรแสตมป์,1
+2026-11,UPC2,UPC - West,ขาดใบสัญญาบริการพยากรณ์เลขหมาย,26
+2026-11,UPC2,UPC - West,ลายเซ็นไม่ตรง/ไม่เหมือน,2
+2026-11,UPC2,UPC - West,อายุไม่ครบ18ปี,1
+2026-11,UPC2,UPC - West,อื่นๆ,11
