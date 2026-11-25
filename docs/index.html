@@ -79,6 +79,28 @@ section{margin:0 0 28px}
 .ins p{margin:0;font-size:14px}
 .ins .act{margin-top:8px;color:var(--muted);font-size:13px}
 
+/* region cards */
+.rrgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.rrc{all:unset;box-sizing:border-box;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.rrc:focus-visible{outline:2px solid var(--blue)}
+.rrc.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.rrc.dim{opacity:.55}
+.rrc .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rrc .name{font-size:20px;font-weight:700}
+.rrc .vol{font-size:13px;color:var(--muted)}
+.rrc .vals{display:flex;align-items:baseline;gap:10px}
+.rrc .cur{font-size:40px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.rrc .from{color:var(--muted);font-size:14px}
+.rrc .meter{position:relative;height:10px;background:var(--track);border-radius:5px}
+.rrc .meter i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+.rrc .meter em{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--faint)}
+.rrc .meter b{position:absolute;top:-3px;width:4px;height:16px;border-radius:2px;background:var(--prev);margin-left:-2px}
+.rrc .facts{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;color:var(--muted)}
+.rrc .facts b{color:var(--text);font-variant-numeric:tabular-nums}
+.rrc .go{font-size:13px;color:var(--blue)}
+.divider{border-top:2px solid var(--line);padding-top:18px;margin:36px 0 14px}
+.divider h2{margin:0;font-size:21px}.divider p{margin:2px 0 0;color:var(--muted);font-size:14px}
+
 /* dumbbell */
 .db{position:relative}
 .db .row{display:grid;grid-template-columns:minmax(120px,190px) 1fr 118px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid #f0f3f6;cursor:pointer}
@@ -166,8 +188,8 @@ details.rules summary{cursor:pointer;color:var(--text)}
   </div>
   <div class="filterbar">
     <div class="wrap">
-      <label>RR <select id="f-rr"><option value="">ทั้งหมด</option><option>BMA</option><option>UPC1</option><option>UPC2</option></select></label>
-      <label>ภาค <select id="f-region"><option value="">ทั้งหมด</option></select></label>
+      <label>Region <select id="f-rr"><option value="">ทั้งหมด</option><option>BMA</option><option>UPC1</option><option>UPC2</option></select></label>
+      <label>Area <select id="f-region"><option value="">ทั้งหมด</option></select></label>
       <label>สาขา <select id="f-shop"><option value="">ทุกสาขา</option></select></label>
       <button class="reset" id="f-reset" type="button">ล้างตัวกรอง</button>
       <span class="note" id="f-note"></span>
@@ -182,14 +204,55 @@ details.rules summary{cursor:pointer;color:var(--text)}
     <ul class="ins" id="ins"></ul>
   </section>
 
+  <section id="rr">
+    <div class="sec-h"><h2>1. ราย Region: BMA · UPC1 · UPC2</h2><p>เดือนก่อน → เดือนนี้ · คลิกการ์ดเพื่อเจาะดู Area ของ Region นั้น</p></div>
+    <div class="rrgrid" id="rr-cards"></div>
+    <p class="read" id="read-rr"></p>
+  </section>
+
   <section id="regions">
-    <div class="sec-h"><h2>รายภาค: เดือนก่อน → เดือนนี้</h2><p>คลิกภาคเพื่อกรองทั้งหน้า</p></div>
+    <div class="sec-h"><h2>2. ราย Area</h2><p>เดือนก่อน → เดือนนี้ · คลิก Area เพื่อเจาะดูสาขา</p></div>
     <div class="panel">
       <div class="legend"><span><i style="background:var(--prev)"></i><span class="m-prev">เดือนก่อน</span></span><span><i style="background:var(--good)"></i>เดือนนี้ ดีขึ้น</span><span><i style="background:var(--bad)"></i>เดือนนี้ แย่ลง</span><span><i class="sq" style="background:none;border-left:2px dashed var(--faint);border-radius:0;width:2px"></i>เป้าหมาย</span></div>
       <div class="db" id="db-region"></div>
       <p class="read" id="read-region"></p>
     </div>
   </section>
+
+  <section id="targets">
+    <div class="sec-h"><h2>3. ชี้เป้าราย Shop และราย Staff</h2><p>สถานะจาก % สมบูรณ์เดือนนี้และการเปลี่ยนจากเดือนก่อน · กดการ์ดเพื่อกรองตาราง</p></div>
+    <div class="grid2">
+      <div><h3 class="tg-h">สาขา</h3><div class="tiles" id="tiles-shop"></div></div>
+      <div><h3 class="tg-h">Staff</h3><div class="tiles" id="tiles-staff"></div></div>
+    </div>
+    <details class="rules"><summary>เกณฑ์สถานะ</summary><p id="rules"></p></details>
+  </section>
+
+  <section id="shops">
+    <div class="sec-h"><h2>ราย Shop</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดู Staff ของสาขานั้น</p></div>
+    <div class="ctrl">
+      <label>สถานะ <select id="fs-tag"></select></label>
+      <label>ค้นหา <input id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา"></label>
+    </div>
+    <p class="count" id="fs-count"></p>
+    <div class="tw"><table class="dt" id="t-shop"></table></div>
+    <button class="more" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button>
+  </section>
+
+  <section id="staff">
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน</p></div>
+    <p class="names-note" id="names-note">ชื่อพนักงานไม่ได้เก็บไว้บนเว็บ เลือกไฟล์ <b>staff_names.csv</b> จากเครื่องของคุณเพื่อแสดงชื่อ (อ่านในเบราว์เซอร์เท่านั้น ไม่ถูกส่งไปที่ไหน)</p>
+    <div class="ctrl">
+      <label>สถานะ <select id="ft-tag"></select></label>
+      <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
+      <label>รายชื่อพนักงาน <input id="f-names" type="file" accept=".csv,text/csv"></label>
+    </div>
+    <p class="count" id="ft-count"></p>
+    <div class="tw"><table class="dt" id="t-staff"></table></div>
+    <button class="more" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button>
+  </section>
+
+  <div class="divider"><h2>วิเคราะห์เพิ่มเติม</h2><p>สาเหตุ แนวโน้มรายวัน ช่องทาง และความเร็วในการตรวจ เทียบเดือนก่อน</p></div>
 
   <section id="why">
     <div class="sec-h"><h2>สาเหตุ: เกิดบ่อยขึ้นหรือน้อยลง</h2><p>ต่อเอกสาร 100 ฉบับ เพื่อเทียบได้แม้จำนวนเอกสารสองเดือนไม่เท่ากัน</p></div>
@@ -226,39 +289,6 @@ details.rules summary{cursor:pointer;color:var(--text)}
   <section id="tat">
     <div class="sec-h"><h2>ความเร็วในการตรวจ</h2><p>จำนวนวันจากวันทำรายการถึงตรวจเสร็จ</p></div>
     <div class="panel" id="tat-box"></div>
-  </section>
-
-  <section id="targets">
-    <div class="sec-h"><h2>ชี้เป้า: ใครต้องติดตาม</h2><p>สถานะจาก % สมบูรณ์เดือนนี้และการเปลี่ยนจากเดือนก่อน · กดการ์ดเพื่อกรองตาราง</p></div>
-    <div class="grid2">
-      <div><h3 class="tg-h">สาขา</h3><div class="tiles" id="tiles-shop"></div></div>
-      <div><h3 class="tg-h">Staff</h3><div class="tiles" id="tiles-staff"></div></div>
-    </div>
-    <details class="rules"><summary>เกณฑ์สถานะ</summary><p id="rules"></p></details>
-  </section>
-
-  <section id="shops">
-    <div class="sec-h"><h2>รายสาขา</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดู Staff ของสาขานั้น</p></div>
-    <div class="ctrl">
-      <label>สถานะ <select id="fs-tag"></select></label>
-      <label>ค้นหา <input id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา"></label>
-    </div>
-    <p class="count" id="fs-count"></p>
-    <div class="tw"><table class="dt" id="t-shop"></table></div>
-    <button class="more" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button>
-  </section>
-
-  <section id="staff">
-    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน</p></div>
-    <p class="names-note" id="names-note">ชื่อพนักงานไม่ได้เก็บไว้บนเว็บ เลือกไฟล์ <b>staff_names.csv</b> จากเครื่องของคุณเพื่อแสดงชื่อ (อ่านในเบราว์เซอร์เท่านั้น ไม่ถูกส่งไปที่ไหน)</p>
-    <div class="ctrl">
-      <label>สถานะ <select id="ft-tag"></select></label>
-      <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
-      <label>รายชื่อพนักงาน <input id="f-names" type="file" accept=".csv,text/csv"></label>
-    </div>
-    <p class="count" id="ft-count"></p>
-    <div class="tw"><table class="dt" id="t-staff"></table></div>
-    <button class="more" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button>
   </section>
 
   <p class="foot" id="foot">ข้อมูล: ไฟล์ DPS ล่าสุด · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน · สร้างด้วย scripts/build_data.py</p>
@@ -318,6 +348,19 @@ dash.calc('regionCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
     const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
     return { key: region, label: region, sub: g[0].rr, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
   }).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
+} });
+
+dash.calc('rrCmp', { inputs: ['cube', 'staff', 'M'], fn: (cube, staff, M) => {
+  return ['BMA', 'UPC1', 'UPC2'].map((rr) => {
+    const g = cube.filter((r) => r.rr === rr);
+    const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
+    const areas = [...d3.group(g, (r) => r.region)].map(([, h]) => { const x = tally(h.filter((r) => r.month === M.prev)), y = tally(h.filter((r) => r.month === M.cur)); return x.pct != null && y.pct != null ? y.pct - x.pct : 0; });
+    const shops = compare(staff.filter((r) => r.rr === rr), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M);
+    return { rr, prev: a.pct, cur: b.pct, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null, prev_n: a.total, cur_n: b.total,
+      prev_x: a.total ? r1(100 * a.xflag / a.total) : null, cur_x: b.total ? r1(100 * b.xflag / b.total) : null,
+      areas: areas.length, areas_worse: areas.filter((d) => d < 0).length,
+      urgent: shops.filter((x) => x.tag === 'เร่งด่วน').length, worse: shops.filter((x) => x.tag === 'แย่ลง').length };
+  });
 } });
 
 dash.calc('dimCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
@@ -387,7 +430,7 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
 (function () {
   const ok = (...ids) => ids.map((id) => dash.data(id)).every((d) => d.status === 'ok' && d.data);
   const D = (id) => dash.data(id).data;
-  const scope = () => { const p = dash.params(); return p.shop ? 'สาขาที่เลือก' : p.region ? p.region : p.rr ? p.rr : 'ทุกภาค'; };
+  const scope = () => { const p = dash.params(); return p.shop ? 'สาขาที่เลือก' : p.region ? p.region : p.rr ? p.rr : 'ทุก Region'; };
 
   /* filters */
   const P = (k) => document.getElementById(k);
@@ -415,6 +458,7 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
     P('period').textContent = `เทียบ ${ml(M.cur)} กับ ${ml(M.prev)} · ${scope()} · ${DATA_NOTE}`;
     P('foot').textContent = `ข้อมูล: ${DATA_NOTE} · เดือนล่าสุดอาจยังไม่ครบเดือน · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน`;
     gauge(K, M); verdict(K, M); insights(K, M);
+    if (ok('rrCmp')) rrCards(D('rrCmp'), M);
     if (ok('regionCmp')) { dumbbell(P('db-region'), D('regionCmp'), M, (r) => dash.setParams({ region: dash.params().region === r.key ? '' : r.key, shop: '' }), dash.params().region); readRegion(D('regionCmp')); }
     if (ok('dimCmp')) { const dc = D('dimCmp'); ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => dumbbell(P('db-' + k), dc[k], M)); }
     if (ok('reasonCmp')) { paired(P('pb-reason'), D('reasonCmp')); readReason(D('reasonCmp'), M); }
@@ -509,9 +553,9 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
     }
     if (ok('regionCmp')) {
       const rg = D('regionCmp').filter((r) => r.cur_n >= 30); const drop = [...rg].sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0]; const best = [...rg].sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
-      if (drop) add(drop.delta < 0 ? 'bad' : 'good', `ภาคที่แย่ลงมากสุด: ${drop.key}`,
+      if (drop) add(drop.delta < 0 ? 'bad' : 'good', `Area ที่แย่ลงมากสุด: ${drop.key}`,
         `${pct(drop.prev)} → ${pct(drop.cur)} (${sgn(drop.delta, ' จุด')})` + (best && best.delta > 0 ? ` · ดีขึ้นมากสุดคือ ${best.key} (${sgn(best.delta, ' จุด')})` : ''),
-        'ให้ Area Manager ของภาคที่แย่ลงดูรายสาขาสถานะ "เร่งด่วน" และ "แย่ลง" ในตารางด้านล่าง');
+        'ให้ Area Manager ของ Area ที่แย่ลงดูราย Shop สถานะ "เร่งด่วน" และ "แย่ลง" ในตารางด้านล่าง');
     }
     if (ok('dimCmp')) {
       const ch = D('dimCmp').channel; const w = ch[0];
@@ -523,6 +567,39 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
     const ld = r1(K.cur.late - K.prev.late);
     add(ld > 0 ? 'bad' : 'good', ld > 0 ? 'ตรวจช้าลง' : 'ตรวจเร็วขึ้น', `เอกสารที่ใช้เวลาเกิน 7 วัน ${pct(K.prev.late)} → ${pct(K.cur.late)} · เฉลี่ย ${K.prev.avg_tat} → ${K.cur.avg_tat} วัน`,
       'ตั้ง SLA ตรวจเสร็จภายใน 7 วัน (เดือนล่าสุดยังไม่ครบเดือน งานที่ยังรอตรวจอาจทำให้ตัวเลขดูดีกว่าความจริง)');
+  }
+
+  /* region cards */
+  function rrCards(rows, M) {
+    const box = P('rr-cards'); box.replaceChildren(); const p = dash.params();
+    rows.forEach((r) => {
+      const b = el('button', 'rrc' + (p.rr === r.rr ? ' on' : p.rr ? ' dim' : '')); b.type = 'button';
+      b.setAttribute('aria-pressed', String(p.rr === r.rr));
+      const top = el('div', 'top'); top.append(el('span', 'name', r.rr), el('span', 'vol', `${num(r.cur_n)} ฉบับเดือนนี้`));
+      const col = r.cur >= GOAL ? 'var(--good)' : r.cur >= URGENT ? 'var(--warn)' : 'var(--bad)';
+      const vals = el('div', 'vals'); const cur = el('span', 'cur', pct(r.cur)); cur.style.color = col;
+      vals.append(cur, el('span', 'chip ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : 'flat'), r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+      b.append(top, vals, el('span', 'from', `${ml(M.prev)} ${pct(r.prev)} → ${ml(M.cur)} ${pct(r.cur)}`));
+      const lo = 50, x = (v) => Math.max(0, (v - lo) / (100 - lo) * 100) + '%';
+      const mtr = el('div', 'meter'); const f = el('i'); f.style.width = x(r.cur); f.style.background = col;
+      const gl = el('em'); gl.style.left = x(GOAL); const pv = el('b'); pv.style.left = x(r.prev); pv.title = ml(M.prev);
+      mtr.append(f, gl, pv); b.append(mtr);
+      const facts = el('div', 'facts');
+      const fact = (label, val) => { const d = el('span'); d.append(label + ' ', el('b', null, val)); facts.append(d); };
+      fact('X Flag', `${pct(r.prev_x)} → ${pct(r.cur_x)}`);
+      fact('Area แย่ลง', `${r.areas_worse} จาก ${r.areas}`);
+      fact('Shop เร่งด่วน', num(r.urgent));
+      fact('Shop แย่ลง', num(r.worse));
+      b.append(facts, el('span', 'go', p.rr === r.rr ? 'กดอีกครั้งเพื่อดูทุก Region' : 'ดู Area ของ ' + r.rr));
+      b.addEventListener('click', () => { dash.setParams({ rr: p.rr === r.rr ? '' : r.rr, region: '', shop: '' }); if (p.rr !== r.rr) P('regions').scrollIntoView({ behavior: 'smooth' }); });
+      box.append(b);
+    });
+    const rd = P('read-rr'); rd.replaceChildren();
+    const worst = [...rows].sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0], low = [...rows].sort((a, b) => (a.cur ?? 999) - (b.cur ?? 999))[0];
+    const allDown = rows.every((r) => r.delta < 0);
+    rd.append('อ่านผล: ', el('b', null, allDown ? 'ทั้ง 3 Region แย่ลง' : `${rows.filter((r) => r.delta < 0).length} จาก 3 Region แย่ลง`),
+      ` · ลดลงมากสุดคือ ${worst.rr} (${sgn(worst.delta, ' จุด')}) · ต่ำสุดเดือนนี้คือ ${low.rr} (${pct(low.cur)})`,
+      allDown ? ' แปลว่าเป็นปัญหาทั้งประเทศ ควรแก้ที่ระบบหรือขั้นตอนกลางก่อน แล้วค่อยเจาะราย Area' : ' ควรเริ่มเจาะจาก Region ที่ลดลงมากสุด');
   }
 
   /* dumbbell */
@@ -555,9 +632,9 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
   function readRegion(rows) {
     const r = P('read-region'); r.replaceChildren(); const up = rows.filter((x) => x.delta > 0).length, dn = rows.filter((x) => x.delta < 0).length;
     const below = rows.filter((x) => x.cur != null && x.cur < GOAL).length;
-    r.append('อ่านผล: ', el('b', null, `แย่ลง ${dn} ภาค`), ` · ดีขึ้น ${up} ภาค · ต่ำกว่าเป้า ${GOAL}% อยู่ ${below} จาก ${rows.length} ภาค`);
+    r.append('อ่านผล: ', el('b', null, `แย่ลง ${dn} Area`), ` · ดีขึ้น ${up} Area · ต่ำกว่าเป้า ${GOAL}% อยู่ ${below} จาก ${rows.length} Area`);
     if (dn > up) r.append(' ส่วนใหญ่แย่ลง แปลว่าปัญหาเป็นวงกว้าง ไม่ใช่แค่บางพื้นที่ ควรแก้ที่ระบบหรือขั้นตอนกลาง');
-    else if (dn) r.append(' แย่ลงเฉพาะบางภาค ควรเจาะดูรายสาขาของภาคนั้น');
+    else if (dn) r.append(' แย่ลงเฉพาะบาง Area ควรเจาะดูราย Shop ของ Area นั้น');
   }
 
   /* paired bars */
@@ -662,7 +739,7 @@ dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube,
       P(s.count).textContent = `แสดง ${num(Math.min(rows.length, s.limit))} จาก ${num(rows.length)} ${s.unit}`;
       P(s.more).hidden = rows.length <= s.limit;
       const t = P(s.table); t.replaceChildren();
-      const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'สาขา', 'ภาค'] : ['สถานะ', 'สาขา', 'รหัส Staff', 'ชื่อ'];
+      const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
       H.forEach((h) => hd.append(el('th', null, h)));
       [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]].forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
