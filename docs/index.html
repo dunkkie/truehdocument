@@ -3,891 +3,687 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard ตรวจสอบเอกสาร TMH Postpaid</title>
+<title>ผลตรวจเอกสาร TMH Postpaid: เทียบเดือนก่อน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500&family=Noto+Serif+Thai:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="dash-runtime.js"></script>
 <style>
 :root{
-  --color-fg:#1f1e1d;--color-fg-muted:#6b6a68;--color-bg:#f5f4ef;--color-panel:#ffffff;--color-border-line:#e3e1da;
-  --color-ok:#2f7d4f;--color-warn:#c98a12;--color-bad:#c2412d;
-  --font-anthropic-sans:"Noto Sans Thai",system-ui,sans-serif;--font-anthropic-serif:"Noto Serif Thai",Georgia,serif;
-  --cds-font-size-caption:13px;--cds-font-size-body:15px;--cds-font-size-heading:18px;--cds-font-size-title:34px;--cds-font-weight-medium:500;
-  --cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:12px;--cds-gap-lg:16px;--cds-gap-xl:28px;--cds-pad-lg:18px;--cds-radius:10px;
-  --cds-chart-muted:#b9c4d0;--cds-chart-grid:#ecebe6;--cds-chart-axis:#cfcdc6;--cds-chart-reference:#8a8984;
-  --cds-surface-popover:#ffffff;--cds-border:#e3e1da;--cds-shadow-popover:0 4px 16px rgba(0,0,0,.12);--cds-text-secondary:#6b6a68;
-  --c1:#3b6fb6;--c2:#c2412d;--c3:#c98a12;--c4:#2f7d4f;--c5:#7a5cb8;--c6:#2a9d9d;--c7:#8a8984;
+  --ink:#13203a; --ink-2:#1d2d4d; --page:#eef2f6; --panel:#ffffff; --line:#dde3ea;
+  --text:#18222f; --muted:#5b6b82; --faint:#8a97a8;
+  --good:#0e9f8a; --bad:#e0383e; --warn:#f0a202; --orange:#ec6a1e; --blue:#3a6fd8;
+  --prev:#a9b6c8; --track:#e6ebf1;
+  --font:"IBM Plex Sans Thai",system-ui,sans-serif;
 }
-@media (prefers-color-scheme: dark){:root{
-  --color-fg:#ecebe6;--color-fg-muted:#a6a5a0;--color-bg:#1c1b1a;--color-panel:#262523;--color-border-line:#3a3936;
-  --color-ok:#5fbf86;--color-warn:#e0a83a;--color-bad:#e66a55;
-  --cds-chart-muted:#5d6b7a;--cds-chart-grid:#33322f;--cds-chart-axis:#4a4945;--cds-chart-reference:#9a9994;
-  --cds-surface-popover:#2e2d2b;--cds-border:#44433f;--cds-text-secondary:#a6a5a0;
-  --c1:#6c9be0;--c2:#e66a55;--c3:#e0a83a;--c4:#5fbf86;--c5:#a78be0;--c6:#4fc0c0;--c7:#9a9994;
-}}
-html,body{margin:0;background:var(--color-bg)}
-#dash-root{max-width:1200px;margin:0 auto;padding:24px 16px 48px}
-.dash-select{font:inherit;font-size:13px;padding:6px 28px 6px 10px;border:1px solid var(--color-border-line);border-radius:8px;background-color:var(--color-panel);color:var(--color-fg)}
-.dash-skeleton{color:transparent!important;background:var(--cds-chart-grid);border-radius:4px}
-.foot{font-family:var(--font-anthropic-sans);font-size:12px;color:var(--color-fg-muted);margin-top:32px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.6}
+.num,td.n,th.n{font-variant-numeric:tabular-nums}
+a{color:var(--blue)}
+button,select,input{font:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* hero */
+.hero{background:var(--ink);color:#fff;padding:28px 20px 0}
+.wrap{max-width:1180px;margin:0 auto}
+.hero h1{font-size:28px;font-weight:700;margin:0;letter-spacing:-.01em}
+.hero .sub{color:#aab6cc;margin:4px 0 0;font-size:14px}
+.hero-grid{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:28px;align-items:center;margin-top:18px}
+@media (max-width:820px){.hero-grid{grid-template-columns:1fr}}
+.gauge{position:relative}
+.gauge svg{display:block;width:100%;height:auto}
+.gauge .center{position:absolute;left:0;right:0;top:30%;text-align:center}
+.glegend{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:#aab6cc;margin-top:-6px;padding-bottom:6px}
+.glegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.gauge .big{font-size:48px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.gauge .cap{color:#aab6cc;font-size:13px;margin-top:6px}
+.chip{display:inline-block;font-weight:600;font-size:14px;padding:2px 10px;border-radius:999px;margin-top:8px}
+.chip.up{background:rgba(14,159,138,.18);color:#4fd6c1}.chip.down{background:rgba(224,56,62,.2);color:#ff8a8e}.chip.flat{background:rgba(255,255,255,.1);color:#d5dbe6}
+.verdict{background:var(--ink-2);border-radius:14px;padding:18px 20px}
+.verdict h2{margin:0 0 8px;font-size:19px;font-weight:600}
+.verdict p{margin:0 0 6px;color:#d5dbe6}
+.verdict b{color:#fff;font-weight:600}
+.kt{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+.kt th{color:#aab6cc;font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid #2c3d5f}
+.kt th:first-child,.kt td:first-child{text-align:left}
+.kt td{padding:7px 8px;border-bottom:1px solid #22345a;text-align:right;font-variant-numeric:tabular-nums}
+.kt td.d{font-weight:600}
+.kt .g{color:#4fd6c1}.kt .r{color:#ff8a8e}.kt .z{color:#aab6cc}
+.filterbar{position:sticky;top:0;z-index:10;background:var(--ink);border-top:1px solid #22345a;margin-top:22px}
+.filterbar .wrap{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 0}
+.filterbar label{color:#aab6cc;font-size:13px;display:flex;align-items:center;gap:8px}
+.filterbar select{background:#22345a;color:#fff;border:1px solid #33476f;border-radius:8px;padding:6px 10px}
+.filterbar .reset{background:none;border:1px solid #33476f;color:#d5dbe6;border-radius:8px;padding:6px 12px;cursor:pointer}
+.filterbar .note{color:#8a97a8;font-size:12px;margin-left:auto}
+
+/* body */
+main{padding:24px 20px 60px}
+section{margin:0 0 28px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0 0 10px}
+.sec-h h2{font-size:21px;font-weight:700;margin:0}
+.sec-h p{margin:0;color:var(--muted);font-size:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:18px}
+.read{margin:12px 0 0;padding:10px 14px;border-radius:10px;background:#f4f7fa;font-size:14px}
+.read b{font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:0 0 10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.up{color:var(--good)}.down{color:var(--bad)}
+
+/* insights */
+.ins{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.ins li{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--muted);border-radius:12px;padding:14px 16px}
+.ins li.bad{border-left-color:var(--bad)}.ins li.good{border-left-color:var(--good)}.ins li.warn{border-left-color:var(--warn)}
+.ins h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.ins p{margin:0;font-size:14px}
+.ins .act{margin-top:8px;color:var(--muted);font-size:13px}
+
+/* dumbbell */
+.db{position:relative}
+.db .row{display:grid;grid-template-columns:minmax(120px,190px) 1fr 118px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid #f0f3f6;cursor:pointer}
+.db .row:hover{background:#f7f9fb}
+.db .row.sel{background:#eef4ff}
+.db .lab{font-size:14px;overflow-wrap:anywhere}
+.db .lab small{color:var(--faint);display:block;font-size:12px}
+.db .lane{position:relative;height:22px}
+.db .goal{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--faint);opacity:.6}
+.db .bar{position:absolute;top:10px;height:3px;border-radius:2px}
+.db .dot{position:absolute;top:4px;width:14px;height:14px;border-radius:50%;margin-left:-7px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.db .val{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.db .val b{font-size:15px}
+.db .axis{display:grid;grid-template-columns:minmax(120px,190px) 1fr 118px;gap:10px;font-size:12px;color:var(--faint)}
+.db .axis .ticks{position:relative;height:18px}
+.db .axis .ticks span{position:absolute;transform:translateX(-50%)}
+
+/* paired bars */
+.pb .row{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) 96px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f3f6}
+.pb .lab{font-size:14px;overflow-wrap:anywhere}
+.pb .bars{display:flex;flex-direction:column;gap:3px}
+.pb .b{height:9px;border-radius:3px;min-width:2px}
+.pb .val{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+
+/* strips */
+.strip{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:4px 0 2px}
+.strip div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden}
+.strip-l{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* chart */
+.chart{position:relative;width:100%;min-height:270px}
+.chart svg text{font-size:12px;fill:var(--muted);font-family:var(--font)}
+.axis path,.axis line{stroke:#cfd7e1}
+.gridl line{stroke:#edf1f5}.gridl path{display:none}
+.tt{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);box-shadow:0 6px 20px rgba(19,32,58,.15);border-radius:8px;padding:8px 10px;font-size:13px;white-space:nowrap;z-index:5;display:none}
+.tt .m{color:var(--muted)}
+
+/* targets */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.tile{all:unset;box-sizing:border-box;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--muted);border-radius:10px;padding:10px 12px}
+.tile:focus-visible{outline:2px solid var(--blue)}
+.tile .n{font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .l{font-size:13px;color:var(--muted)}
+.tg-h{font-size:15px;font-weight:600;margin:4px 0 8px}
+.t1{--tc:var(--bad)}.t2{--tc:var(--orange)}.t3{--tc:var(--warn)}.t4{--tc:var(--good)}.t5{--tc:var(--blue)}.t6,.t7{--tc:var(--faint)}
+.tile[class*=" t"]{border-top-color:var(--tc)}.tile[class*=" t"] .n{color:var(--tc)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px;color:#fff;background:var(--tc,var(--faint));white-space:nowrap}
+
+/* tables */
+.ctrl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;margin:0 0 10px}
+.ctrl label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.ctrl select,.ctrl input{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff;color:var(--text);min-width:150px}
+.count{font-size:13px;color:var(--muted);margin:0 0 6px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff}
+.dt th{position:sticky;top:0;background:#f4f7fa;text-align:left;font-weight:600;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.dt td{padding:7px 10px;border-bottom:1px solid #eef2f6;vertical-align:middle}
+.dt th.n,.dt td.n{text-align:right}
+.dt tr.click{cursor:pointer}.dt tr.click:hover td{background:#f7f9fb}
+.dt tr.sel td{background:#eef4ff}
+.mini{display:inline-flex;align-items:center;gap:6px}
+.mini .tr{position:relative;width:70px;height:6px;background:var(--track);border-radius:3px}
+.mini .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.mini .tr em{position:absolute;top:-3px;bottom:-3px;border-left:1.5px solid var(--text);opacity:.45}
+.more{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+.names-note{font-size:13px;color:var(--muted);background:#fff8e6;border:1px solid #f3dfa6;border-radius:8px;padding:8px 12px;margin:0 0 10px}
+details.rules{font-size:13px;color:var(--muted);margin-top:12px}
+details.rules summary{cursor:pointer;color:var(--text)}
+.foot{font-size:12px;color:var(--faint);margin-top:30px}
+.err{color:var(--bad)}
+@media (max-width:560px){.db .row,.db .axis{grid-template-columns:96px 1fr 92px}.hero h1{font-size:23px}.gauge .big{font-size:46px}}
+@media (prefers-reduced-motion:no-preference){.gauge .arc-cur{transition:stroke-dashoffset .9s ease-out}}
 </style>
 </head>
 <body>
-<div id="dash-root">
-<style>
-.tx{font-family:var(--font-anthropic-sans),"Noto Sans Thai","Sarabun",sans-serif;color:var(--color-fg);display:flex;flex-direction:column;gap:var(--cds-gap-xl)}
-.tx h1{font-family:var(--font-anthropic-serif),"Noto Serif Thai",serif;font-weight:400;font-size:var(--cds-font-size-title);margin:0}
-.tx h2{font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium);margin:0 0 var(--cds-gap-xs)}
-.tx h3{font-size:var(--cds-font-size-body);font-weight:var(--cds-font-weight-medium);margin:0 0 var(--cds-gap-xs)}
-.tx .sub{color:var(--color-fg-muted);font-size:var(--cds-font-size-caption);margin:var(--cds-gap-xs) 0 var(--cds-gap-sm)}
-.tx .lead{font-size:var(--cds-font-size-body);margin:var(--cds-gap-sm) 0 0;line-height:1.7}
-.tx .lead b{font-weight:var(--cds-font-weight-medium)}
-.tx .filters{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:end}
-.tx .filters label{display:flex;flex-direction:column;gap:var(--cds-gap-xs);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
-.tx .btn{font:inherit;font-size:var(--cds-font-size-caption);background:var(--color-panel);color:var(--color-fg);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:6px 12px;cursor:pointer}
-.tx .card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);min-width:0}
-.tx .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:var(--cds-gap-lg)}
-.tx .big{font-family:var(--font-anthropic-serif),serif;font-weight:400;font-size:var(--cds-font-size-title);font-variant-numeric:tabular-nums;line-height:1.1;}
-.tx .lbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
-.tx .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--cds-gap-md)}
-.tx .stat .v{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-heading);font-variant-numeric:tabular-nums}
-.tx .ok{color:var(--color-ok)}.tx .bad{color:var(--color-bad)}
-.tx .strip{display:flex;height:16px;border-radius:3px;overflow:hidden;margin:var(--cds-gap-sm) 0;background:var(--cds-chart-grid);position:relative}
-.tx .strip>div{height:100%}
-.tx .keys{display:flex;flex-direction:column;gap:4px;font-size:var(--cds-font-size-caption);position:relative}
-.tx .keys .k{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:var(--cds-gap-sm);align-items:center}
-.tx .keys .k .s{width:10px;height:10px;border-radius:2px}
-.tx .keys .k .nn{font-variant-numeric:tabular-nums;text-align:right;color:var(--color-fg-muted)}
-.tx .keys .k .pp{font-variant-numeric:tabular-nums;text-align:right;min-width:52px;font-weight:var(--cds-font-weight-medium)}
-.tx .rrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--cds-gap-md)}
-.tx .rr{cursor:pointer;text-align:left;font:inherit;color:inherit}
-.tx .rr.on{outline:2px solid var(--color-fg);outline-offset:-2px}
-.tx .rr .v{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-title);font-variant-numeric:tabular-nums;color:var(--color-ok)}
-.tx .chart{position:relative;min-height:260px;width:100%}
-.tx .legend{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
-.tx .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.tx .tt{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);box-shadow:var(--cds-shadow-popover);border-radius:var(--cds-radius);padding:8px 10px;font-size:var(--cds-font-size-caption);line-height:1.5;white-space:nowrap;z-index:5;display:none}
-.tx .tt .m{color:var(--cds-text-secondary)}
-.tx svg text{font-size:var(--cds-font-size-caption);fill:var(--cds-text-secondary)}
-.tx .axis line,.tx .axis path{stroke:var(--cds-chart-axis)}
-.tx .gridl line{stroke:var(--cds-chart-grid)}.tx .gridl path{display:none}
-.tx .rb{display:flex;flex-direction:column;gap:6px;position:relative}
-.tx .rb .r{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr) 56px;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption);cursor:pointer;padding:2px 0;border-radius:3px}
-.tx .rb .r.sel{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
-.tx .rb .bar{display:flex;height:14px;border-radius:2px;overflow:hidden}
-.tx .rb .p{text-align:right;font-variant-numeric:tabular-nums}
-.tx .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--cds-gap-lg)}
-.tx .hb{display:flex;flex-direction:column;gap:6px;position:relative}
-.tx .hb .r{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption)}
-.tx .hb .r .l{overflow-wrap:anywhere}
-.tx .hb .r .t{background:var(--cds-chart-grid);border-radius:2px;height:12px;overflow:hidden}
-.tx .hb .r .f{height:100%;border-radius:2px}
-.tx .hb .r .n{font-variant-numeric:tabular-nums;text-align:right;min-width:60px}
-.tx .dots{display:flex;flex-direction:column;gap:8px;position:relative}
-.tx .dots .g{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:var(--cds-gap-sm)}
-.tx .dots .r{display:grid;grid-template-columns:minmax(0,90px) minmax(0,1fr) 92px;gap:var(--cds-gap-sm);align-items:center;font-size:var(--cds-font-size-caption)}
-.tx .dots .lane{position:relative;height:16px;border-bottom:1px solid var(--cds-chart-grid)}
-.tx .dots .lane .avg{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--cds-chart-reference)}
-.tx .dots .lane .d{position:absolute;top:3px;width:10px;height:10px;border-radius:50%;margin-left:-5px}
-.tx .dots .p{text-align:right;font-variant-numeric:tabular-nums}
-.tx .tw{overflow-x:auto}
-.tx table{border-collapse:collapse;width:100%;font-size:var(--cds-font-size-caption);font-variant-numeric:tabular-nums}
-.tx th{text-align:left;font-weight:var(--cds-font-weight-medium);color:var(--color-fg-muted);border-bottom:1px solid var(--color-border-line);padding:6px 8px;white-space:nowrap}
-.tx td{border-bottom:1px solid var(--color-border-line);padding:6px 8px}
-.tx td.num,.tx th.num{text-align:right}
-.tx .err{color:var(--color-bad);font-size:var(--cds-font-size-caption)}
-.tx .sg{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:var(--cds-gap-md);font-size:var(--cds-font-size-body);line-height:1.7}
-.tx .sg .act{display:block;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)}
-.tx .srch{font:inherit;font-size:var(--cds-font-size-caption);padding:6px 10px;border:1px solid var(--color-border-line);border-radius:var(--cds-radius);background:var(--color-bg);color:var(--color-fg);min-width:200px}
-.tx tr.click{cursor:pointer}.tx tr.click:hover td{background:var(--color-bg)}
-.tx tr.sel td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
-.tx .tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--cds-gap-lg);margin-top:var(--cds-gap-sm)}
-.tx .tgrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:var(--cds-gap-sm)}
-.tx .tgt{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--color-border-line);border-left-width:4px;border-radius:var(--cds-radius);background:var(--color-panel);color:var(--color-fg);padding:8px 10px}
-.tx .tgt .n{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-heading);font-variant-numeric:tabular-nums}
-.tx .tgt .l{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
-.tx .tag{display:inline-block;font-size:12px;font-weight:var(--cds-font-weight-medium);padding:1px 8px;border-radius:999px;white-space:nowrap;border:1px solid currentColor}
-.tx .t1{color:var(--color-bad);border-left-color:var(--color-bad)}.tx .t2{color:#d4631f;border-left-color:#d4631f}.tx .t3{color:var(--color-warn);border-left-color:var(--color-warn)}
-.tx .t4{color:var(--color-ok);border-left-color:var(--color-ok)}.tx .t5{color:var(--c1);border-left-color:var(--c1)}.tx .t6,.tx .t7{color:var(--color-fg-muted);border-left-color:var(--color-border-line)}
-.tx .tgt.t1 .n,.tx .tgt.t2 .n,.tx .tgt.t3 .n,.tx .tgt.t4 .n,.tx .tgt.t5 .n{color:inherit}
-.tx .rules{margin-top:var(--cds-gap-md)}
-.tx details{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.7}
-.tx details summary{cursor:pointer;color:var(--color-fg)}
-</style>
 
-<div class="tx">
-  <header id="top">
-    <h1>Dashboard ตรวจสอบเอกสาร TMH Postpaid</h1>
-    <p class="sub">ผลตรวจเอกสาร DPS ตามวันที่ทำรายการ 1 ต.ค. – 17 พ.ย. 2026</p>
-    <p class="lead" id="takeaway">เอกสารสมบูรณ์ <b class="dash-skeleton" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</b> จาก <b class="dash-skeleton" data-draw="kpi" data-source="kpi" data-field="total" data-row="0">—</b> ฉบับ · % สมบูรณ์เดือน พ.ย. เปลี่ยน <b data-draw="mdelta" data-source="mdelta">—</b> จุดจาก ต.ค. · ภาคที่ % สมบูรณ์ต่ำสุดคือ <b class="dash-skeleton" data-draw="toprg" data-source="regionStats" data-field="region" data-row="0">—</b> ที่ <b class="dash-skeleton" data-draw="toprg" data-source="regionStats" data-field="pct_complete" data-row="0">—</b></p>
-  </header>
-
-  <div class="filters" id="filters">
-    <label>เดือน
-      <select class="dash-select" id="f-month" aria-label="เดือน">
-        <option value="">ทั้งหมด</option>
-        <option value="2026-10">ต.ค. 26</option>
-        <option value="2026-11">พ.ย. 26 (1–17)</option>
-      </select>
-    </label>
-    <label>RR
-      <select class="dash-select" id="f-rr" aria-label="RR">
-        <option value="">ทั้งหมด</option>
-        <option value="BMA">BMA</option>
-        <option value="UPC1">UPC1</option>
-        <option value="UPC2">UPC2</option>
-      </select>
-    </label>
-    <label>ภาค (Region)
-      <select class="dash-select" id="f-region" data-draw="regionsel" data-source="regionStats" aria-label="ภาค"></select>
-    </label>
-    <button class="btn" id="f-reset" type="button">ล้างตัวกรอง</button>
+<div class="hero">
+  <div class="wrap">
+    <h1>ผลตรวจเอกสาร TMH Postpaid</h1>
+    <p class="sub" id="period">กำลังโหลดข้อมูล…</p>
+    <div class="hero-grid">
+      <div class="gauge" id="gauge" aria-label="เกจ % สมบูรณ์เดือนนี้"></div>
+      <div class="verdict" id="verdict"><h2>กำลังสรุปผล…</h2></div>
+    </div>
   </div>
-
-  <section class="hero" id="hero">
-    <div class="card" id="hero-bad">
-      <div class="lbl">% เอกสารสมบูรณ์</div>
-      <div class="big ok dash-skeleton" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</div>
-      <div class="lbl">ไม่สมบูรณ์รวม <span class="bad" data-draw="kpi" data-source="kpi" data-field="pct_bad" data-row="0">—</span> (<span data-draw="kpi" data-source="kpi" data-field="bad" data-row="0">—</span> ฉบับ)</div>
-      <div class="strip" data-draw="split" data-source="kpi" role="img" aria-label="สัดส่วนผลตรวจ"></div>
-      <div class="keys">
-        <div class="k"><i class="s" data-draw="sw" data-k="complete"></i><span>สมบูรณ์</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="complete" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</span></div>
-        <div class="k"><i class="s" data-draw="sw" data-k="incomplete"></i><span>ไม่สมบูรณ์ (ไม่ผ่านเงื่อนไข)</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="incomplete" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_incomplete" data-row="0">—</span></div>
-        <div class="k"><i class="s" data-draw="sw" data-k="xflag"></i><span>ไม่สมบูรณ์ (X Flag)</span><span class="nn" data-draw="kpi" data-source="kpi" data-field="xflag" data-row="0">—</span><span class="pp" data-draw="kpi" data-source="kpi" data-field="pct_xflag" data-row="0">—</span></div>
-      </div>
+  <div class="filterbar">
+    <div class="wrap">
+      <label>RR <select id="f-rr"><option value="">ทั้งหมด</option><option>BMA</option><option>UPC1</option><option>UPC2</option></select></label>
+      <label>ภาค <select id="f-region"><option value="">ทั้งหมด</option></select></label>
+      <label>สาขา <select id="f-shop"><option value="">ทุกสาขา</option></select></label>
+      <button class="reset" id="f-reset" type="button">ล้างตัวกรอง</button>
+      <span class="note" id="f-note"></span>
     </div>
-    <div class="card stats" id="hero-stats">
-      <div class="stat"><div class="lbl">เอกสารที่ตรวจ</div><div class="v dash-skeleton" data-draw="kpi" data-source="kpi" data-field="total" data-row="0">—</div></div>
-      <div class="stat"><div class="lbl">วันตรวจเฉลี่ย (นับจากวันทำรายการ)</div><div class="v dash-skeleton" data-draw="kpi" data-source="kpi" data-field="avg_tat" data-row="0">—</div></div>
-      <div class="stat"><div class="lbl">% สมบูรณ์ ต.ค. 26</div><div class="v" data-draw="bm" data-source="bymonth" data-field="pct_complete" data-where="month=2026-10">—</div></div>
-      <div class="stat"><div class="lbl">% สมบูรณ์ พ.ย. 26 (1–17)</div><div class="v" data-draw="bm" data-source="bymonth" data-field="pct_complete" data-where="month=2026-11">—</div></div>
-    </div>
-  </section>
-
-  <section class="card" id="suggest">
-    <h2>วิเคราะห์และข้อเสนอแนะ</h2>
-    <p class="sub">ตัวเลขในแต่ละข้อเปลี่ยนตามตัวกรอง</p>
-    <ol class="sg">
-      <li id="sg-1"><b>ลด X Flag ก่อน เพราะเป็นก้อนใหญ่ที่สุด</b> X Flag คิดเป็น <b data-draw="ins" data-source="insights" data-field="xflag_share_of_bad" data-row="0">—</b> ของเอกสารไม่สมบูรณ์ และสาเหตุอันดับหนึ่งคือ <b data-draw="topreason" data-source="reasonsMain" data-field="reason" data-row="0">—</b> (<b data-draw="topreason" data-source="reasonsMain" data-field="share" data-row="0">—</b>) <span class="act">→ ให้ระบบขายบังคับแนบเอกสารหลักก่อนกดส่ง (hard stop) และเตือนหน้าร้านทันทีที่เอกสารถูก Flag</span></li>
-      <li id="sg-2"><b>ทำ checklist ตามประเภทลูกค้า</b> สาเหตุย่อยที่พบบ่อยสุด 3 อันดับคือ <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="0">—</b>, <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="1">—</b> และ <b data-draw="topitem" data-source="reasonsDetail" data-field="item" data-row="2">—</b> <span class="act">→ แยก checklist คนไทย / ต่างชาติ (Passport, Work Permit, VISA อายุเหลือ ≥ 6 เดือน) / นิติบุคคล / ผู้เยาว์ และใส่ใบสัญญาบริการพยากรณ์เลขหมายเป็นเอกสารบังคับสำหรับเบอร์มงคล</span></li>
-      <li id="sg-3"><b>โฟกัสภาคและสาขาที่ต่ำสุด</b> <b data-draw="toprg" data-source="regionStats" data-field="region" data-row="0">—</b> มี % สมบูรณ์ <b data-draw="toprg" data-source="regionStats" data-field="pct_complete" data-row="0">—</b> เทียบภาพรวม <b data-draw="kpi" data-source="kpi" data-field="pct_complete" data-row="0">—</b> และมีสาขาที่ % สมบูรณ์ต่ำกว่า 80% อยู่ <b data-draw="ins" data-source="insights" data-field="shops_below80" data-row="0">—</b> จาก <b data-draw="ins" data-source="insights" data-field="shops_watched" data-row="0">—</b> สาขาที่มีเอกสาร 30 ฉบับขึ้นไป <span class="act">→ ส่งรายชื่อสาขาในตารางด้านล่างให้ Area Manager ทำ coaching รายสัปดาห์ และติดตาม % สมบูรณ์รายสาขา</span></li>
-      <li id="sg-4"><b>ดู Channel ที่ต่างกันมาก</b> <b data-draw="ins" data-source="insights" data-field="worst_channel" data-row="0">—</b> มี % สมบูรณ์ <b data-draw="ins" data-source="insights" data-field="worst_channel_pct" data-row="0">—</b> ขณะที่ <b data-draw="ins" data-source="insights" data-field="best_channel" data-row="0">—</b> อยู่ที่ <b data-draw="ins" data-source="insights" data-field="best_channel_pct" data-row="0">—</b> <span class="act">→ ทบทวนขั้นตอนการรับเอกสารของ Channel ที่ต่ำ และนำวิธีของ Channel ที่ดีที่สุดไปใช้</span></li>
-      <li id="sg-5"><b>ตรวจคุณภาพ Smart Doc</b> เอกสารที่ทำ Smart Doc สมบูรณ์ <b data-draw="ins" data-source="insights" data-field="smart_yes_pct" data-row="0">—</b> เทียบกับที่ไม่ได้ทำ <b data-draw="ins" data-source="insights" data-field="smart_no_pct" data-row="0">—</b> <span class="act">→ ถ้า Smart Doc ต่ำกว่า ให้ตรวจความชัดของภาพสแกนและการแนบไฟล์ครบหน้าในขั้นตอน Upload</span></li>
-      <li id="sg-6"><b>ตั้ง SLA การตรวจ</b> เอกสาร <b data-draw="ins" data-source="insights" data-field="late_share" data-row="0">—</b> ใช้เวลาเกิน 7 วันนับจากวันทำรายการ <span class="act">→ ตั้งเป้าตรวจเสร็จภายใน 7 วัน และเร่งการส่งซองเอกสารจากหน้าร้าน โดยเฉพาะรายการประเภทนำส่งแบบ "ปรับปรุง"</span></li>
-    </ol>
-  </section>
-
-  <section id="rr">
-    <h2>เทียบตาม RR</h2>
-    <p class="sub">% สมบูรณ์ · กดการ์ดเพื่อกรองตาม RR</p>
-    <div class="rrs">
-      <button type="button" class="card rr" data-rr="BMA" id="rr-bma"><div class="lbl">BMA</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=BMA">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=BMA">—</span> ฉบับ</div></button>
-      <button type="button" class="card rr" data-rr="UPC1" id="rr-upc1"><div class="lbl">UPC1</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=UPC1">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=UPC1">—</span> ฉบับ</div></button>
-      <button type="button" class="card rr" data-rr="UPC2" id="rr-upc2"><div class="lbl">UPC2</div><div class="v" data-draw="rrv" data-source="rrStats" data-field="pct_complete" data-where="rr=UPC2">—</div><div class="lbl"><span data-draw="rrv" data-source="rrStats" data-field="total" data-where="rr=UPC2">—</span> ฉบับ</div></button>
-    </div>
-  </section>
-
-  <section class="card" id="trend">
-    <h2>ปริมาณเอกสารและ % ไม่สมบูรณ์รายวัน</h2>
-    <div class="legend"><span><i class="sw" data-draw="sw" data-k="complete"></i>จำนวนเอกสาร (แกนซ้าย)</span><span><i class="sw" data-draw="sw" data-k="xflag"></i>% ไม่สมบูรณ์รวม (แกนขวา)</span></div>
-    <div class="chart" id="combo-chart" data-draw="combo" data-source="daily kpi"></div>
-  </section>
-
-  <section class="card" id="regions">
-    <h2>สัดส่วนผลตรวจรายภาค</h2>
-    <p class="sub">ตัวเลขขวาคือ % สมบูรณ์ เรียงจากต่ำสุด · คลิกภาคเพื่อกรองทั้งหน้า</p>
-    <div class="rb" data-draw="regionbars" data-source="regionStats"></div>
-  </section>
-
-  <div class="grid2">
-    <section class="card" id="reasons-main">
-      <h2>สาเหตุหลักที่ไม่สมบูรณ์</h2>
-      <p class="sub">สัดส่วนจากผล Upload Verification</p>
-      <div class="strip" data-draw="rstrip" data-source="reasonsMain" role="img" aria-label="สัดส่วนสาเหตุหลัก"></div>
-      <div class="keys" data-draw="rkeys" data-source="reasonsMain"></div>
-    </section>
-    <section class="card" id="reasons-detail">
-      <h2>รายละเอียดสาเหตุ 20 อันดับแรก</h2>
-      <p class="sub">นับทีละรายการ เอกสาร 1 ฉบับอาจมีหลายสาเหตุ</p>
-      <div class="hb" data-draw="reasonsdetail" data-source="reasonsDetail"></div>
-    </section>
   </div>
-
-  <div class="grid2">
-    <section class="card" id="dims">
-      <h2>% ไม่สมบูรณ์รวม แยกตามมิติ</h2>
-      <p class="sub">เส้นประคือค่าเฉลี่ยของช่วงที่เลือก</p>
-      <div class="dots" data-draw="dots" data-source="dims kpi"></div>
-    </section>
-    <section class="card" id="tat">
-      <h2>ระยะเวลาตั้งแต่ทำรายการถึงตรวจเสร็จ</h2>
-      <p class="sub">สัดส่วนเอกสารตามจำนวนวัน</p>
-      <div class="strip" data-draw="tstrip" data-source="tatDist" role="img" aria-label="สัดส่วนระยะเวลาตรวจ"></div>
-      <div class="keys" data-draw="tkeys" data-source="tatDist"></div>
-    </section>
-  </div>
-
-  <section class="card" id="targets">
-    <h2>ชี้เป้า: สาขาและ Staff ที่ต้องติดตาม</h2>
-    <p class="sub">เทียบ % สมบูรณ์ <b data-draw="mlabel" data-k="cur">—</b> กับ <b data-draw="mlabel" data-k="prev">—</b> · เป้าหมาย % สมบูรณ์ <b data-draw="goal">—</b> · ใช้ตัวกรอง RR และภาคด้านบน (ส่วนนี้ไม่ขึ้นกับตัวกรองเดือน) · กดการ์ดเพื่อกรองตาราง</p>
-    <div class="tg">
-      <div class="tgcol">
-        <h3>สาขา</h3>
-        <div class="tgrow" data-draw="tagtiles" data-scope="shop" data-source="shopCmp"></div>
-      </div>
-      <div class="tgcol">
-        <h3>Staff</h3>
-        <div class="tgrow" data-draw="tagtiles" data-scope="staff" data-source="staffCmp"></div>
-      </div>
-    </div>
-    <details class="rules">
-      <summary>เกณฑ์สถานะ</summary>
-      <p><b class="tag t1">เร่งด่วน</b> % สมบูรณ์เดือนนี้ต่ำกว่า <span data-draw="urgent">—</span> · <b class="tag t2">แย่ลง</b> ลดลงตั้งแต่ <span data-draw="drop">—</span> จุดจากเดือนก่อน · <b class="tag t3">ต่ำกว่าเป้า</b> ต่ำกว่าเป้าหมาย · <b class="tag t4">ดีขึ้น</b> เพิ่มขึ้นตั้งแต่ <span data-draw="drop">—</span> จุด · <b class="tag t5">ผ่านเป้า</b> · <b class="tag t6">เดือนนี้ไม่มีงาน</b></p>
-      <p>นับเฉพาะสาขาที่มีเอกสารเดือนนี้อย่างน้อย <span data-draw="minshop">—</span> ฉบับ และ Staff อย่างน้อย <span data-draw="minstaff">—</span> ฉบับ ที่น้อยกว่านี้จัดเป็น "เอกสารน้อย" เพราะ % ยังไม่นิ่ง</p>
-    </details>
-  </section>
-
-  <section class="card" id="shops">
-    <h2>รายสาขา: เทียบเดือนนี้กับเดือนก่อน</h2>
-    <p class="sub">เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูราย Staff ของสาขานั้น</p>
-    <div class="filters">
-      <label>สถานะ
-        <select class="dash-select" id="fs-tag" aria-label="สถานะสาขา">
-          <option value="">ทุกสถานะ</option><option>เร่งด่วน</option><option>แย่ลง</option><option>ต่ำกว่าเป้า</option><option>ดีขึ้น</option><option>ผ่านเป้า</option><option>เอกสารน้อย</option><option>เดือนนี้ไม่มีงาน</option>
-        </select>
-      </label>
-      <label>ค้นหาสาขา
-        <input class="srch" id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา" aria-label="ค้นหาสาขา">
-      </label>
-    </div>
-    <p class="sub">แสดง <b data-draw="cmpcount" data-scope="shop" data-k="shown">—</b> จาก <b data-draw="cmpcount" data-scope="shop" data-k="all">—</b> สาขา</p>
-    <div class="tw">
-      <table data-source="shopCmp" data-row-key="shop_code" id="shop-cmp-table">
-        <thead><tr>
-          <th data-field="tag">สถานะ</th><th data-field="shop_code">รหัส</th><th data-field="shop">สาขา</th><th data-field="region">ภาค</th>
-          <th class="num" data-field="prev_total">เอกสาร <span data-draw="mlabel" data-k="prev">—</span></th><th class="num" data-field="prev_pct">% <span data-draw="mlabel" data-k="prev">—</span></th>
-          <th class="num" data-field="cur_total">เอกสาร <span data-draw="mlabel" data-k="cur">—</span></th><th class="num" data-field="cur_pct">% <span data-draw="mlabel" data-k="cur">—</span></th>
-          <th class="num" data-field="delta">เปลี่ยน (จุด)</th><th data-field="top_reason">สาเหตุหลักเดือนนี้</th>
-        </tr></thead>
-        <tbody data-draw="cmptable" data-scope="shop"></tbody>
-      </table>
-    </div>
-    <p><button class="btn" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button></p>
-  </section>
-
-  <section class="card" id="staff">
-    <h2>ราย Staff: เทียบเดือนนี้กับเดือนก่อน</h2>
-    <p class="sub">เรียงตามความเร่งด่วน · โหลดไฟล์รายชื่อเพื่อแสดงชื่อพนักงาน</p>
-    <div class="filters">
-      <label>สาขา
-        <select class="dash-select" id="f-shop" data-draw="shopsel" data-source="shopList" aria-label="สาขา"></select>
-      </label>
-      <label>สถานะ
-        <select class="dash-select" id="ft-tag" aria-label="สถานะ Staff">
-          <option value="">ทุกสถานะ</option><option>เร่งด่วน</option><option>แย่ลง</option><option>ต่ำกว่าเป้า</option><option>ดีขึ้น</option><option>ผ่านเป้า</option><option>เอกสารน้อย</option><option>เดือนนี้ไม่มีงาน</option>
-        </select>
-      </label>
-      <label>ค้นหา
-        <input class="srch" id="f-q" type="search" placeholder="รหัส ชื่อ Staff หรือชื่อสาขา" aria-label="ค้นหา Staff">
-      </label>
-      <label>รายชื่อพนักงาน (ไฟล์ในเครื่อง)
-        <input class="srch" id="f-names" type="file" accept=".csv,text/csv" aria-label="โหลดไฟล์รายชื่อพนักงาน">
-      </label>
-    </div>
-    <p class="sub" id="names-status">ยังไม่ได้โหลดรายชื่อ: เลือกไฟล์ staff_names.csv เพื่อแสดงชื่อพนักงาน ไฟล์จะถูกอ่านในเครื่องคุณเท่านั้น ไม่ถูกส่งขึ้นเว็บ</p>
-    <p class="sub">แสดง <b data-draw="cmpcount" data-scope="staff" data-k="shown">—</b> จาก <b data-draw="cmpcount" data-scope="staff" data-k="all">—</b> Staff</p>
-    <div class="tw">
-      <table data-source="staffCmp" data-row-key="shop_code,staff_id" id="staff-table">
-        <thead><tr>
-          <th data-field="tag">สถานะ</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th><th>ชื่อ Staff</th>
-          <th class="num" data-field="prev_total">เอกสาร <span data-draw="mlabel" data-k="prev">—</span></th><th class="num" data-field="prev_pct">% <span data-draw="mlabel" data-k="prev">—</span></th>
-          <th class="num" data-field="cur_total">เอกสาร <span data-draw="mlabel" data-k="cur">—</span></th><th class="num" data-field="cur_pct">% <span data-draw="mlabel" data-k="cur">—</span></th>
-          <th class="num" data-field="delta">เปลี่ยน (จุด)</th><th data-field="top_reason">สาเหตุหลักเดือนนี้</th>
-        </tr></thead>
-        <tbody data-draw="cmptable" data-scope="staff"></tbody>
-      </table>
-    </div>
-    <p><button class="btn" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button></p>
-  </section>
-
-  <details id="defs">
-    <summary>นิยามและที่มาของตัวเลข</summary>
-    <p><b>ไม่สมบูรณ์รวม</b> = ไม่สมบูรณ์ + ไม่สมบูรณ์ (X Flag) ตามตาราง Region ในไฟล์ต้นฉบับ · ส่วนใหญ่ของ X Flag มาจากเอกสารหลักไม่แนบ ส่วน "ไม่สมบูรณ์" ส่วนใหญ่มาจากเอกสารหลักไม่ผ่านเงื่อนไข</p>
-    <p><b>วันตรวจ</b> = วันที่ตรวจเรียบร้อยแล้ว ลบ Order Date · ข้อมูลจากไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26) สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้ารายบุคคล</p>
-  </details>
 </div>
 
-<script>
-window.TM = (function () {
-  const COLORS = { complete: 'var(--cds-chart-muted)', incomplete: 'var(--color-warn)', xflag: 'var(--color-bad)' };
-  const num = d3.format(',');
-  const pct = (v) => (v == null || isNaN(v) ? '—' : v.toFixed(1) + '%');
-  const r1 = (v) => Math.round(v * 10) / 10;
-  function filt(rows, p, skip) {
-    skip = skip || {};
-    return rows.filter((r) => (skip.month || !p.month || r.month === p.month) && (skip.rr || !p.rr || r.rr === p.rr) && (skip.region || !p.region || r.region === p.region));
-  }
-  function tally(rows) {
-    const o = { total: 0, complete: 0, incomplete: 0, xflag: 0, tat: 0 };
-    rows.forEach((r) => { const n = +r.n; o.total += n; o[r.result] += n; o.tat += +(r.tat_sum || 0); });
-    o.bad = o.incomplete + o.xflag;
-    return o;
-  }
-  function tip(el) {
-    let t = el.querySelector(':scope > .tt');
-    if (!t) { t = document.createElement('div'); t.className = 'tt'; el.appendChild(t); }
-    return {
-      show(ev, lines) {
-        t.replaceChildren(...lines.map(([a, b]) => { const d = document.createElement('div'); if (b !== undefined) { const s = document.createElement('span'); s.className = 'm'; s.textContent = a + ' '; d.append(s, document.createTextNode(b)); } else d.textContent = a; return d; }));
-        t.style.display = 'block';
-        const box = el.getBoundingClientRect(); let x = ev.clientX - box.left + 12, y = ev.clientY - box.top + 12;
-        if (x + t.offsetWidth > box.width) x = Math.max(0, ev.clientX - box.left - t.offsetWidth - 12);
-        t.style.left = x + 'px'; t.style.top = y + 'px';
-      },
-      hide() { t.style.display = 'none'; }
-    };
-  }
-  function placeholder(el, d, label) {
-    if (d.status === 'error') { const p = document.createElement('p'); p.className = 'err'; p.textContent = label || 'โหลดข้อมูลส่วนนี้ไม่สำเร็จ'; el.replaceChildren(p); return true; }
-    if (d.status !== 'ok' || !d.data) { el.replaceChildren(document.createTextNode('—')); return true; }
-    return false;
-  }
-  function hbars(el, rows, o) {
-    el.replaceChildren();
-    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
-    const tp = tip(el);
-    const max = d3.max(rows, (r) => r[o.value]) || 1;
-    rows.forEach((r, i) => {
-      const row = document.createElement('div'); row.className = 'r';
-      const l = document.createElement('div'); l.className = 'l'; l.textContent = r[o.label];
-      const t = document.createElement('div'); t.className = 't';
-      const f = document.createElement('div'); f.className = 'f'; f.style.width = (100 * r[o.value] / max) + '%'; f.style.background = o.color || dash.colors[0];
-      t.appendChild(f);
-      const n = document.createElement('div'); n.className = 'n';
-      const v = document.createElement('span'); v.textContent = o.main(r);
-      v.setAttribute('data-source', o.src); v.setAttribute('data-field', o.field); v.setAttribute('data-row', String(o.rowIndex ? o.rowIndex(r, i) : i));
-      n.appendChild(v);
-      if (o.extra) n.appendChild(document.createTextNode(' ' + o.extra(r)));
-      row.append(l, t, n);
-      row.addEventListener('mousemove', (ev) => tp.show(ev, o.tip(r)));
-      row.addEventListener('mouseleave', () => tp.hide());
-      el.appendChild(row);
-    });
-  }
-  function unskel(el, d) { if (d.status !== 'loading') el.classList.remove('dash-skeleton'); }
-  return { COLORS, num, pct, r1, filt, tally, tip, placeholder, hbars, unskel };
-})();
-</script>
+<main class="wrap">
+
+  <section id="insights">
+    <div class="sec-h"><h2>ดีขึ้นหรือแย่ลง และต้องทำอะไร</h2><p>สรุปจากการเทียบเดือนนี้กับเดือนก่อน เปลี่ยนตามตัวกรอง</p></div>
+    <ul class="ins" id="ins"></ul>
+  </section>
+
+  <section id="regions">
+    <div class="sec-h"><h2>รายภาค: เดือนก่อน → เดือนนี้</h2><p>คลิกภาคเพื่อกรองทั้งหน้า</p></div>
+    <div class="panel">
+      <div class="legend"><span><i style="background:var(--prev)"></i><span class="m-prev">เดือนก่อน</span></span><span><i style="background:var(--good)"></i>เดือนนี้ ดีขึ้น</span><span><i style="background:var(--bad)"></i>เดือนนี้ แย่ลง</span><span><i class="sq" style="background:none;border-left:2px dashed var(--faint);border-radius:0;width:2px"></i>เป้าหมาย</span></div>
+      <div class="db" id="db-region"></div>
+      <p class="read" id="read-region"></p>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="sec-h"><h2>สาเหตุ: เกิดบ่อยขึ้นหรือน้อยลง</h2><p>ต่อเอกสาร 100 ฉบับ เพื่อเทียบได้แม้จำนวนเอกสารสองเดือนไม่เท่ากัน</p></div>
+    <div class="grid2">
+      <div class="panel">
+        <h3 class="tg-h">สาเหตุหลัก (Upload Verification)</h3>
+        <div class="legend"><span><i class="sq" style="background:var(--prev)"></i><span class="m-prev">เดือนก่อน</span></span><span><i class="sq" style="background:var(--ink)"></i><span class="m-cur">เดือนนี้</span></span></div>
+        <div class="pb" id="pb-reason"></div>
+        <p class="read" id="read-reason"></p>
+      </div>
+      <div class="panel">
+        <h3 class="tg-h">รายละเอียดสาเหตุ 12 อันดับแรก</h3>
+        <div class="legend"><span><i class="sq" style="background:var(--prev)"></i><span class="m-prev">เดือนก่อน</span></span><span><i class="sq" style="background:var(--ink)"></i><span class="m-cur">เดือนนี้</span></span></div>
+        <div class="pb" id="pb-item"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trend">
+    <div class="sec-h"><h2>รายวัน: % สมบูรณ์ต่อเนื่องสองเดือน</h2><p>แท่งคือจำนวนเอกสาร เส้นคือ % สมบูรณ์ เส้นประคือเป้าหมาย</p></div>
+    <div class="panel"><div class="chart" id="daily"></div><p class="read" id="read-daily"></p></div>
+  </section>
+
+  <section id="dims">
+    <div class="sec-h"><h2>เทียบตามช่องทางและประเภทงาน</h2><p>% สมบูรณ์ เดือนก่อน → เดือนนี้</p></div>
+    <div class="grid2">
+      <div class="panel"><h3 class="tg-h">Channel</h3><div class="db" id="db-channel"></div></div>
+      <div class="panel"><h3 class="tg-h">Order Type</h3><div class="db" id="db-order_type"></div></div>
+      <div class="panel"><h3 class="tg-h">Smart Doc</h3><div class="db" id="db-smartdoc"></div></div>
+      <div class="panel"><h3 class="tg-h">ประเภทการนำส่ง</h3><div class="db" id="db-delivery"></div></div>
+    </div>
+  </section>
+
+  <section id="tat">
+    <div class="sec-h"><h2>ความเร็วในการตรวจ</h2><p>จำนวนวันจากวันทำรายการถึงตรวจเสร็จ</p></div>
+    <div class="panel" id="tat-box"></div>
+  </section>
+
+  <section id="targets">
+    <div class="sec-h"><h2>ชี้เป้า: ใครต้องติดตาม</h2><p>สถานะจาก % สมบูรณ์เดือนนี้และการเปลี่ยนจากเดือนก่อน · กดการ์ดเพื่อกรองตาราง</p></div>
+    <div class="grid2">
+      <div><h3 class="tg-h">สาขา</h3><div class="tiles" id="tiles-shop"></div></div>
+      <div><h3 class="tg-h">Staff</h3><div class="tiles" id="tiles-staff"></div></div>
+    </div>
+    <details class="rules"><summary>เกณฑ์สถานะ</summary><p id="rules"></p></details>
+  </section>
+
+  <section id="shops">
+    <div class="sec-h"><h2>รายสาขา</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดู Staff ของสาขานั้น</p></div>
+    <div class="ctrl">
+      <label>สถานะ <select id="fs-tag"></select></label>
+      <label>ค้นหา <input id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา"></label>
+    </div>
+    <p class="count" id="fs-count"></p>
+    <div class="tw"><table class="dt" id="t-shop"></table></div>
+    <button class="more" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button>
+  </section>
+
+  <section id="staff">
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน</p></div>
+    <p class="names-note" id="names-note">ชื่อพนักงานไม่ได้เก็บไว้บนเว็บ เลือกไฟล์ <b>staff_names.csv</b> จากเครื่องของคุณเพื่อแสดงชื่อ (อ่านในเบราว์เซอร์เท่านั้น ไม่ถูกส่งไปที่ไหน)</p>
+    <div class="ctrl">
+      <label>สถานะ <select id="ft-tag"></select></label>
+      <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
+      <label>รายชื่อพนักงาน <input id="f-names" type="file" accept=".csv,text/csv"></label>
+    </div>
+    <p class="count" id="ft-count"></p>
+    <div class="tw"><table class="dt" id="t-staff"></table></div>
+    <button class="more" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button>
+  </section>
+
+  <p class="foot" id="foot">ข้อมูล: ไฟล์ DPS ล่าสุด · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน · สร้างด้วย scripts/build_data.py</p>
+</main>
 
 <script>
-const T = window.TM;
-dash.calc('kpi', {
-  title: 'สรุปผลตรวจ (ตามตัวกรอง)', description: 'รวมจำนวนเอกสารแต่ละผลตรวจและคิดเป็น %',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const o = window.TM.tally(window.TM.filt(cube, dash.params())); const r1 = window.TM.r1; const t = o.total || 1;
-    return [{ total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag, bad: o.bad,
-      pct_complete: r1(100 * o.complete / t), pct_bad: r1(100 * o.bad / t), pct_incomplete: r1(100 * o.incomplete / t), pct_xflag: r1(100 * o.xflag / t), avg_tat: r1(o.tat / t) }];
-  }
-});
-dash.calc('bymonth', {
-  title: '% สมบูรณ์รายเดือน', description: 'ตามตัวกรอง RR และภาค ไม่ขึ้นกับตัวกรองเดือน',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const p = dash.params(); const rows = window.TM.filt(cube, p, { month: true });
-    return ['2026-10', '2026-11'].map((m) => { const o = window.TM.tally(rows.filter((r) => r.month === m)); const t = o.total || 1;
-      return { month: m, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t) }; });
-  }
-});
-dash.calc('mdelta', {
-  title: 'ส่วนต่าง % สมบูรณ์ พ.ย. เทียบ ต.ค.', description: 'จุดเปอร์เซ็นต์',
-  inputs: ['bymonth'],
-  fn: (bymonth) => Math.round((bymonth[1].pct_complete - bymonth[0].pct_complete) * 10) / 10
-});
-dash.calc('daily', {
-  title: 'ผลตรวจรายวัน', description: 'จำนวนเอกสารต่อวันตาม Order Date',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const m = new Map();
-    window.TM.filt(cube, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, complete: 0, incomplete: 0, xflag: 0 }; m.set(r.date, o); } o[r.result] += +r.n; });
-    return [...m.values()].sort((a, b) => a.date < b.date ? -1 : 1).map((o) => { o.total = o.complete + o.incomplete + o.xflag; o.pct_bad = window.TM.r1(100 * (o.incomplete + o.xflag) / (o.total || 1)); return o; });
-  }
-});
-dash.calc('regionStats', {
-  title: 'ผลตรวจรายภาค', description: 'ตามตัวกรองเดือนและ RR',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const g = d3.group(window.TM.filt(cube, dash.params(), { region: true }), (r) => r.region);
-    return [...g].map(([region, rows]) => { const o = window.TM.tally(rows); const t = o.total || 1;
-      return { region, rr: rows[0].rr, total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t), avg_tat: window.TM.r1(o.tat / t) }; })
-      .sort((a, b) => b.pct_bad - a.pct_bad);
-  }
-});
-dash.calc('reasonsMain', {
-  title: 'สาเหตุหลัก', description: 'จำนวนเอกสารไม่สมบูรณ์ต่อสาเหตุหลัก และสัดส่วน',
-  inputs: ['reasons_main'],
-  fn: (reasons_main) => {
-    const g = d3.rollup(window.TM.filt(reasons_main, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
-    const tot = d3.sum([...g.values()]) || 1;
-    return [...g].map(([reason, n]) => ({ reason, n, share: window.TM.r1(100 * n / tot) })).sort((a, b) => b.n - a.n);
-  }
-});
-dash.calc('reasonsDetail', {
-  title: 'รายละเอียดสาเหตุ', description: 'นับรายการสาเหตุย่อย 20 อันดับแรก ที่เหลือรวมเป็น อื่นๆ',
-  inputs: ['reasons_detail'],
-  fn: (reasons_detail) => {
-    const g = d3.rollup(window.TM.filt(reasons_detail, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.item);
-    const tot = d3.sum([...g.values()]) || 1;
-    return [...g].map(([item, n]) => ({ item, n, share: window.TM.r1(100 * n / tot) }))
-      .sort((a, b) => (a.item === 'อื่นๆ') - (b.item === 'อื่นๆ') || b.n - a.n);
-  }
-});
-dash.calc('dims', {
-  title: '% ไม่สมบูรณ์ตามมิติ', description: 'Channel, Order Type, Smart Doc และประเภทการนำส่ง',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const rows = window.TM.filt(cube, dash.params()); const out = [];
-    ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((dim) => {
-      d3.group(rows, (r) => r[dim]).forEach((v, value) => { const o = window.TM.tally(v);
-        out.push({ key: dim + ':' + value, dim, value, total: o.total, bad: o.bad, pct_bad: window.TM.r1(100 * o.bad / (o.total || 1)) }); });
-    });
-    return out.sort((a, b) => b.pct_bad - a.pct_bad);
-  }
-});
-dash.calc('shopTop', {
-  title: 'สาขา % ไม่สมบูรณ์สูงสุด', description: '15 สาขาแรก เฉพาะที่มีเอกสาร 30 ฉบับขึ้นไป',
-  inputs: ['shops'],
-  fn: (shops) => {
-    const g = d3.group(window.TM.filt(shops, dash.params()), (r) => r.shop_code);
-    return [...g].map(([shop_code, v]) => { const o = window.TM.tally(v);
-      return { shop_code, shop: v[0].shop, region: v[0].region, total: o.total, incomplete: o.incomplete, xflag: o.xflag, pct_complete: window.TM.r1(100 * o.complete / (o.total || 1)), pct_bad: window.TM.r1(100 * o.bad / (o.total || 1)) }; })
-      .filter((r) => r.total >= 30).sort((a, b) => b.pct_bad - a.pct_bad || b.total - a.total).slice(0, 15);
-  }
-});
-dash.calc('tatDist', {
-  title: 'การกระจายระยะเวลาตรวจ', description: 'สัดส่วนเอกสารตามช่วงวัน',
-  inputs: ['tat'],
-  fn: (tat) => {
-    const order = ['0-1 วัน', '2-3 วัน', '4-7 วัน', '8-14 วัน', '15+ วัน'];
-    const g = d3.rollup(window.TM.filt(tat, dash.params()), (v) => d3.sum(v, (r) => +r.n), (r) => r.tat_bucket);
-    const tot = d3.sum([...g.values()]) || 1;
-    return order.map((bucket) => ({ bucket, n: g.get(bucket) || 0, share: window.TM.r1(100 * (g.get(bucket) || 0) / tot) }));
-  }
-});
-</script>
+/* ---------- settings ---------- */
+const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;
+const DATA_NOTE = 'ไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26)';
 
-<script>
-dash.calc('rrStats', {
-  title: 'ผลตรวจตาม RR', description: 'ตามตัวกรองเดือน ไม่ขึ้นกับตัวกรอง RR และภาค',
-  inputs: ['cube'],
-  fn: (cube) => {
-    const rows = window.TM.filt(cube, dash.params(), { rr: true, region: true });
-    return ['BMA', 'UPC1', 'UPC2'].map((rr) => { const o = window.TM.tally(rows.filter((r) => r.rr === rr)); const t = o.total || 1;
-      return { rr, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t) }; });
-  }
-});
-dash.calc('insights', {
-  title: 'ตัวเลขประกอบข้อเสนอแนะ', description: 'Channel และ Smart Doc ที่ต่างกันมากที่สุด สัดส่วน X Flag ในเอกสารไม่สมบูรณ์ สัดส่วนที่ตรวจเกิน 7 วัน และจำนวนสาขาที่ % สมบูรณ์ต่ำกว่า 80%',
-  inputs: ['cube', 'shops', 'tatDist'],
-  fn: (cube, shops, tatDist) => {
-    const p = dash.params(); const TM = window.TM; const rows = TM.filt(cube, p);
-    const by = (k) => [...d3.group(rows, (r) => r[k])].map(([v, g]) => { const o = TM.tally(g); return { v, total: o.total, pct_complete: TM.r1(100 * o.complete / (o.total || 1)) }; }).filter((x) => x.total >= 100);
-    const ch = by('channel').sort((a, b) => a.pct_complete - b.pct_complete);
-    const sd = by('smartdoc'); const yes = sd.find((x) => x.v === 'Yes'); const no = sd.find((x) => x.v === 'No');
-    const all = TM.tally(rows);
-    const late = TM.r1(d3.sum(tatDist.filter((x) => x.bucket === '8-14 วัน' || x.bucket === '15+ วัน'), (x) => x.share));
-    const sh = [...d3.group(TM.filt(shops, p), (r) => r.shop_code)].map(([, g]) => TM.tally(g)).filter((o) => o.total >= 30);
-    return [{
-      worst_channel: ch.length ? ch[0].v : null, worst_channel_pct: ch.length ? ch[0].pct_complete : null,
-      best_channel: ch.length ? ch[ch.length - 1].v : null, best_channel_pct: ch.length ? ch[ch.length - 1].pct_complete : null,
-      smart_yes_pct: yes ? yes.pct_complete : null, smart_no_pct: no ? no.pct_complete : null,
-      shops_below80: sh.filter((o) => o.complete / o.total < 0.8).length, shops_watched: sh.length,
-      xflag_share_of_bad: TM.r1(100 * all.xflag / (all.bad || 1)), late_share: late
-    }];
-  }
-});
-</script>
-<script>
-dash.calc('shopList', {
-  title: 'รายชื่อสาขา', description: 'สาขาที่มีเอกสารตามตัวกรองเดือน RR และภาค',
-  inputs: ['staff'],
-  fn: (staff) => {
-    const m = new Map(); window.TM.filt(staff, dash.params()).forEach((r) => m.set(r.shop_code, r.shop));
-    return [...m].map(([shop_code, shop]) => ({ shop_code, shop })).sort((a, b) => a.shop.localeCompare(b.shop, 'th'));
-  }
-});
-dash.calc('staffStats', {
-  title: 'ผลตรวจรายสาขา ราย Staff', description: 'จำนวนเอกสารและ % สมบูรณ์ต่อ Staff ในแต่ละสาขา พร้อมสาเหตุหลักที่พบบ่อยที่สุด',
-  inputs: ['staff'],
-  fn: (staff) => {
-    const p = dash.params(); const TM = window.TM;
-    const rows = TM.filt(staff, p).filter((r) => !p.shop || r.shop_code === p.shop);
-    return [...d3.group(rows, (r) => r.shop_code + '|' + r.staff_id)].map(([, g]) => {
-      const o = TM.tally(g);
-      const rs = d3.rollup(g.filter((r) => r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
-      const top = [...rs].sort((a, b) => b[1] - a[1])[0];
-      return { shop_code: g[0].shop_code, shop: g[0].shop, region: g[0].region, staff_id: g[0].staff_id, total: o.total, complete: o.complete, incomplete: o.incomplete, xflag: o.xflag,
-        pct_complete: TM.r1(100 * o.complete / (o.total || 1)), top_reason: top ? top[0] + ' (' + top[1] + ')' : '' };
-    }).sort((a, b) => a.pct_complete - b.pct_complete || b.total - a.total);
-  }
-});
-</script>
-<script>
-window.TMC = (function () {
-  const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;
-  const TAGS = ['เร่งด่วน', 'แย่ลง', 'ต่ำกว่าเป้า', 'ดีขึ้น', 'ผ่านเป้า', 'เอกสารน้อย', 'เดือนนี้ไม่มีงาน'];
-  const CLS = { 'เร่งด่วน': 't1', 'แย่ลง': 't2', 'ต่ำกว่าเป้า': 't3', 'ดีขึ้น': 't4', 'ผ่านเป้า': 't5', 'เอกสารน้อย': 't7', 'เดือนนี้ไม่มีงาน': 't6' };
-  const TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-  const mlabel = (m) => (m ? TH[+m.slice(5, 7) - 1] + ' ' + m.slice(2, 4) : '—');
-  function tag(r, min) {
-    if (!r.cur_total) return 'เดือนนี้ไม่มีงาน';
-    if (r.cur_total < min) return 'เอกสารน้อย';
-    if (r.cur_pct < URGENT) return 'เร่งด่วน';
-    if (r.delta != null && r.delta <= -DROP) return 'แย่ลง';
-    if (r.cur_pct < GOAL) return 'ต่ำกว่าเป้า';
-    if (r.delta != null && r.delta >= DROP) return 'ดีขึ้น';
-    return 'ผ่านเป้า';
-  }
-  function compare(rows, keyFn, info, min) {
-    const months = [...new Set(rows.map((r) => r.month))].sort();
-    const cur = months[months.length - 1], prev = months[months.length - 2];
-    const TM = window.TM;
-    return [...d3.group(rows, keyFn)].map(([, g]) => {
-      const c = TM.tally(g.filter((r) => r.month === cur)), p = TM.tally(g.filter((r) => r.month === prev));
-      const cur_pct = c.total ? TM.r1(100 * c.complete / c.total) : null;
-      const prev_pct = p.total ? TM.r1(100 * p.complete / p.total) : null;
-      const rs = d3.rollup(g.filter((r) => r.month === cur && r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
-      const top = [...rs].sort((a, b) => b[1] - a[1])[0];
-      const o = Object.assign(info(g[0]), { prev_total: p.total, prev_pct, cur_total: c.total, cur_pct, cur_bad: c.bad,
-        delta: cur_pct != null && prev_pct != null ? TM.r1(cur_pct - prev_pct) : null, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
-      o.tag = tag(o, min); o.rank = TAGS.indexOf(o.tag);
-      return o;
-    }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
-  }
-  return { GOAL, URGENT, DROP, MIN_SHOP, MIN_STAFF, TAGS, CLS, mlabel, compare };
-})();
-
-dash.calc('cmpMonths', {
-  title: 'เดือนที่เปรียบเทียบ', description: 'เดือนล่าสุดและเดือนก่อนหน้าในข้อมูล',
-  inputs: ['staff'],
-  fn: (staff) => { const m = [...new Set(staff.map((r) => r.month))].sort(); return [{ prev: m[m.length - 2] || null, cur: m[m.length - 1] || null }]; }
-});
-dash.calc('shopCmp', {
-  title: 'สาขา: เดือนนี้เทียบเดือนก่อน', description: '% สมบูรณ์ของแต่ละสาขาในเดือนล่าสุดเทียบเดือนก่อน พร้อมสถานะที่ต้องติดตาม',
-  inputs: ['staff'],
-  fn: (staff) => {
-    const rows = window.TM.filt(staff, dash.params(), { month: true });
-    return window.TMC.compare(rows, (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), window.TMC.MIN_SHOP);
-  }
-});
-dash.calc('staffCmp', {
-  title: 'Staff: เดือนนี้เทียบเดือนก่อน', description: '% สมบูรณ์ของแต่ละ Staff ในแต่ละสาขา เดือนล่าสุดเทียบเดือนก่อน พร้อมสถานะที่ต้องติดตาม',
-  inputs: ['staff'],
-  fn: (staff) => {
-    const p = dash.params();
-    const rows = window.TM.filt(staff, p, { month: true }).filter((r) => !p.shop || r.shop_code === p.shop);
-    return window.TMC.compare(rows, (r) => r.shop_code + '|' + r.staff_id, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region, staff_id: r.staff_id }), window.TMC.MIN_STAFF);
-  }
-});
-</script>
-<script>
-(function () {
-  const T = window.TM, C = window.TMC;
-  const S = { shop: { limit: 30, step: 30, tag: '#fs-tag', q: '#fs-q', more: '#fs-more', src: 'shopCmp', cols: 10 },
-              staff: { limit: 50, step: 50, tag: '#ft-tag', q: '#f-q', more: '#ft-more', src: 'staffCmp', cols: 10 } };
-  window.TMS = { names: {} };
-  const redraw = () => { dash.draw('cmptable'); dash.draw('cmpcount'); };
-
-  const setNames = (text, from) => {
-    const rows = d3.csvParse(text.replace(/^﻿/, '')); const m = {};
-    rows.forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); });
-    window.TMS.names = m;
-    document.querySelectorAll('#names-status').forEach((el) => { el.hidden = true; });
-    document.querySelectorAll('#f-names').forEach((el) => { el.title = 'โหลดแล้ว ' + Object.keys(m).length + ' คน (' + from + ')'; });
+/* ---------- helpers ---------- */
+const TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const ml = (m) => (m ? TH[+m.slice(5, 7) - 1] + ' ' + m.slice(2, 4) : '—');
+const num = d3.format(',');
+const pct = (v) => (v == null || isNaN(v) ? '—' : v.toFixed(1) + '%');
+const r1 = (v) => Math.round(v * 10) / 10;
+const sgn = (v, unit = '') => (v == null || isNaN(v) ? '—' : (v > 0 ? '+' : '') + v.toFixed(1) + unit);
+const arrow = (v) => (v > 0 ? '▲' : v < 0 ? '▼' : '■');
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+function filt(rows, p, o = {}) {
+  return rows.filter((r) => (!p.rr || r.rr === p.rr) && (o.noRegion || !p.region || r.region === p.region) && (!o.shop || !p.shop || r.shop_code === p.shop));
+}
+function tally(rows) {
+  const o = { total: 0, complete: 0, incomplete: 0, xflag: 0, tat: 0 };
+  rows.forEach((r) => { const n = +r.n; o.total += n; o[r.result] += n; o.tat += +(r.tat_sum || 0); });
+  o.bad = o.incomplete + o.xflag; o.pct = o.total ? r1(100 * o.complete / o.total) : null; return o;
+}
+function monthsOf(rows) { const m = [...new Set(rows.map((r) => r.month))].sort(); return { prev: m[m.length - 2], cur: m[m.length - 1] }; }
+function tip(box) {
+  let t = box.querySelector(':scope > .tt'); if (!t) { t = el('div', 'tt'); box.appendChild(t); }
+  return {
+    show(ev, lines) {
+      t.replaceChildren(...lines.map(([a, b]) => { const d = el('div'); if (b === undefined) { d.textContent = a; d.style.fontWeight = 600; } else { d.append(el('span', 'm', a + ' '), document.createTextNode(b)); } return d; }));
+      t.style.display = 'block'; const r = box.getBoundingClientRect();
+      let x = ev.clientX - r.left + 14; if (x + t.offsetWidth > r.width) x = Math.max(0, ev.clientX - r.left - t.offsetWidth - 14);
+      t.style.left = x + 'px'; t.style.top = (ev.clientY - r.top + 14) + 'px';
+    }, hide() { t.style.display = 'none'; }
   };
-  try { const saved = localStorage.getItem('tmh_staff_names'); if (saved) setNames(saved, 'จำไว้ในเครื่องนี้'); } catch (e) {}
-  document.querySelectorAll('#f-names').forEach((i) => i.addEventListener('change', () => {
-    const f = i.files && i.files[0]; if (!f) return;
-    f.text().then((t) => { setNames(t, f.name); try { localStorage.setItem('tmh_staff_names', t); } catch (e) {} redraw(); });
-  }));
+}
 
-  Object.values(S).forEach((s) => {
-    document.querySelectorAll(s.tag + ',' + s.q).forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { s.limit = s.step; redraw(); }));
-    document.querySelectorAll(s.more).forEach((b) => b.addEventListener('click', () => { s.limit += s.step; redraw(); }));
+/* ---------- calcs ---------- */
+dash.calc('M', { inputs: ['cube'], fn: (cube) => monthsOf(cube) });
+
+dash.calc('kpi', { inputs: ['cube', 'tat', 'M'], fn: (cube, tat, M) => {
+  const p = dash.params(); const rows = filt(cube, p);
+  const one = (m) => { const o = tally(rows.filter((r) => r.month === m));
+    const tb = filt(tat, p).filter((r) => r.month === m); const tt = d3.sum(tb, (r) => +r.n) || 1;
+    const late = d3.sum(tb.filter((r) => r.tat_bucket === '8-14 วัน' || r.tat_bucket === '15+ วัน'), (r) => +r.n);
+    return Object.assign(o, { pct_x: o.total ? r1(100 * o.xflag / o.total) : null, pct_inc: o.total ? r1(100 * o.incomplete / o.total) : null,
+      avg_tat: o.total ? r1(o.tat / o.total) : null, late: r1(100 * late / tt) }); };
+  return { prev: one(M.prev), cur: one(M.cur) };
+} });
+
+dash.calc('regionCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
+  const rows = filt(cube, dash.params(), { noRegion: true });
+  return [...d3.group(rows, (r) => r.region)].map(([region, g]) => {
+    const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
+    return { key: region, label: region, sub: g[0].rr, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
+  }).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
+} });
+
+dash.calc('dimCmp', { inputs: ['cube', 'M'], fn: (cube, M) => {
+  const rows = filt(cube, dash.params()); const out = {};
+  ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => {
+    out[k] = [...d3.group(rows, (r) => r[k])].map(([v, g]) => {
+      const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
+      return { key: v, label: v, sub: num(b.total) + ' ฉบับ', prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
+    }).filter((r) => r.cur_n + r.prev_n >= 30).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
   });
+  return out;
+} });
 
-  function rows(scope) {
-    const s = S[scope]; const d = dash.data(s.src); if (d.status !== 'ok' || !d.data) return null;
-    const tg = document.querySelector(s.tag), qi = document.querySelector(s.q);
-    const tag = tg ? tg.value : ''; const q = (qi ? qi.value : '').trim().toLowerCase(); const nm = window.TMS.names;
-    return d.data.filter((r) => (!tag || r.tag === tag) && (!q || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)
-      || (r.staff_id && (r.staff_id.includes(q) || (nm[r.staff_id] || '').toLowerCase().includes(q)))));
-  }
-  dash.onData(() => { Object.entries(S).forEach(([k, s]) => { const r = rows(k); document.querySelectorAll(s.more).forEach((b) => { b.hidden = !r || r.length <= s.limit; }); }); });
-
-  dash.draw('mlabel', (el) => { const d = dash.data('cmpMonths'); el.textContent = d.status === 'ok' && d.data ? C.mlabel(d.data[0][el.dataset.k]) : '—'; });
-  dash.draw('goal', (el) => { el.textContent = C.GOAL + '%'; });
-  dash.draw('urgent', (el) => { el.textContent = C.URGENT + '%'; });
-  dash.draw('drop', (el) => { el.textContent = String(C.DROP); });
-  dash.draw('minshop', (el) => { el.textContent = String(C.MIN_SHOP); });
-  dash.draw('minstaff', (el) => { el.textContent = String(C.MIN_STAFF); });
-
-  dash.draw('tagtiles', (el) => {
-    const scope = el.dataset.scope; const d = dash.data(S[scope].src);
-    if (d.status !== 'ok' || !d.data) { el.replaceChildren(document.createTextNode('—')); return; }
-    const cnt = d3.rollup(d.data, (v) => v.length, (r) => r.tag);
-    el.replaceChildren(...C.TAGS.filter((t) => t !== 'เดือนนี้ไม่มีงาน').map((t) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'tgt ' + C.CLS[t];
-      const n = document.createElement('div'); n.className = 'n'; n.textContent = T.num(cnt.get(t) || 0);
-      const l = document.createElement('div'); l.className = 'l'; l.textContent = t;
-      b.append(n, l);
-      b.addEventListener('click', () => {
-        document.querySelectorAll(S[scope].tag).forEach((s) => { s.value = t; });
-        S[scope].limit = S[scope].step; redraw();
-        document.querySelectorAll(scope === 'shop' ? '#shops' : '#staff').forEach((s) => s.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-      });
-      return b;
-    }));
+function rateCmp(src, key, kpi, M, p) {
+  const rows = filt(src, p);
+  return [...d3.group(rows, (r) => r[key])].map(([k, g]) => {
+    const a = d3.sum(g.filter((r) => r.month === M.prev), (r) => +r.n), b = d3.sum(g.filter((r) => r.month === M.cur), (r) => +r.n);
+    const ra = kpi.prev.total ? r1(100 * a / kpi.prev.total) : 0, rb = kpi.cur.total ? r1(100 * b / kpi.cur.total) : 0;
+    return { key: k, prev_n: a, cur_n: b, prev: ra, cur: rb, delta: r1(rb - ra) };
   });
+}
+dash.calc('reasonCmp', { inputs: ['reasons_main', 'kpi', 'M'], fn: (rm, kpi, M) => rateCmp(rm, 'reason', kpi, M, dash.params()).sort((a, b) => b.cur - a.cur) });
+dash.calc('itemCmp', { inputs: ['reasons_detail', 'kpi', 'M'], fn: (rd, kpi, M) => rateCmp(rd, 'item', kpi, M, dash.params()).filter((r) => r.key !== 'อื่นๆ').sort((a, b) => b.cur - a.cur).slice(0, 12) });
 
-  dash.draw('cmpcount', (el) => {
-    const r = rows(el.dataset.scope); if (!r) { el.textContent = '—'; return; }
-    el.textContent = T.num(el.dataset.k === 'all' ? r.length : Math.min(r.length, S[el.dataset.scope].limit));
-  });
+dash.calc('daily', { inputs: ['cube'], fn: (cube) => {
+  const m = new Map();
+  filt(cube, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
+  return [...m.values()].sort((a, b) => (a.date < b.date ? -1 : 1)).map((o) => Object.assign(o, { pct: r1(100 * o.complete / o.total) }));
+} });
 
-  dash.draw('cmptable', (tb) => {
-    const scope = tb.dataset.scope; const s = S[scope]; const d = dash.data(s.src);
-    const msg = (t, cls) => { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = s.cols; td.textContent = t; if (cls) td.className = cls; tr.appendChild(td); tb.replaceChildren(tr); };
-    if (d.status === 'error') return msg('โหลดข้อมูลตารางนี้ไม่สำเร็จ', 'err');
-    if (d.status !== 'ok' || !d.data) return msg('—');
-    const all = rows(scope);
-    document.querySelectorAll(s.more).forEach((b) => { b.hidden = all.length <= s.limit; });
-    if (!all.length) return msg('ไม่พบรายการตามเงื่อนไข');
-    const p = dash.params();
-    tb.replaceChildren(...all.slice(0, s.limit).map((r) => {
-      const tr = document.createElement('tr');
-      const c = (t, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = t; tr.appendChild(td); return td; };
-      const tt = c(''); const b = document.createElement('b'); b.className = 'tag ' + C.CLS[r.tag]; b.textContent = r.tag; tt.appendChild(b);
-      if (scope === 'shop') {
-        tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : '');
-        tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); document.querySelectorAll('#staff').forEach((x) => x.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
-        c(r.shop_code); c(r.shop); c(r.region);
-      } else {
-        c(r.shop); c(r.staff_id); c(window.TMS.names[r.staff_id] || '—');
-      }
-      c(T.num(r.prev_total), 'num'); c(T.pct(r.prev_pct), 'num');
-      c(T.num(r.cur_total), 'num'); c(T.pct(r.cur_pct), 'num' + (r.cur_pct != null && r.cur_pct < C.URGENT ? ' bad' : ''));
-      c(r.delta == null ? '—' : (r.delta > 0 ? '+' : '') + r.delta.toFixed(1), 'num' + (r.delta == null ? '' : r.delta < 0 ? ' bad' : r.delta > 0 ? ' ok' : ''));
-      c(r.top_reason || '—');
-      return tr;
-    }));
-  });
-})();
+dash.calc('tatCmp', { inputs: ['tat', 'M'], fn: (tat, M) => {
+  const order = ['0-1 วัน', '2-3 วัน', '4-7 วัน', '8-14 วัน', '15+ วัน']; const rows = filt(tat, dash.params());
+  const one = (m) => { const g = d3.rollup(rows.filter((r) => r.month === m), (v) => d3.sum(v, (r) => +r.n), (r) => r.tat_bucket); const t = d3.sum([...g.values()]) || 1;
+    return order.map((b) => ({ bucket: b, n: g.get(b) || 0, share: r1(100 * (g.get(b) || 0) / t) })); };
+  return { prev: one(M.prev), cur: one(M.cur) };
+} });
+
+const TAGS = ['เร่งด่วน', 'แย่ลง', 'ต่ำกว่าเป้า', 'ดีขึ้น', 'ผ่านเป้า', 'เอกสารน้อย', 'เดือนนี้ไม่มีงาน'];
+const TCLS = { 'เร่งด่วน': 't1', 'แย่ลง': 't2', 'ต่ำกว่าเป้า': 't3', 'ดีขึ้น': 't4', 'ผ่านเป้า': 't5', 'เอกสารน้อย': 't7', 'เดือนนี้ไม่มีงาน': 't6' };
+function tagOf(r, min) {
+  if (!r.cur_total) return 'เดือนนี้ไม่มีงาน';
+  if (r.cur_total < min) return 'เอกสารน้อย';
+  if (r.cur_pct < URGENT) return 'เร่งด่วน';
+  if (r.delta != null && r.delta <= -DROP) return 'แย่ลง';
+  if (r.cur_pct < GOAL) return 'ต่ำกว่าเป้า';
+  if (r.delta != null && r.delta >= DROP) return 'ดีขึ้น';
+  return 'ผ่านเป้า';
+}
+function compare(rows, keyFn, info, min, M) {
+  return [...d3.group(rows, keyFn)].map(([, g]) => {
+    const c = tally(g.filter((r) => r.month === M.cur)), p = tally(g.filter((r) => r.month === M.prev));
+    const rs = d3.rollup(g.filter((r) => r.month === M.cur && r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
+    const top = [...rs].sort((a, b) => b[1] - a[1])[0];
+    const o = Object.assign(info(g[0]), { prev_total: p.total, prev_pct: p.pct, cur_total: c.total, cur_pct: c.pct,
+      delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
+    o.tag = tagOf(o, min); o.rank = TAGS.indexOf(o.tag); return o;
+  }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
+}
+dash.calc('shopCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params()), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M) });
+dash.calc('staffCmp', { inputs: ['staff', 'M'], fn: (staff, M) => compare(filt(staff, dash.params(), { shop: true }), (r) => r.shop_code + '|' + r.staff_id, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region, staff_id: r.staff_id }), MIN_STAFF, M) });
+dash.calc('shopList', { inputs: ['staff'], fn: (staff) => { const m = new Map(); filt(staff, dash.params()).forEach((r) => m.set(r.shop_code, r.shop)); return [...m].sort((a, b) => a[1].localeCompare(b[1], 'th')); } });
+dash.calc('regionList', { inputs: ['cube'], fn: (cube) => [...new Set(filt(cube, dash.params(), { noRegion: true }).map((r) => r.region))].sort() });
 </script>
+
 <script>
+/* ---------- drawing ---------- */
 (function () {
-  const T = window.TM;
-  const SEG = (i) => dash.colors[i % dash.colors.length];
-  document.querySelectorAll('#f-month').forEach((s) => s.addEventListener('change', () => dash.setParams({ month: s.value })));
-  document.querySelectorAll('#f-rr').forEach((s) => s.addEventListener('change', () => dash.setParams({ rr: s.value, region: '', shop: '' })));
-  document.querySelectorAll('#f-reset').forEach((b) => b.addEventListener('click', () => dash.resetParams()));
-  document.querySelectorAll('.rr[data-rr]').forEach((b) => b.addEventListener('click', () => { const p = dash.params(); dash.setParams({ rr: p.rr === b.dataset.rr ? '' : b.dataset.rr, region: '', shop: '' }); }));
+  const ok = (...ids) => ids.map((id) => dash.data(id)).every((d) => d.status === 'ok' && d.data);
+  const D = (id) => dash.data(id).data;
+  const scope = () => { const p = dash.params(); return p.shop ? 'สาขาที่เลือก' : p.region ? p.region : p.rr ? p.rr : 'ทุกภาค'; };
+
+  /* filters */
+  const P = (k) => document.getElementById(k);
+  P('f-rr').addEventListener('change', (e) => dash.setParams({ rr: e.target.value, region: '', shop: '' }));
+  P('f-region').addEventListener('change', (e) => dash.setParams({ region: e.target.value, shop: '' }));
+  P('f-shop').addEventListener('change', (e) => dash.setParams({ shop: e.target.value }));
+  P('f-reset').addEventListener('click', () => dash.resetParams());
+
   dash.onData(() => {
-    const p = dash.params();
-    document.querySelectorAll('#f-month').forEach((s) => { s.value = p.month || ''; });
-    document.querySelectorAll('#f-rr').forEach((s) => { s.value = p.rr || ''; });
-    document.querySelectorAll('.rr[data-rr]').forEach((b) => { b.classList.toggle('on', p.rr === b.dataset.rr); b.setAttribute('aria-pressed', String(p.rr === b.dataset.rr)); });
+    const p = dash.params(); P('f-rr').value = p.rr || '';
+    if (ok('regionList')) { const s = P('f-region'); s.replaceChildren(new Option('ทั้งหมด', ''), ...D('regionList').map((r) => new Option(r, r))); s.value = p.region || ''; }
+    if (ok('shopList')) { const s = P('f-shop'); s.replaceChildren(new Option('ทุกสาขา', ''), ...D('shopList').map(([c, n]) => new Option(n + ' (' + c + ')', c))); s.value = p.shop || ''; }
+    P('f-note').textContent = 'ตัวกรองมีผลทั้งหน้า';
+    if (ok('M')) {
+      const M = D('M');
+      document.querySelectorAll('.m-prev').forEach((e) => { e.textContent = ml(M.prev); });
+      document.querySelectorAll('.m-cur').forEach((e) => { e.textContent = ml(M.cur); });
+    }
+    drawAll();
   });
 
-  dash.draw('regionsel', (sel) => {
-    const g = dash.data('regionStats'); const p = dash.params();
-    const names = g.status === 'ok' && g.data ? g.data.map((r) => r.region).sort() : [];
-    sel.replaceChildren(new Option('ทั้งหมด', ''), ...names.map((n) => new Option(n, n)));
-    sel.value = p.region || '';
-    sel.onchange = () => dash.setParams({ region: sel.value, shop: '' });
-  });
-
-  dash.draw('sw', (el) => { el.style.background = T.COLORS[el.dataset.k]; });
-
-  dash.draw('kpi', (el) => {
-    const k = dash.data('kpi'); T.unskel(el, k);
-    if (k.status !== 'ok' || !k.data) { el.textContent = '—'; return; }
-    const f = el.dataset.field; const v = k.data[0][f];
-    el.textContent = f.startsWith('pct') ? T.pct(v) : f === 'avg_tat' ? v.toFixed(1) : T.num(v);
-  });
-
-  dash.draw('topreason', (el) => {
-    const d = dash.data('reasonsMain'); T.unskel(el, d);
-    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
-    const r = d.data[0]; el.textContent = el.dataset.field === 'share' ? T.pct(r.share) : r.reason;
-  });
-  dash.draw('topitem', (el) => {
-    const d = dash.data('reasonsDetail');
-    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
-    const r = d.data[+el.dataset.row]; el.textContent = r ? r.item : '—';
-  });
-  dash.draw('toprg', (el) => {
-    const d = dash.data('regionStats'); T.unskel(el, d);
-    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
-    const r = d.data[0]; const f = el.dataset.field; el.textContent = f.startsWith('pct') ? T.pct(r[f]) : r[f];
-  });
-  dash.draw('ins', (el) => {
-    const d = dash.data('insights');
-    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
-    const f = el.dataset.field; const v = d.data[0][f];
-    el.textContent = v == null ? '—' : /pct|share/.test(f) ? T.pct(v) : typeof v === 'number' ? T.num(v) : v;
-  });
-
-  dash.draw('bm', (el) => {
-    const d = dash.data('bymonth');
-    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
-    const m = el.dataset.where.split('=')[1]; const r = d.data.find((x) => x.month === m);
-    el.textContent = r && r.total ? T.pct(r.pct_complete) : '—';
-  });
-  dash.draw('mdelta', (el) => {
-    const d = dash.data('mdelta');
-    if (d.status !== 'ok' || d.data == null || isNaN(d.data)) { el.textContent = '—'; el.className = ''; return; }
-    el.textContent = (d.data > 0 ? '+' : '') + d.data.toFixed(1);
-    el.className = d.data > 0 ? 'ok' : d.data < 0 ? 'bad' : '';
-  });
-  dash.draw('rrv', (el) => {
-    const d = dash.data('rrStats');
-    if (d.status !== 'ok' || !d.data) { el.textContent = '—'; return; }
-    const rr = el.dataset.where.split('=')[1]; const r = d.data.find((x) => x.rr === rr); const f = el.dataset.field;
-    el.textContent = !r || !r.total ? '—' : f.startsWith('pct') ? T.pct(r[f]) : T.num(r[f]);
-  });
-
-  function strip(el, segs) {
-    el.replaceChildren(); const tp = T.tip(el);
-    segs.forEach((s) => { const d = document.createElement('div'); d.style.width = s.share + '%'; d.style.background = s.color;
-      d.addEventListener('mousemove', (ev) => tp.show(ev, s.tip)); d.addEventListener('mouseleave', () => tp.hide()); el.appendChild(d); });
+  function drawAll() {
+    if (!ok('M', 'kpi')) return;
+    const M = D('M'), K = D('kpi');
+    P('period').textContent = `เทียบ ${ml(M.cur)} กับ ${ml(M.prev)} · ${scope()} · ${DATA_NOTE}`;
+    P('foot').textContent = `ข้อมูล: ${DATA_NOTE} · เดือนล่าสุดอาจยังไม่ครบเดือน · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน`;
+    gauge(K, M); verdict(K, M); insights(K, M);
+    if (ok('regionCmp')) { dumbbell(P('db-region'), D('regionCmp'), M, (r) => dash.setParams({ region: dash.params().region === r.key ? '' : r.key, shop: '' }), dash.params().region); readRegion(D('regionCmp')); }
+    if (ok('dimCmp')) { const dc = D('dimCmp'); ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => dumbbell(P('db-' + k), dc[k], M)); }
+    if (ok('reasonCmp')) { paired(P('pb-reason'), D('reasonCmp')); readReason(D('reasonCmp'), M); }
+    if (ok('itemCmp')) paired(P('pb-item'), D('itemCmp'));
+    if (ok('daily')) daily(P('daily'), D('daily'), M);
+    if (ok('tatCmp')) tatBox(D('tatCmp'), M, K);
+    targets(M);
   }
-  function keys(el, rows, o) {
-    el.replaceChildren();
-    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
-    rows.forEach((r, i) => {
-      const k = document.createElement('div'); k.className = 'k';
-      const s = document.createElement('i'); s.className = 's'; s.style.background = SEG(i);
-      const l = document.createElement('span'); l.textContent = r[o.label];
-      const n = document.createElement('span'); n.className = 'nn'; n.textContent = T.num(r.n);
-      n.setAttribute('data-source', o.src); n.setAttribute('data-field', 'n'); n.setAttribute('data-row', String(i));
-      const p = document.createElement('span'); p.className = 'pp'; p.textContent = T.pct(r.share);
-      p.setAttribute('data-source', o.src); p.setAttribute('data-field', 'share'); p.setAttribute('data-row', String(i));
-      k.append(s, l, n, p); el.appendChild(k);
+
+  /* hero gauge */
+  function gauge(K, M) {
+    const box = P('gauge'); box.replaceChildren();
+    const W = 320, H = 230, cx = 160, cy = 150, R = 132, lo = 50, hi = 100;
+    const ang = d3.scaleLinear().domain([lo, hi]).range([-120, 120]).clamp(true);
+    const rad = (d) => d * Math.PI / 180;
+    const arc = d3.arc().innerRadius(R - 18).outerRadius(R).cornerRadius(9);
+    const svg = d3.select(box).append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
+      .attr('aria-label', `% สมบูรณ์ ${ml(M.cur)} ${pct(K.cur.pct)} เทียบ ${ml(M.prev)} ${pct(K.prev.pct)} เป้า ${GOAL}%`);
+    const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
+    g.append('path').attr('d', arc({ startAngle: rad(-120), endAngle: rad(120) })).attr('fill', '#22345a');
+    const col = K.cur.pct >= GOAL ? 'var(--good)' : K.cur.pct >= URGENT ? 'var(--warn)' : 'var(--bad)';
+    if (K.cur.pct != null) g.append('path').attr('d', arc({ startAngle: rad(-120), endAngle: rad(ang(K.cur.pct)) })).style('fill', col);
+    const tick = (v, color, w, out) => { const a = rad(ang(v) - 90);
+      g.append('line').attr('x1', (R - 24) * Math.cos(a)).attr('y1', (R - 24) * Math.sin(a)).attr('x2', (R + out) * Math.cos(a)).attr('y2', (R + out) * Math.sin(a)).style('stroke', color).attr('stroke-width', w).attr('stroke-linecap', 'round'); };
+    if (K.prev.pct != null) tick(K.prev.pct, 'var(--prev)', 4, 4);
+    tick(GOAL, '#ffffff', 2, 8);
+    [lo, 75, hi].forEach((v) => { const a = rad(ang(v) - 90); g.append('text').attr('x', (R + 14) * Math.cos(a)).attr('y', (R + 14) * Math.sin(a) + 4).attr('text-anchor', v === lo ? 'end' : v === hi ? 'start' : 'middle').style('fill', '#6f7f99').style('font-size', '11px').text(v + '%'); });
+    const c = el('div', 'center');
+    c.append(el('div', 'big', pct(K.cur.pct)), el('div', 'cap', '% สมบูรณ์ ' + ml(M.cur)));
+    const d = K.cur.pct != null && K.prev.pct != null ? r1(K.cur.pct - K.prev.pct) : null;
+    c.append(el('span', 'chip ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat'), d == null ? '—' : `${arrow(d)} ${Math.abs(d).toFixed(1)} จุด จาก ${ml(M.prev)}`));
+    const lg = el('div', 'glegend');
+    const item = (sw, txt) => { const s = el('span'); const i = el('i'); i.style.cssText = sw; s.append(i, txt); lg.append(s); };
+    item('background:' + col, ml(M.cur) + ' ' + pct(K.cur.pct));
+    item('background:var(--prev);width:4px;border-radius:1px', ml(M.prev) + ' ' + pct(K.prev.pct));
+    item('background:#fff;width:2px;border-radius:0', 'เป้า ' + GOAL + '%');
+    box.append(c, lg);
+  }
+
+  /* hero verdict + KPI table */
+  function verdict(K, M) {
+    const v = P('verdict'); v.replaceChildren();
+    const d = r1(K.cur.pct - K.prev.pct); const gap = r1(GOAL - K.cur.pct);
+    const head = d >= 1 ? 'ดีขึ้นจากเดือนก่อน' : d <= -1 ? 'แย่ลงจากเดือนก่อน' : 'ทรงตัวจากเดือนก่อน';
+    v.append(el('h2', null, `${scope()}: ${head}`));
+    const p1 = el('p');
+    p1.append('% สมบูรณ์ ', el('b', null, `${pct(K.prev.pct)} → ${pct(K.cur.pct)}`), ` (${sgn(d, ' จุด')}) `);
+    p1.append(gap > 0 ? `ยังต่ำกว่าเป้า ${GOAL}% อยู่ ${gap.toFixed(1)} จุด` : `ผ่านเป้า ${GOAL}% แล้ว`);
+    const lost = Math.round(K.cur.total * Math.max(0, gap) / 100);
+    const p2 = el('p');
+    if (gap > 0) p2.append('ถ้าจะถึงเป้าเดือนนี้ ต้องลดเอกสารไม่สมบูรณ์ลงประมาณ ', el('b', null, num(lost) + ' ฉบับ'), ` จาก ${num(K.cur.bad)} ฉบับ`);
+    else p2.append(`มีเอกสารไม่สมบูรณ์ ${num(K.cur.bad)} ฉบับ จาก ${num(K.cur.total)} ฉบับ`);
+    v.append(p1, p2);
+    const t = el('table', 'kt'); const hr = el('tr');
+    ['', ml(M.prev), ml(M.cur), 'เปลี่ยน', 'ความหมาย'].forEach((h) => hr.append(el('th', null, h))); t.append(hr);
+    const rows = [
+      ['% สมบูรณ์', K.prev.pct, K.cur.pct, true, pct],
+      ['% X Flag (ไม่แนบ/ไม่ครบ)', K.prev.pct_x, K.cur.pct_x, false, pct],
+      ['% ไม่ผ่านเงื่อนไข', K.prev.pct_inc, K.cur.pct_inc, false, pct],
+      ['% ตรวจเกิน 7 วัน', K.prev.late, K.cur.late, false, pct],
+      ['วันตรวจเฉลี่ย', K.prev.avg_tat, K.cur.avg_tat, false, (x) => (x == null ? '—' : x.toFixed(1))],
+      ['จำนวนเอกสาร', K.prev.total, K.cur.total, null, num]
+    ];
+    rows.forEach(([name, a, b, higherGood, f]) => {
+      const tr = el('tr'); const dd = a != null && b != null ? r1(b - a) : null;
+      tr.append(el('td', null, name), el('td', null, f(a)), el('td', null, f(b)));
+      let cls = 'z', mean = '—';
+      if (higherGood === null) { mean = 'เดือนนี้อาจยังไม่ครบเดือน'; }
+      else if (dd != null && Math.abs(dd) >= 0.1) { const good = higherGood ? dd > 0 : dd < 0; cls = good ? 'g' : 'r'; mean = good ? 'ดีขึ้น' : 'แย่ลง'; }
+      else mean = 'ทรงตัว';
+      tr.append(el('td', 'd ' + cls, higherGood === null ? (dd == null ? '—' : (dd > 0 ? '+' : '') + num(dd)) : dd == null ? '—' : arrow(dd) + ' ' + Math.abs(dd).toFixed(1)), el('td', 'd ' + cls, mean));
+      t.append(tr);
+    });
+    v.append(t);
+  }
+
+  /* insights */
+  function insights(K, M) {
+    const ul = P('ins'); ul.replaceChildren();
+    const add = (cls, title, body, act) => { const li = el('li', cls); li.append(el('h3', null, title), el('p', null, body)); if (act) li.append(el('p', 'act', '→ ' + act)); ul.append(li); };
+    const d = r1(K.cur.pct - K.prev.pct);
+    add(d < 0 ? 'bad' : 'good', d < 0 ? `% สมบูรณ์ลดลง ${Math.abs(d).toFixed(1)} จุด` : `% สมบูรณ์เพิ่มขึ้น ${d.toFixed(1)} จุด`,
+      `${ml(M.prev)} ${pct(K.prev.pct)} → ${ml(M.cur)} ${pct(K.cur.pct)} · X Flag ${pct(K.prev.pct_x)} → ${pct(K.cur.pct_x)} · ไม่ผ่านเงื่อนไข ${pct(K.prev.pct_inc)} → ${pct(K.cur.pct_inc)}`,
+      K.cur.pct_x - K.prev.pct_x >= K.cur.pct_inc - K.prev.pct_inc
+        ? 'ตัวที่ขยับมากกว่าคือ X Flag (เอกสารไม่แนบ/ไม่ครบ) แก้ที่หน้าร้านด้วยการบังคับแนบเอกสารก่อนกดส่ง'
+        : 'ตัวที่ขยับมากกว่าคือเอกสารไม่ผ่านเงื่อนไข ทบทวนเงื่อนไขเอกสารกับหน้าร้าน');
+    if (ok('reasonCmp')) {
+      const rc = D('reasonCmp'); const worst = [...rc].sort((a, b) => b.delta - a.delta)[0]; const top = rc[0];
+      if (top) add(worst && worst.delta > 0 ? 'bad' : 'good', `สาเหตุอันดับหนึ่ง: ${top.key}`,
+        `เกิด ${top.prev.toFixed(1)} → ${top.cur.toFixed(1)} ครั้งต่อ 100 ฉบับ` + (worst && worst.delta > 0 && worst.key !== top.key ? ` · ที่เพิ่มมากสุดคือ ${worst.key} (${sgn(worst.delta)})` : ''),
+        'ให้ระบบขายบังคับแนบเอกสารหลักก่อนส่ง (hard stop) และแจ้งหน้าร้านทันทีที่ถูก Flag');
+    }
+    if (ok('regionCmp')) {
+      const rg = D('regionCmp').filter((r) => r.cur_n >= 30); const drop = [...rg].sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0]; const best = [...rg].sort((a, b) => (b.delta ?? 0) - (a.delta ?? 0))[0];
+      if (drop) add(drop.delta < 0 ? 'bad' : 'good', `ภาคที่แย่ลงมากสุด: ${drop.key}`,
+        `${pct(drop.prev)} → ${pct(drop.cur)} (${sgn(drop.delta, ' จุด')})` + (best && best.delta > 0 ? ` · ดีขึ้นมากสุดคือ ${best.key} (${sgn(best.delta, ' จุด')})` : ''),
+        'ให้ Area Manager ของภาคที่แย่ลงดูรายสาขาสถานะ "เร่งด่วน" และ "แย่ลง" ในตารางด้านล่าง');
+    }
+    if (ok('dimCmp')) {
+      const ch = D('dimCmp').channel; const w = ch[0];
+      if (w) add(w.cur < GOAL ? 'warn' : 'good', `ช่องทางที่ต่ำสุด: ${w.key}`, `${pct(w.prev)} → ${pct(w.cur)} (${sgn(w.delta, ' จุด')}) จาก ${num(w.cur_n)} ฉบับเดือนนี้`, 'ทบทวนขั้นตอนรับเอกสารของช่องทางนี้');
+      const sd = D('dimCmp').smartdoc; const y = sd.find((r) => r.key === 'Yes'), n = sd.find((r) => r.key === 'No');
+      if (y && n) add(y.cur < n.cur ? 'warn' : 'good', 'Smart Doc', `ทำ Smart Doc ${pct(y.cur)} (${sgn(y.delta, ' จุด')}) · ไม่ทำ ${pct(n.cur)} (${sgn(n.delta, ' จุด')})`,
+        y.cur < n.cur ? 'งานที่ทำ Smart Doc สมบูรณ์น้อยกว่า ตรวจความชัดของภาพสแกนและการแนบครบหน้า' : 'Smart Doc ช่วยให้สมบูรณ์ขึ้น ผลักดันให้ใช้มากขึ้น');
+    }
+    const ld = r1(K.cur.late - K.prev.late);
+    add(ld > 0 ? 'bad' : 'good', ld > 0 ? 'ตรวจช้าลง' : 'ตรวจเร็วขึ้น', `เอกสารที่ใช้เวลาเกิน 7 วัน ${pct(K.prev.late)} → ${pct(K.cur.late)} · เฉลี่ย ${K.prev.avg_tat} → ${K.cur.avg_tat} วัน`,
+      'ตั้ง SLA ตรวจเสร็จภายใน 7 วัน (เดือนล่าสุดยังไม่ครบเดือน งานที่ยังรอตรวจอาจทำให้ตัวเลขดูดีกว่าความจริง)');
+  }
+
+  /* dumbbell */
+  function dumbbell(box, rows, M, onClick, selected) {
+    box.replaceChildren(); if (!rows.length) { box.textContent = 'ไม่มีข้อมูลในตัวกรองนี้'; return; }
+    const tp = tip(box);
+    const vals = rows.flatMap((r) => [r.prev, r.cur]).filter((v) => v != null);
+    const lo = Math.max(0, Math.floor(Math.min(GOAL - 5, d3.min(vals)) / 5) * 5), hi = 100;
+    const x = (v) => (100 * (v - lo) / (hi - lo)) + '%';
+    rows.forEach((r) => {
+      const row = el('div', 'row' + (selected === r.key ? ' sel' : ''));
+      const lab = el('div', 'lab', r.label); if (r.sub) lab.append(el('small', null, r.sub));
+      const lane = el('div', 'lane'); const g = el('div', 'goal'); g.style.left = x(GOAL); lane.append(g);
+      const col = r.delta == null ? 'var(--muted)' : r.delta >= 0 ? 'var(--good)' : 'var(--bad)';
+      if (r.prev != null && r.cur != null) { const b = el('div', 'bar'); b.style.left = x(Math.min(r.prev, r.cur)); b.style.width = (100 * Math.abs(r.cur - r.prev) / (hi - lo)) + '%'; b.style.background = col; b.style.opacity = .5; lane.append(b); }
+      if (r.prev != null) { const a = el('div', 'dot'); a.style.left = x(r.prev); a.style.background = 'var(--prev)'; lane.append(a); }
+      if (r.cur != null) { const c = el('div', 'dot'); c.style.left = x(r.cur); c.style.background = col; lane.append(c); }
+      const val = el('div', 'val'); val.append(el('b', null, pct(r.cur)), document.createElement('br'));
+      val.append(el('span', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', r.delta == null ? 'ไม่มีข้อมูลเดือนก่อน' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+      row.append(lab, lane, val);
+      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.label], [ml(M.prev), `${pct(r.prev)} (${num(r.prev_n)} ฉบับ)`], [ml(M.cur), `${pct(r.cur)} (${num(r.cur_n)} ฉบับ)`], ['เปลี่ยน', sgn(r.delta, ' จุด')]]));
+      row.addEventListener('mouseleave', () => tp.hide());
+      if (onClick) row.addEventListener('click', () => onClick(r)); else row.style.cursor = 'default';
+      box.append(row);
+    });
+    const ax = el('div', 'axis'); ax.append(el('div')); const tk = el('div', 'ticks');
+    d3.range(lo, hi + 1, (hi - lo) > 30 ? 10 : 5).forEach((v) => { const s = el('span', null, v + '%'); s.style.left = x(v); tk.append(s); });
+    ax.append(tk, el('div')); box.append(ax);
+  }
+  function readRegion(rows) {
+    const r = P('read-region'); r.replaceChildren(); const up = rows.filter((x) => x.delta > 0).length, dn = rows.filter((x) => x.delta < 0).length;
+    const below = rows.filter((x) => x.cur != null && x.cur < GOAL).length;
+    r.append('อ่านผล: ', el('b', null, `แย่ลง ${dn} ภาค`), ` · ดีขึ้น ${up} ภาค · ต่ำกว่าเป้า ${GOAL}% อยู่ ${below} จาก ${rows.length} ภาค`);
+    if (dn > up) r.append(' ส่วนใหญ่แย่ลง แปลว่าปัญหาเป็นวงกว้าง ไม่ใช่แค่บางพื้นที่ ควรแก้ที่ระบบหรือขั้นตอนกลาง');
+    else if (dn) r.append(' แย่ลงเฉพาะบางภาค ควรเจาะดูรายสาขาของภาคนั้น');
+  }
+
+  /* paired bars */
+  function paired(box, rows) {
+    box.replaceChildren(); if (!rows.length) { box.textContent = 'ไม่มีข้อมูล'; return; }
+    const max = d3.max(rows, (r) => Math.max(r.prev, r.cur)) || 1; const tp = tip(box);
+    rows.forEach((r) => {
+      const row = el('div', 'row'); const bars = el('div', 'bars');
+      const a = el('div', 'b'); a.style.width = (100 * r.prev / max) + '%'; a.style.background = 'var(--prev)';
+      const b = el('div', 'b'); b.style.width = (100 * r.cur / max) + '%'; b.style.background = 'var(--ink)'; bars.append(a, b);
+      const v = el('div', 'val'); v.append(el('b', null, r.cur.toFixed(1)), document.createElement('br'), el('span', r.delta > 0 ? 'down' : r.delta < 0 ? 'up' : '', `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`));
+      row.append(el('div', 'lab', r.key), bars, v);
+      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.key], ['เดือนก่อน', `${r.prev.toFixed(1)} ต่อ 100 ฉบับ (${num(r.prev_n)})`], ['เดือนนี้', `${r.cur.toFixed(1)} ต่อ 100 ฉบับ (${num(r.cur_n)})`]]));
+      row.addEventListener('mouseleave', () => tp.hide());
+      box.append(row);
     });
   }
+  function readReason(rows) {
+    const r = P('read-reason'); r.replaceChildren(); const up = rows.filter((x) => x.delta >= 0.1).sort((a, b) => b.delta - a.delta);
+    if (!up.length) { r.append('อ่านผล: ไม่มีสาเหตุไหนเกิดบ่อยขึ้น'); return; }
+    r.append('อ่านผล: เกิดบ่อยขึ้น ', el('b', null, up.map((x) => `${x.key} (${sgn(x.delta)})`).join(', ')), ' ตัวเลขแดง ▲ คือเกิดบ่อยขึ้น (แย่ลง) เขียว ▼ คือลดลง (ดีขึ้น)');
+  }
 
-  dash.draw('split', (el) => {
-    const k = dash.data('kpi'); if (k.status !== 'ok' || !k.data) { el.replaceChildren(); return; }
-    const r = k.data[0];
-    strip(el, [['complete', 'สมบูรณ์', r.pct_complete, r.complete], ['incomplete', 'ไม่สมบูรณ์', r.pct_incomplete, r.incomplete], ['xflag', 'X Flag', r.pct_xflag, r.xflag]]
-      .map(([key, name, share, n]) => ({ share, color: T.COLORS[key], tip: [[name], ['จำนวน', T.num(n)], ['สัดส่วน', T.pct(share)]] })));
-  });
-  dash.draw('rstrip', (el) => {
-    const d = dash.data('reasonsMain'); if (d.status !== 'ok' || !d.data) { el.replaceChildren(); return; }
-    strip(el, d.data.map((r, i) => ({ share: r.share, color: SEG(i), tip: [[r.reason], ['จำนวน', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] })));
-  });
-  dash.draw('rkeys', (el) => { const d = dash.data('reasonsMain'); if (T.placeholder(el, d)) return; keys(el, d.data, { label: 'reason', src: 'reasonsMain' }); });
-  dash.draw('tstrip', (el) => {
-    const d = dash.data('tatDist'); if (d.status !== 'ok' || !d.data) { el.replaceChildren(); return; }
-    strip(el, d.data.map((r, i) => ({ share: r.share, color: SEG(i), tip: [[r.bucket], ['เอกสาร', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] })));
-  });
-  dash.draw('tkeys', (el) => { const d = dash.data('tatDist'); if (T.placeholder(el, d)) return; keys(el, d.data, { label: 'bucket', src: 'tatDist' }); });
-
-  dash.draw('combo', (el) => {
-    const d = dash.data('daily'); if (T.placeholder(el, d)) return;
-    const rows = d.data; el.replaceChildren(); const tp = T.tip(el);
-    if (!rows.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
-    const W = el.clientWidth || 600, H = 260, m = { t: 10, r: 44, b: 24, l: 44 };
-    const parse = d3.utcParse('%Y-%m-%d'); const pf = d3.utcFormat('%d/%m');
+  /* daily */
+  function daily(box, rows, M) {
+    box.replaceChildren(); if (!rows.length) return; const tp = tip(box);
+    const W = box.clientWidth || 800, H = 270, m = { t: 14, r: 46, b: 28, l: 44 };
+    const parse = d3.utcParse('%Y-%m-%d');
     const x = d3.scaleBand().domain(rows.map((r) => r.date)).range([m.l, W - m.r]).padding(0.2);
     const y = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.total)]).nice().range([H - m.b, m.t]);
-    const y2 = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.pct_bad)]).nice().range([H - m.b, m.t]);
-    const svg = d3.select(el).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', 'จำนวนเอกสารรายวันเป็นแท่ง และเปอร์เซ็นต์ไม่สมบูรณ์รวมเป็นเส้น');
-    svg.append('g').attr('class', 'gridl').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)).tickFormat(''));
-    svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format('~s')));
+    const lo = Math.min(70, Math.floor(d3.min(rows, (r) => r.pct) / 5) * 5);
+    const y2 = d3.scaleLinear().domain([lo, 100]).range([H - m.b, m.t]);
+    const svg = d3.select(box).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', 'จำนวนเอกสารและ % สมบูรณ์รายวัน');
+    svg.append('g').attr('class', 'gridl').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)).tickFormat(''));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('~s')));
     svg.append('g').attr('class', 'axis').attr('transform', `translate(${W - m.r},0)`).call(d3.axisRight(y2).ticks(5).tickFormat((v) => v + '%'));
-    const step = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((W - 90) / 48))));
-    svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(rows.filter((_, i) => i % step === 0).map((r) => r.date)).tickFormat((s) => pf(parse(s))));
-    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.total)).attr('height', (r) => y(0) - y(r.total)).style('fill', T.COLORS.complete);
+    const step = Math.max(1, Math.ceil(rows.length / Math.max(2, Math.floor((W - 100) / 52))));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(rows.filter((_, i) => i % step === 0).map((r) => r.date)).tickFormat((s) => d3.utcFormat('%d/%m')(parse(s))));
+    svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.total)).attr('height', (r) => y(0) - y(r.total))
+      .style('fill', (r) => (r.month === M.cur ? '#c9d5e6' : '#e1e7ef'));
+    const split = rows.find((r) => r.month === M.cur);
+    if (split) { const sx = x(split.date) - x.step() * x.padding() / 2; svg.append('line').attr('x1', sx).attr('x2', sx).attr('y1', m.t).attr('y2', H - m.b).style('stroke', '#8a97a8');
+      svg.append('text').attr('x', sx - 6).attr('y', m.t + 10).attr('text-anchor', 'end').text(ml(M.prev)); svg.append('text').attr('x', sx + 6).attr('y', m.t + 10).text(ml(M.cur)); }
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y2(GOAL)).attr('y2', y2(GOAL)).style('stroke', '#8a97a8').attr('stroke-dasharray', '5 4');
     const cx = (r) => x(r.date) + x.bandwidth() / 2;
-    svg.append('path').datum(rows).attr('fill', 'none').style('stroke', 'var(--color-bad)').attr('stroke-width', 2).attr('d', d3.line().x(cx).y((r) => y2(r.pct_bad)));
-    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', cx).attr('cy', (r) => y2(r.pct_bad)).attr('r', 2.5).style('fill', 'var(--color-bad)');
+    [M.prev, M.cur].forEach((mm) => { const seg = rows.filter((r) => r.month === mm);
+      svg.append('path').datum(seg).attr('fill', 'none').style('stroke', 'var(--ink)').attr('stroke-width', 2).attr('d', d3.line().x(cx).y((r) => y2(r.pct)));
+      const avg = r1(100 * d3.sum(seg, (r) => r.complete) / (d3.sum(seg, (r) => r.total) || 1));
+      if (seg.length) { svg.append('line').attr('x1', x(seg[0].date)).attr('x2', x(seg[seg.length - 1].date) + x.bandwidth()).attr('y1', y2(avg)).attr('y2', y2(avg)).style('stroke', mm === M.cur ? 'var(--bad)' : 'var(--prev)').attr('stroke-width', 3).attr('opacity', .8);
+        svg.append('text').attr('x', x(seg[seg.length - 1].date) + x.bandwidth()).attr('y', y2(avg) - 6).attr('text-anchor', 'end').style('fill', mm === M.cur ? 'var(--bad)' : 'var(--muted)').style('font-weight', 600).text('เฉลี่ย ' + pct(avg)); }
+    });
+    svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', cx).attr('cy', (r) => y2(r.pct)).attr('r', 2.5).style('fill', (r) => (r.pct < URGENT ? 'var(--bad)' : 'var(--ink)'));
     svg.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.date) - x.step() * x.padding() / 2).attr('width', x.step()).attr('y', m.t).attr('height', H - m.b - m.t).style('fill', 'transparent')
-      .on('mousemove', (ev, r) => tp.show(ev, [[d3.utcFormat('%d/%m/%Y')(parse(r.date))], ['เอกสาร', T.num(r.total)], ['สมบูรณ์', T.num(r.complete)], ['ไม่สมบูรณ์', T.num(r.incomplete)], ['X Flag', T.num(r.xflag)], ['% ไม่สมบูรณ์รวม', T.pct(r.pct_bad)]]))
-      .on('mouseleave', () => tp.hide());
-  });
-
-  dash.draw('regionbars', (el) => {
-    const d = dash.data('regionStats'); if (T.placeholder(el, d)) return;
-    el.replaceChildren(); const p = dash.params();
-    if (!d.data.length) { el.textContent = 'ไม่มีข้อมูลในช่วงที่เลือก'; return; }
-    const tp = T.tip(el);
-    d.data.forEach((r, i) => {
-      const row = document.createElement('div'); row.className = 'r' + (p.region === r.region ? ' sel' : '');
-      const l = document.createElement('div'); l.textContent = r.region;
-      const bar = document.createElement('div'); bar.className = 'bar';
-      [['complete', r.complete], ['incomplete', r.incomplete], ['xflag', r.xflag]].forEach(([k, n]) => { const s = document.createElement('div'); s.style.width = (100 * n / (r.total || 1)) + '%'; s.style.background = T.COLORS[k]; bar.appendChild(s); });
-      const v = document.createElement('div'); v.className = 'p'; v.textContent = T.pct(r.pct_complete);
-      v.setAttribute('data-source', 'regionStats'); v.setAttribute('data-field', 'pct_complete'); v.setAttribute('data-row', String(i));
-      row.append(l, bar, v);
-      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.region + ' (' + r.rr + ')'], ['เอกสาร', T.num(r.total)], ['% สมบูรณ์', T.pct(r.pct_complete)], ['ไม่สมบูรณ์', T.num(r.incomplete)], ['X Flag', T.num(r.xflag)], ['วันตรวจเฉลี่ย', r.avg_tat.toFixed(1)]]));
-      row.addEventListener('mouseleave', () => tp.hide());
-      row.addEventListener('click', () => dash.setParams({ region: p.region === r.region ? '' : r.region, shop: '' }));
-      el.appendChild(row);
-    });
-  });
-
-  dash.draw('reasonsdetail', (el) => {
-    const d = dash.data('reasonsDetail'); if (T.placeholder(el, d)) return;
-    T.hbars(el, d.data, { label: 'item', value: 'n', color: 'var(--color-warn)', src: 'reasonsDetail', field: 'n', main: (r) => T.num(r.n), tip: (r) => [[r.item], ['จำนวนรายการ', T.num(r.n)], ['สัดส่วน', T.pct(r.share)]] });
-  });
-
-  dash.draw('dots', (el) => {
-    const d = dash.data('dims'); const k = dash.data('kpi'); if (T.placeholder(el, d)) return;
-    el.replaceChildren(); const tp = T.tip(el);
-    const max = Math.max(5, Math.ceil((d3.max(d.data, (r) => r.pct_bad) || 0) / 5) * 5);
-    const avg = k.status === 'ok' && k.data ? k.data[0].pct_bad : null;
-    [['channel', 'Channel'], ['order_type', 'Order Type'], ['smartdoc', 'Smart Doc'], ['delivery', 'ประเภทการนำส่ง']].forEach(([dim, name]) => {
-      const g = document.createElement('div'); g.className = 'g'; g.textContent = name; el.appendChild(g);
-      d.data.forEach((r, i) => {
-        if (r.dim !== dim) return;
-        const row = document.createElement('div'); row.className = 'r';
-        const l = document.createElement('div'); l.textContent = r.value;
-        const lane = document.createElement('div'); lane.className = 'lane';
-        if (avg != null) { const a = document.createElement('div'); a.className = 'avg'; a.style.left = (100 * avg / max) + '%'; lane.appendChild(a); }
-        const dot = document.createElement('div'); dot.className = 'd'; dot.style.left = (100 * r.pct_bad / max) + '%'; dot.style.background = avg != null && r.pct_bad > avg ? 'var(--color-bad)' : dash.colors[0]; lane.appendChild(dot);
-        const v = document.createElement('div'); v.className = 'p';
-        const vs = document.createElement('span'); vs.textContent = T.pct(r.pct_bad); vs.setAttribute('data-source', 'dims'); vs.setAttribute('data-field', 'pct_bad'); vs.setAttribute('data-row', String(i));
-        v.append(vs, document.createTextNode(' (' + T.num(r.total) + ')'));
-        row.append(l, lane, v);
-        row.addEventListener('mousemove', (ev) => tp.show(ev, [[name + ': ' + r.value], ['เอกสาร', T.num(r.total)], ['ไม่สมบูรณ์รวม', T.num(r.bad)], ['%', T.pct(r.pct_bad)]]));
-        row.addEventListener('mouseleave', () => tp.hide());
-        el.appendChild(row);
-      });
-    });
-  });
-
-  dash.draw('shopsel', (sel) => {
-    const g = dash.data('shopList'); const p = dash.params();
-    const list = g.status === 'ok' && g.data ? g.data : [];
-    sel.replaceChildren(new Option('ทุกสาขา', ''), ...list.map((r) => new Option(r.shop + ' (' + r.shop_code + ')', r.shop_code)));
-    sel.value = p.shop || '';
-    sel.onchange = () => dash.setParams({ shop: sel.value });
-  });
-
-
-
-  function cell(tr, text, cls) { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.appendChild(td); return td; }
-  function tableMsg(tb, d, cols) {
-    if (d.status === 'ok' && d.data) return false;
-    const tr = document.createElement('tr'); const td = cell(tr, d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—', d.status === 'error' ? 'err' : ''); td.colSpan = cols; tb.replaceChildren(tr); return true;
+      .on('mousemove', (ev, r) => tp.show(ev, [[d3.utcFormat('%d/%m/%Y')(parse(r.date))], ['% สมบูรณ์', pct(r.pct)], ['เอกสาร', num(r.total)]])).on('mouseleave', () => tp.hide());
+    const rd = P('read-daily'); rd.replaceChildren();
+    const wk = (mm) => rows.filter((r) => r.month === mm); const lastWeek = wk(M.cur).slice(-7);
+    const lw = r1(100 * d3.sum(lastWeek, (r) => r.complete) / (d3.sum(lastWeek, (r) => r.total) || 1));
+    rd.append('อ่านผล: 7 วันล่าสุดสมบูรณ์ ', el('b', null, pct(lw)), lw < GOAL ? ` ยังต่ำกว่าเป้า ${GOAL}%` : ' ผ่านเป้า', ' เส้นแนวนอนหนาคือค่าเฉลี่ยของแต่ละเดือน');
   }
 
+  /* TAT */
+  function tatBox(T, M, K) {
+    const box = P('tat-box'); box.replaceChildren();
+    const cols = ['#0e9f8a', '#58b9a6', '#f0c14b', '#ec8a3c', '#e0383e'];
+    [[M.prev, T.prev], [M.cur, T.cur]].forEach(([mm, rows]) => {
+      box.append(el('div', 'strip-l', ml(mm)));
+      const s = el('div', 'strip'); rows.forEach((r, i) => { const d = el('div', null, r.share >= 7 ? `${r.bucket} ${r.share.toFixed(0)}%` : ''); d.style.width = r.share + '%'; d.style.background = cols[i]; d.title = `${r.bucket}: ${pct(r.share)} (${num(r.n)})`; s.append(d); });
+      box.append(s);
+    });
+    const p = el('p', 'read'); const d = r1(K.cur.late - K.prev.late);
+    p.append('อ่านผล: เอกสารที่ตรวจเกิน 7 วัน ', el('b', null, `${pct(K.prev.late)} → ${pct(K.cur.late)}`), d > 0 ? ' ช้าลง' : ' เร็วขึ้น', ' (เดือนล่าสุดยังไม่ครบเดือน งานที่ยังรอตรวจยังไม่ถูกนับ ตัวเลขจึงอาจดูดีกว่าความจริง)');
+    box.append(p);
+  }
+
+  /* targets + tables */
+  const S = { shop: { limit: 30, step: 30, tag: 'fs-tag', q: 'fs-q', more: 'fs-more', count: 'fs-count', table: 't-shop', src: 'shopCmp', unit: 'สาขา' },
+              staff: { limit: 50, step: 50, tag: 'ft-tag', q: 'ft-q', more: 'ft-more', count: 'ft-count', table: 't-staff', src: 'staffCmp', unit: 'Staff' } };
+  let NAMES = {};
+  const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^﻿/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; P('names-note').hidden = Object.keys(m).length > 0; };
+  try { const s = localStorage.getItem('tmh_staff_names'); if (s) setNames(s); } catch (e) {}
+  P('f-names').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { setNames(t); try { localStorage.setItem('tmh_staff_names', t); } catch (x) {} targets(D('M')); }); });
+  Object.values(S).forEach((s) => {
+    P(s.tag).replaceChildren(new Option('ทุกสถานะ', ''), ...TAGS.map((t) => new Option(t, t)));
+    P(s.tag).addEventListener('change', () => { s.limit = s.step; targets(D('M')); });
+    P(s.q).addEventListener('input', () => { s.limit = s.step; targets(D('M')); });
+    P(s.more).addEventListener('click', () => { s.limit += s.step; targets(D('M')); });
+  });
+  P('rules').textContent = `เร่งด่วน: % สมบูรณ์เดือนนี้ต่ำกว่า ${URGENT}% · แย่ลง: ลดลงตั้งแต่ ${DROP} จุด · ต่ำกว่าเป้า: ต่ำกว่า ${GOAL}% · ดีขึ้น: เพิ่มขึ้นตั้งแต่ ${DROP} จุด · ผ่านเป้า: ${GOAL}% ขึ้นไป · เอกสารน้อย: สาขาน้อยกว่า ${MIN_SHOP} ฉบับ หรือ Staff น้อยกว่า ${MIN_STAFF} ฉบับในเดือนนี้ (% ยังไม่นิ่ง)`;
+
+  function targets(M) {
+    if (!M) return;
+    Object.entries(S).forEach(([k, s]) => {
+      const d = dash.data(s.src); if (d.status !== 'ok' || !d.data) return;
+      const cnt = d3.rollup(d.data, (v) => v.length, (r) => r.tag);
+      const tiles = P('tiles-' + k); tiles.replaceChildren(...TAGS.filter((t) => t !== 'เดือนนี้ไม่มีงาน').map((t) => {
+        const b = el('button', 'tile ' + TCLS[t]); b.type = 'button'; b.append(el('div', 'n', num(cnt.get(t) || 0)), el('div', 'l', t));
+        b.addEventListener('click', () => { P(s.tag).value = t; s.limit = s.step; targets(M); P(k === 'shop' ? 'shops' : 'staff').scrollIntoView({ behavior: 'smooth' }); });
+        return b;
+      }));
+      const tag = P(s.tag).value, q = P(s.q).value.trim().toLowerCase();
+      const rows = d.data.filter((r) => (!tag || r.tag === tag) && (!q || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q) || (r.staff_id && (r.staff_id.includes(q) || (NAMES[r.staff_id] || '').toLowerCase().includes(q)))));
+      P(s.count).textContent = `แสดง ${num(Math.min(rows.length, s.limit))} จาก ${num(rows.length)} ${s.unit}`;
+      P(s.more).hidden = rows.length <= s.limit;
+      const t = P(s.table); t.replaceChildren();
+      const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'สาขา', 'ภาค'] : ['สถานะ', 'สาขา', 'รหัส Staff', 'ชื่อ'];
+      H.forEach((h) => hd.append(el('th', null, h)));
+      [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]].forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
+      const p = dash.params();
+      rows.slice(0, s.limit).forEach((r) => {
+        const tr = el('tr'); const c = (v, cls) => { const td = el('td', cls); if (v instanceof Node) td.append(v); else td.textContent = v; tr.append(td); return td; };
+        c(el('span', 'pill ' + TCLS[r.tag], r.tag));
+        if (k === 'shop') { tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : ''); tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }); c(r.shop_code); c(r.shop); c(r.region); }
+        else { c(r.shop); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
+        c(num(r.prev_total), 'n'); c(pct(r.prev_pct), 'n'); c(num(r.cur_total), 'n');
+        const mini = el('span', 'mini'); const tr_ = el('span', 'tr'); const fill = el('i'); fill.style.width = (r.cur_pct || 0) + '%';
+        fill.style.background = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)'; const gl = el('em'); gl.style.left = GOAL + '%'; tr_.append(fill, gl);
+        mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
+        c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
+        c(r.top_reason || '—');
+        tb.append(tr);
+      });
+      if (!rows.length) { const tr = el('tr'); const td = el('td', null, 'ไม่พบรายการตามเงื่อนไข'); td.colSpan = 10; tr.append(td); tb.append(tr); }
+    });
+  }
 })();
 </script>
-<p class="foot">ข้อมูล: ไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26) · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน · สร้างด้วย scripts/build_data.py</p>
-</div>
 </body>
 </html>

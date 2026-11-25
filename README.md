@@ -21,7 +21,7 @@ python scripts/build_data.py "DPS_xxx.xlsb" docs/data private/staff_names.csv
 git add docs/data && git commit -m "อัปเดตข้อมูล DPS รอบ ..." && git push
 ```
 
-แล้วแก้ช่วงวันที่ในหัวข้อ `docs/index.html` ให้ตรงกับรอบใหม่
+แล้วแก้ `DATA_NOTE` ใน `docs/index.html` ให้ตรงกับไฟล์รอบใหม่ หน้าเว็บจะเทียบเดือนล่าสุดกับเดือนก่อนหน้าให้อัตโนมัติ
 
 > อย่า commit ไฟล์ DPS ต้นฉบับ (`.xlsb`) เพราะมีข้อมูลลูกค้า (`.gitignore` กันไว้แล้ว)
 
@@ -31,7 +31,7 @@ Settings → Pages → Build and deployment → Source: **Deploy from a branch**
 
 ## เกณฑ์ชี้เป้า
 
-ตั้งค่าได้ที่บรรทัด `const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;` ใน `docs/index.html`
+ตั้งค่าได้ที่บรรทัด `const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;` และ `DATA_NOTE` (ชื่อไฟล์ข้อมูลรอบนั้น) ใน `docs/index.html`
 
 | สถานะ | เงื่อนไข (เดือนล่าสุด) |
 |---|---|
