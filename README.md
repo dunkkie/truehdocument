@@ -1,6 +1,6 @@
 # Dashboard ตรวจสอบเอกสาร TMH Postpaid
 
-Dashboard ผลตรวจเอกสาร DPS (TMH Postpaid): % สมบูรณ์, สาเหตุที่ไม่สมบูรณ์, รายภาค, รายสาขา, ราย Staff และข้อเสนอแนะ
+Dashboard ผลตรวจเอกสาร DPS (TMH Postpaid): % สมบูรณ์, ข้อเสนอแนะ, สาเหตุที่ไม่สมบูรณ์, รายภาค และ **ชี้เป้ารายสาขา ราย Staff เทียบเดือนนี้กับเดือนก่อน**
 
 **เปิดดู:** https://dunkkie.github.io/truehdocument/ (หลังเปิด GitHub Pages ตามขั้นตอนด้านล่าง)
 
@@ -28,6 +28,19 @@ git add docs/data && git commit -m "อัปเดตข้อมูล DPS ร
 ## เปิด GitHub Pages
 
 Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: `main` / folder `/docs` → Save
+
+## เกณฑ์ชี้เป้า
+
+ตั้งค่าได้ที่บรรทัด `const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;` ใน `docs/index.html`
+
+| สถานะ | เงื่อนไข (เดือนล่าสุด) |
+|---|---|
+| เร่งด่วน | % สมบูรณ์ < 80% |
+| แย่ลง | ลดลง ≥ 5 จุดจากเดือนก่อน |
+| ต่ำกว่าเป้า | % สมบูรณ์ < 90% |
+| ดีขึ้น | เพิ่มขึ้น ≥ 5 จุด |
+| ผ่านเป้า | ≥ 90% |
+| เอกสารน้อย | สาขา < 10 ฉบับ / Staff < 5 ฉบับ |
 
 ## ข้อมูลส่วนบุคคล
 

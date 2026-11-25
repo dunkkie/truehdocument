@@ -9,7 +9,7 @@ browser. Keep it on your own computer: private/ is in .gitignore.
 
 Reads the 'Detail' sheet of the DPS export and writes only aggregated counts.
 No customer data (name, phone, BAN, SIM) and no employee names are written:
-staff appear by Sales ID Code, auditors by their auditor code.
+staff appear by Sales ID Code. Auditor names are not exported.
 """
 import sys, os
 import pandas as pd
@@ -32,11 +32,6 @@ d['result'] = d['ผลการตรวจสอบ'].map({'สมบูรณ
 d['rr'] = d['RR']; d['region'] = d['Region']
 d['channel'] = d['Channel']; d['order_type'] = d['Order Type']; d['smartdoc'] = d['Smart Doc Flag']
 d['delivery'] = d['ประเภทการนำส่ง']
-
-# auditor: keep system trackers by name, people by code only
-name = d['ชื่อผู้ตรวจสอบ'].fillna('').str.strip()
-code = d['รหัสผู้ตรวจสอบ'].fillna('').astype(str).str.strip()
-d['auditor'] = name.where(name.str.contains('Tracker'), 'ผู้ตรวจ ' + code)
 
 ver = pd.to_datetime(d['วันที่ตรวจเรียบร้อยแล้ว'], format='%d/%m/%Y %H:%M:%S', errors='coerce')
 d['tat'] = (ver.dt.normalize() - pd.to_datetime(d['date'])).dt.days
@@ -76,7 +71,6 @@ it['item'] = it.item.where(it.item.isin(top), 'อื่นๆ')
 it.groupby(['month', 'rr', 'region', 'item']).size().reset_index(name='n').to_csv(f'{out}/reasons_detail.csv', index=False)
 
 d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'result']).size().reset_index(name='n').to_csv(f'{out}/shops.csv', index=False)
-d.groupby(['month', 'rr', 'region', 'auditor', 'result']).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index().to_csv(f'{out}/auditors.csv', index=False)
 d.groupby(['month', 'rr', 'region', 'tat_bucket']).size().reset_index(name='n').to_csv(f'{out}/tat.csv', index=False)
 d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n').to_csv(f'{out}/staff.csv', index=False)
 

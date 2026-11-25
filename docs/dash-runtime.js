@@ -4,7 +4,7 @@
 (function () {
   const FILES = {
     cube: 'data/cube.csv', reasons_main: 'data/reasons_main.csv', reasons_detail: 'data/reasons_detail.csv',
-    shops: 'data/shops.csv', auditors: 'data/auditors.csv', tat: 'data/tat.csv', staff: 'data/staff.csv'
+    shops: 'data/shops.csv', tat: 'data/tat.csv', staff: 'data/staff.csv'
   };
   const DEFAULTS = { month: '', rr: '', region: '', shop: '' };
   const raw = {}; const state = {}; const calcs = {}; const draws = {}; const dataFns = [];

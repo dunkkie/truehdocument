@@ -102,6 +102,16 @@ html,body{margin:0;background:var(--color-bg)}
 .tx .srch{font:inherit;font-size:var(--cds-font-size-caption);padding:6px 10px;border:1px solid var(--color-border-line);border-radius:var(--cds-radius);background:var(--color-bg);color:var(--color-fg);min-width:200px}
 .tx tr.click{cursor:pointer}.tx tr.click:hover td{background:var(--color-bg)}
 .tx tr.sel td{background:var(--color-bg);font-weight:var(--cds-font-weight-medium)}
+.tx .tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--cds-gap-lg);margin-top:var(--cds-gap-sm)}
+.tx .tgrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:var(--cds-gap-sm)}
+.tx .tgt{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--color-border-line);border-left-width:4px;border-radius:var(--cds-radius);background:var(--color-panel);color:var(--color-fg);padding:8px 10px}
+.tx .tgt .n{font-family:var(--font-anthropic-serif),serif;font-size:var(--cds-font-size-heading);font-variant-numeric:tabular-nums}
+.tx .tgt .l{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+.tx .tag{display:inline-block;font-size:12px;font-weight:var(--cds-font-weight-medium);padding:1px 8px;border-radius:999px;white-space:nowrap;border:1px solid currentColor}
+.tx .t1{color:var(--color-bad);border-left-color:var(--color-bad)}.tx .t2{color:#d4631f;border-left-color:#d4631f}.tx .t3{color:var(--color-warn);border-left-color:var(--color-warn)}
+.tx .t4{color:var(--color-ok);border-left-color:var(--color-ok)}.tx .t5{color:var(--c1);border-left-color:var(--c1)}.tx .t6,.tx .t7{color:var(--color-fg-muted);border-left-color:var(--color-border-line)}
+.tx .tgt.t1 .n,.tx .tgt.t2 .n,.tx .tgt.t3 .n,.tx .tgt.t4 .n,.tx .tgt.t5 .n{color:inherit}
+.tx .rules{margin-top:var(--cds-gap-md)}
 .tx details{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.7}
 .tx details summary{cursor:pointer;color:var(--color-fg)}
 </style>
@@ -218,71 +228,87 @@ html,body{margin:0;background:var(--color-bg)}
     </section>
   </div>
 
+  <section class="card" id="targets">
+    <h2>ชี้เป้า: สาขาและ Staff ที่ต้องติดตาม</h2>
+    <p class="sub">เทียบ % สมบูรณ์ <b data-draw="mlabel" data-k="cur">—</b> กับ <b data-draw="mlabel" data-k="prev">—</b> · เป้าหมาย % สมบูรณ์ <b data-draw="goal">—</b> · ใช้ตัวกรอง RR และภาคด้านบน (ส่วนนี้ไม่ขึ้นกับตัวกรองเดือน) · กดการ์ดเพื่อกรองตาราง</p>
+    <div class="tg">
+      <div class="tgcol">
+        <h3>สาขา</h3>
+        <div class="tgrow" data-draw="tagtiles" data-scope="shop" data-source="shopCmp"></div>
+      </div>
+      <div class="tgcol">
+        <h3>Staff</h3>
+        <div class="tgrow" data-draw="tagtiles" data-scope="staff" data-source="staffCmp"></div>
+      </div>
+    </div>
+    <details class="rules">
+      <summary>เกณฑ์สถานะ</summary>
+      <p><b class="tag t1">เร่งด่วน</b> % สมบูรณ์เดือนนี้ต่ำกว่า <span data-draw="urgent">—</span> · <b class="tag t2">แย่ลง</b> ลดลงตั้งแต่ <span data-draw="drop">—</span> จุดจากเดือนก่อน · <b class="tag t3">ต่ำกว่าเป้า</b> ต่ำกว่าเป้าหมาย · <b class="tag t4">ดีขึ้น</b> เพิ่มขึ้นตั้งแต่ <span data-draw="drop">—</span> จุด · <b class="tag t5">ผ่านเป้า</b> · <b class="tag t6">เดือนนี้ไม่มีงาน</b></p>
+      <p>นับเฉพาะสาขาที่มีเอกสารเดือนนี้อย่างน้อย <span data-draw="minshop">—</span> ฉบับ และ Staff อย่างน้อย <span data-draw="minstaff">—</span> ฉบับ ที่น้อยกว่านี้จัดเป็น "เอกสารน้อย" เพราะ % ยังไม่นิ่ง</p>
+    </details>
+  </section>
+
   <section class="card" id="shops">
-    <h2>สาขาที่ % สมบูรณ์ต่ำสุด 15 อันดับ</h2>
-    <p class="sub">เฉพาะสาขาที่มีเอกสารอย่างน้อย 30 ฉบับในช่วงที่เลือก · คลิกแถวเพื่อดูราย Staff ของสาขานั้น</p>
+    <h2>รายสาขา: เทียบเดือนนี้กับเดือนก่อน</h2>
+    <p class="sub">เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูราย Staff ของสาขานั้น</p>
+    <div class="filters">
+      <label>สถานะ
+        <select class="dash-select" id="fs-tag" aria-label="สถานะสาขา">
+          <option value="">ทุกสถานะ</option><option>เร่งด่วน</option><option>แย่ลง</option><option>ต่ำกว่าเป้า</option><option>ดีขึ้น</option><option>ผ่านเป้า</option><option>เอกสารน้อย</option><option>เดือนนี้ไม่มีงาน</option>
+        </select>
+      </label>
+      <label>ค้นหาสาขา
+        <input class="srch" id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา" aria-label="ค้นหาสาขา">
+      </label>
+    </div>
+    <p class="sub">แสดง <b data-draw="cmpcount" data-scope="shop" data-k="shown">—</b> จาก <b data-draw="cmpcount" data-scope="shop" data-k="all">—</b> สาขา</p>
     <div class="tw">
-      <table data-source="shopTop" data-row-key="shop_code" id="shop-table">
+      <table data-source="shopCmp" data-row-key="shop_code" id="shop-cmp-table">
         <thead><tr>
-          <th data-field="shop_code">รหัส</th><th data-field="shop">สาขา</th><th data-field="region">ภาค</th>
-          <th class="num" data-field="total">ทั้งหมด</th><th class="num" data-field="incomplete">ไม่สมบูรณ์</th>
-          <th class="num" data-field="xflag">X Flag</th><th class="num" data-field="pct_complete">% สมบูรณ์</th><th class="num" data-field="pct_bad">% ไม่สมบูรณ์รวม</th>
+          <th data-field="tag">สถานะ</th><th data-field="shop_code">รหัส</th><th data-field="shop">สาขา</th><th data-field="region">ภาค</th>
+          <th class="num" data-field="prev_total">เอกสาร <span data-draw="mlabel" data-k="prev">—</span></th><th class="num" data-field="prev_pct">% <span data-draw="mlabel" data-k="prev">—</span></th>
+          <th class="num" data-field="cur_total">เอกสาร <span data-draw="mlabel" data-k="cur">—</span></th><th class="num" data-field="cur_pct">% <span data-draw="mlabel" data-k="cur">—</span></th>
+          <th class="num" data-field="delta">เปลี่ยน (จุด)</th><th data-field="top_reason">สาเหตุหลักเดือนนี้</th>
         </tr></thead>
-        <tbody data-draw="shoptable"></tbody>
+        <tbody data-draw="cmptable" data-scope="shop"></tbody>
       </table>
     </div>
+    <p><button class="btn" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button></p>
   </section>
 
   <section class="card" id="staff">
-    <h2>รายละเอียดรายสาขา ราย Staff</h2>
-    <p class="sub">แสดงรหัส Staff (Sales ID) เรียงจาก % สมบูรณ์ต่ำสุด · ใช้ตัวกรองด้านบน เลือกสาขา หรือคลิกแถวในตารางสาขาด้านบน</p>
+    <h2>ราย Staff: เทียบเดือนนี้กับเดือนก่อน</h2>
+    <p class="sub">เรียงตามความเร่งด่วน · โหลดไฟล์รายชื่อเพื่อแสดงชื่อพนักงาน</p>
     <div class="filters">
       <label>สาขา
         <select class="dash-select" id="f-shop" data-draw="shopsel" data-source="shopList" aria-label="สาขา"></select>
       </label>
+      <label>สถานะ
+        <select class="dash-select" id="ft-tag" aria-label="สถานะ Staff">
+          <option value="">ทุกสถานะ</option><option>เร่งด่วน</option><option>แย่ลง</option><option>ต่ำกว่าเป้า</option><option>ดีขึ้น</option><option>ผ่านเป้า</option><option>เอกสารน้อย</option><option>เดือนนี้ไม่มีงาน</option>
+        </select>
+      </label>
       <label>ค้นหา
-        <input class="srch" id="f-q" type="search" placeholder="รหัส ชื่อ Staff หรือชื่อสาขา" aria-label="ค้นหา">
+        <input class="srch" id="f-q" type="search" placeholder="รหัส ชื่อ Staff หรือชื่อสาขา" aria-label="ค้นหา Staff">
       </label>
       <label>รายชื่อพนักงาน (ไฟล์ในเครื่อง)
         <input class="srch" id="f-names" type="file" accept=".csv,text/csv" aria-label="โหลดไฟล์รายชื่อพนักงาน">
       </label>
-      <label>จำนวนเอกสารขั้นต่ำ
-        <select class="dash-select" id="f-min" aria-label="จำนวนเอกสารขั้นต่ำ">
-          <option value="1">ทุก Staff</option>
-          <option value="5" selected>5 ฉบับขึ้นไป</option>
-          <option value="10">10 ฉบับขึ้นไป</option>
-          <option value="20">20 ฉบับขึ้นไป</option>
-        </select>
-      </label>
     </div>
     <p class="sub" id="names-status">ยังไม่ได้โหลดรายชื่อ: เลือกไฟล์ staff_names.csv เพื่อแสดงชื่อพนักงาน ไฟล์จะถูกอ่านในเครื่องคุณเท่านั้น ไม่ถูกส่งขึ้นเว็บ</p>
-    <p class="sub">แสดง <b data-draw="staffcount" data-k="shown">—</b> จาก <b data-draw="staffcount" data-k="all">—</b> Staff ที่ตรงเงื่อนไข</p>
+    <p class="sub">แสดง <b data-draw="cmpcount" data-scope="staff" data-k="shown">—</b> จาก <b data-draw="cmpcount" data-scope="staff" data-k="all">—</b> Staff</p>
     <div class="tw">
-      <table data-source="staffStats" data-row-key="shop_code,staff_id" id="staff-table">
+      <table data-source="staffCmp" data-row-key="shop_code,staff_id" id="staff-table">
         <thead><tr>
-          <th data-field="shop_code">รหัสสาขา</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th><th>ชื่อ Staff</th>
-          <th class="num" data-field="total">ทั้งหมด</th><th class="num" data-field="complete">สมบูรณ์</th>
-          <th class="num" data-field="incomplete">ไม่สมบูรณ์</th><th class="num" data-field="xflag">X Flag</th>
-          <th class="num" data-field="pct_complete">% สมบูรณ์</th><th data-field="top_reason">สาเหตุหลัก</th>
+          <th data-field="tag">สถานะ</th><th data-field="shop">สาขา</th><th data-field="staff_id">รหัส Staff</th><th>ชื่อ Staff</th>
+          <th class="num" data-field="prev_total">เอกสาร <span data-draw="mlabel" data-k="prev">—</span></th><th class="num" data-field="prev_pct">% <span data-draw="mlabel" data-k="prev">—</span></th>
+          <th class="num" data-field="cur_total">เอกสาร <span data-draw="mlabel" data-k="cur">—</span></th><th class="num" data-field="cur_pct">% <span data-draw="mlabel" data-k="cur">—</span></th>
+          <th class="num" data-field="delta">เปลี่ยน (จุด)</th><th data-field="top_reason">สาเหตุหลักเดือนนี้</th>
         </tr></thead>
-        <tbody data-draw="stafftable"></tbody>
+        <tbody data-draw="cmptable" data-scope="staff"></tbody>
       </table>
     </div>
-    <p><button class="btn" id="f-more" type="button">แสดงเพิ่มอีก 50 แถว</button></p>
-  </section>
-
-  <section class="card" id="auditors">
-    <h2>ผู้ตรวจสอบ</h2>
-    <p class="sub">E-sig Tracker คือการยืนยันอัตโนมัติจากระบบขาย (E-Signature) · ผู้ตรวจแสดงเป็นรหัส</p>
-    <div class="tw">
-      <table data-source="auditorStats" data-row-key="auditor" id="auditor-table">
-        <thead><tr>
-          <th data-field="auditor">ผู้ตรวจสอบ</th><th class="num" data-field="total">ตรวจ</th>
-          <th class="num" data-field="pct_complete">% สมบูรณ์</th><th class="num" data-field="pct_bad">% ไม่สมบูรณ์</th><th class="num" data-field="avg_tat">วันเฉลี่ย</th>
-        </tr></thead>
-        <tbody data-draw="auditortable"></tbody>
-      </table>
-    </div>
+    <p><button class="btn" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button></p>
   </section>
 
   <details id="defs">
@@ -439,16 +465,6 @@ dash.calc('shopTop', {
       .filter((r) => r.total >= 30).sort((a, b) => b.pct_bad - a.pct_bad || b.total - a.total).slice(0, 15);
   }
 });
-dash.calc('auditorStats', {
-  title: 'สถิติผู้ตรวจสอบ', description: 'จำนวนที่ตรวจ % ไม่สมบูรณ์ และวันเฉลี่ย',
-  inputs: ['auditors'],
-  fn: (auditors) => {
-    const g = d3.group(window.TM.filt(auditors, dash.params()), (r) => r.auditor);
-    return [...g].map(([auditor, v]) => { const o = window.TM.tally(v); const t = o.total || 1;
-      return { auditor, total: o.total, pct_complete: window.TM.r1(100 * o.complete / t), pct_bad: window.TM.r1(100 * o.bad / t), avg_tat: window.TM.r1(o.tat / t) }; })
-      .sort((a, b) => b.total - a.total);
-  }
-});
 dash.calc('tatDist', {
   title: 'การกระจายระยะเวลาตรวจ', description: 'สัดส่วนเอกสารตามช่วงวัน',
   inputs: ['tat'],
@@ -518,33 +534,155 @@ dash.calc('staffStats', {
 });
 </script>
 <script>
+window.TMC = (function () {
+  const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;
+  const TAGS = ['เร่งด่วน', 'แย่ลง', 'ต่ำกว่าเป้า', 'ดีขึ้น', 'ผ่านเป้า', 'เอกสารน้อย', 'เดือนนี้ไม่มีงาน'];
+  const CLS = { 'เร่งด่วน': 't1', 'แย่ลง': 't2', 'ต่ำกว่าเป้า': 't3', 'ดีขึ้น': 't4', 'ผ่านเป้า': 't5', 'เอกสารน้อย': 't7', 'เดือนนี้ไม่มีงาน': 't6' };
+  const TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const mlabel = (m) => (m ? TH[+m.slice(5, 7) - 1] + ' ' + m.slice(2, 4) : '—');
+  function tag(r, min) {
+    if (!r.cur_total) return 'เดือนนี้ไม่มีงาน';
+    if (r.cur_total < min) return 'เอกสารน้อย';
+    if (r.cur_pct < URGENT) return 'เร่งด่วน';
+    if (r.delta != null && r.delta <= -DROP) return 'แย่ลง';
+    if (r.cur_pct < GOAL) return 'ต่ำกว่าเป้า';
+    if (r.delta != null && r.delta >= DROP) return 'ดีขึ้น';
+    return 'ผ่านเป้า';
+  }
+  function compare(rows, keyFn, info, min) {
+    const months = [...new Set(rows.map((r) => r.month))].sort();
+    const cur = months[months.length - 1], prev = months[months.length - 2];
+    const TM = window.TM;
+    return [...d3.group(rows, keyFn)].map(([, g]) => {
+      const c = TM.tally(g.filter((r) => r.month === cur)), p = TM.tally(g.filter((r) => r.month === prev));
+      const cur_pct = c.total ? TM.r1(100 * c.complete / c.total) : null;
+      const prev_pct = p.total ? TM.r1(100 * p.complete / p.total) : null;
+      const rs = d3.rollup(g.filter((r) => r.month === cur && r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
+      const top = [...rs].sort((a, b) => b[1] - a[1])[0];
+      const o = Object.assign(info(g[0]), { prev_total: p.total, prev_pct, cur_total: c.total, cur_pct, cur_bad: c.bad,
+        delta: cur_pct != null && prev_pct != null ? TM.r1(cur_pct - prev_pct) : null, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
+      o.tag = tag(o, min); o.rank = TAGS.indexOf(o.tag);
+      return o;
+    }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
+  }
+  return { GOAL, URGENT, DROP, MIN_SHOP, MIN_STAFF, TAGS, CLS, mlabel, compare };
+})();
+
+dash.calc('cmpMonths', {
+  title: 'เดือนที่เปรียบเทียบ', description: 'เดือนล่าสุดและเดือนก่อนหน้าในข้อมูล',
+  inputs: ['staff'],
+  fn: (staff) => { const m = [...new Set(staff.map((r) => r.month))].sort(); return [{ prev: m[m.length - 2] || null, cur: m[m.length - 1] || null }]; }
+});
+dash.calc('shopCmp', {
+  title: 'สาขา: เดือนนี้เทียบเดือนก่อน', description: '% สมบูรณ์ของแต่ละสาขาในเดือนล่าสุดเทียบเดือนก่อน พร้อมสถานะที่ต้องติดตาม',
+  inputs: ['staff'],
+  fn: (staff) => {
+    const rows = window.TM.filt(staff, dash.params(), { month: true });
+    return window.TMC.compare(rows, (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), window.TMC.MIN_SHOP);
+  }
+});
+dash.calc('staffCmp', {
+  title: 'Staff: เดือนนี้เทียบเดือนก่อน', description: '% สมบูรณ์ของแต่ละ Staff ในแต่ละสาขา เดือนล่าสุดเทียบเดือนก่อน พร้อมสถานะที่ต้องติดตาม',
+  inputs: ['staff'],
+  fn: (staff) => {
+    const p = dash.params();
+    const rows = window.TM.filt(staff, p, { month: true }).filter((r) => !p.shop || r.shop_code === p.shop);
+    return window.TMC.compare(rows, (r) => r.shop_code + '|' + r.staff_id, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region, staff_id: r.staff_id }), window.TMC.MIN_STAFF);
+  }
+});
+</script>
+<script>
 (function () {
-  window.TMS = { limit: 50, names: {} };
+  const T = window.TM, C = window.TMC;
+  const S = { shop: { limit: 30, step: 30, tag: '#fs-tag', q: '#fs-q', more: '#fs-more', src: 'shopCmp', cols: 10 },
+              staff: { limit: 50, step: 50, tag: '#ft-tag', q: '#f-q', more: '#ft-more', src: 'staffCmp', cols: 10 } };
+  window.TMS = { names: {} };
+  const redraw = () => { dash.draw('cmptable'); dash.draw('cmpcount'); };
+
   const setNames = (text, from) => {
-    const rows = d3.csvParse(text.replace(/^\ufeff/, '')); const m = {};
+    const rows = d3.csvParse(text.replace(/^﻿/, '')); const m = {};
     rows.forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); });
     window.TMS.names = m;
     document.querySelectorAll('#names-status').forEach((el) => { el.hidden = true; });
     document.querySelectorAll('#f-names').forEach((el) => { el.title = 'โหลดแล้ว ' + Object.keys(m).length + ' คน (' + from + ')'; });
-    return Object.keys(m).length;
   };
   try { const saved = localStorage.getItem('tmh_staff_names'); if (saved) setNames(saved, 'จำไว้ในเครื่องนี้'); } catch (e) {}
   document.querySelectorAll('#f-names').forEach((i) => i.addEventListener('change', () => {
     const f = i.files && i.files[0]; if (!f) return;
-    f.text().then((t) => { setNames(t, f.name); try { localStorage.setItem('tmh_staff_names', t); } catch (e) {} dash.draw('stafftable'); dash.draw('staffcount'); });
+    f.text().then((t) => { setNames(t, f.name); try { localStorage.setItem('tmh_staff_names', t); } catch (e) {} redraw(); });
   }));
-  const redraw = () => { dash.draw('stafftable'); dash.draw('staffcount'); };
-  document.querySelectorAll('#f-q').forEach((i) => i.addEventListener('input', () => { window.TMS.limit = 50; redraw(); }));
-  document.querySelectorAll('#f-min').forEach((s) => s.addEventListener('change', () => { window.TMS.limit = 50; redraw(); }));
-  document.querySelectorAll('#f-more').forEach((b) => b.addEventListener('click', () => { window.TMS.limit += 50; redraw(); }));
-  window.TMS.rows = () => {
-    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) return null;
-    const qi = document.querySelector('#f-q'); const mi = document.querySelector('#f-min');
-    const q = (qi ? qi.value : '').trim().toLowerCase(); const min = mi ? +mi.value : 1;
-    const nm = window.TMS.names;
-    return d.data.filter((r) => r.total >= min && (!q || r.staff_id.toLowerCase().includes(q) || (nm[r.staff_id] || '').toLowerCase().includes(q) || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)));
-  };
-  dash.onData(() => { const rows = window.TMS.rows(); document.querySelectorAll('#f-more').forEach((b) => { b.hidden = !rows || rows.length <= window.TMS.limit; }); });
+
+  Object.values(S).forEach((s) => {
+    document.querySelectorAll(s.tag + ',' + s.q).forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { s.limit = s.step; redraw(); }));
+    document.querySelectorAll(s.more).forEach((b) => b.addEventListener('click', () => { s.limit += s.step; redraw(); }));
+  });
+
+  function rows(scope) {
+    const s = S[scope]; const d = dash.data(s.src); if (d.status !== 'ok' || !d.data) return null;
+    const tg = document.querySelector(s.tag), qi = document.querySelector(s.q);
+    const tag = tg ? tg.value : ''; const q = (qi ? qi.value : '').trim().toLowerCase(); const nm = window.TMS.names;
+    return d.data.filter((r) => (!tag || r.tag === tag) && (!q || r.shop.toLowerCase().includes(q) || r.shop_code.includes(q)
+      || (r.staff_id && (r.staff_id.includes(q) || (nm[r.staff_id] || '').toLowerCase().includes(q)))));
+  }
+  dash.onData(() => { Object.entries(S).forEach(([k, s]) => { const r = rows(k); document.querySelectorAll(s.more).forEach((b) => { b.hidden = !r || r.length <= s.limit; }); }); });
+
+  dash.draw('mlabel', (el) => { const d = dash.data('cmpMonths'); el.textContent = d.status === 'ok' && d.data ? C.mlabel(d.data[0][el.dataset.k]) : '—'; });
+  dash.draw('goal', (el) => { el.textContent = C.GOAL + '%'; });
+  dash.draw('urgent', (el) => { el.textContent = C.URGENT + '%'; });
+  dash.draw('drop', (el) => { el.textContent = String(C.DROP); });
+  dash.draw('minshop', (el) => { el.textContent = String(C.MIN_SHOP); });
+  dash.draw('minstaff', (el) => { el.textContent = String(C.MIN_STAFF); });
+
+  dash.draw('tagtiles', (el) => {
+    const scope = el.dataset.scope; const d = dash.data(S[scope].src);
+    if (d.status !== 'ok' || !d.data) { el.replaceChildren(document.createTextNode('—')); return; }
+    const cnt = d3.rollup(d.data, (v) => v.length, (r) => r.tag);
+    el.replaceChildren(...C.TAGS.filter((t) => t !== 'เดือนนี้ไม่มีงาน').map((t) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tgt ' + C.CLS[t];
+      const n = document.createElement('div'); n.className = 'n'; n.textContent = T.num(cnt.get(t) || 0);
+      const l = document.createElement('div'); l.className = 'l'; l.textContent = t;
+      b.append(n, l);
+      b.addEventListener('click', () => {
+        document.querySelectorAll(S[scope].tag).forEach((s) => { s.value = t; });
+        S[scope].limit = S[scope].step; redraw();
+        document.querySelectorAll(scope === 'shop' ? '#shops' : '#staff').forEach((s) => s.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      });
+      return b;
+    }));
+  });
+
+  dash.draw('cmpcount', (el) => {
+    const r = rows(el.dataset.scope); if (!r) { el.textContent = '—'; return; }
+    el.textContent = T.num(el.dataset.k === 'all' ? r.length : Math.min(r.length, S[el.dataset.scope].limit));
+  });
+
+  dash.draw('cmptable', (tb) => {
+    const scope = tb.dataset.scope; const s = S[scope]; const d = dash.data(s.src);
+    const msg = (t, cls) => { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = s.cols; td.textContent = t; if (cls) td.className = cls; tr.appendChild(td); tb.replaceChildren(tr); };
+    if (d.status === 'error') return msg('โหลดข้อมูลตารางนี้ไม่สำเร็จ', 'err');
+    if (d.status !== 'ok' || !d.data) return msg('—');
+    const all = rows(scope);
+    document.querySelectorAll(s.more).forEach((b) => { b.hidden = all.length <= s.limit; });
+    if (!all.length) return msg('ไม่พบรายการตามเงื่อนไข');
+    const p = dash.params();
+    tb.replaceChildren(...all.slice(0, s.limit).map((r) => {
+      const tr = document.createElement('tr');
+      const c = (t, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = t; tr.appendChild(td); return td; };
+      const tt = c(''); const b = document.createElement('b'); b.className = 'tag ' + C.CLS[r.tag]; b.textContent = r.tag; tt.appendChild(b);
+      if (scope === 'shop') {
+        tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : '');
+        tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); document.querySelectorAll('#staff').forEach((x) => x.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
+        c(r.shop_code); c(r.shop); c(r.region);
+      } else {
+        c(r.shop); c(r.staff_id); c(window.TMS.names[r.staff_id] || '—');
+      }
+      c(T.num(r.prev_total), 'num'); c(T.pct(r.prev_pct), 'num');
+      c(T.num(r.cur_total), 'num'); c(T.pct(r.cur_pct), 'num' + (r.cur_pct != null && r.cur_pct < C.URGENT ? ' bad' : ''));
+      c(r.delta == null ? '—' : (r.delta > 0 ? '+' : '') + r.delta.toFixed(1), 'num' + (r.delta == null ? '' : r.delta < 0 ? ' bad' : r.delta > 0 ? ' ok' : ''));
+      c(r.top_reason || '—');
+      return tr;
+    }));
+  });
 })();
 </script>
 <script>
@@ -738,40 +876,15 @@ dash.calc('staffStats', {
     sel.value = p.shop || '';
     sel.onchange = () => dash.setParams({ shop: sel.value });
   });
-  dash.draw('staffcount', (el) => {
-    const rows = window.TMS.rows(); if (!rows) { el.textContent = '—'; return; }
-    el.textContent = T.num(el.dataset.k === 'all' ? rows.length : Math.min(rows.length, window.TMS.limit));
-  });
-  dash.draw('stafftable', (tb) => {
-    const d = dash.data('staffStats'); if (d.status !== 'ok' || !d.data) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 10; td.textContent = d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—'; if (d.status === 'error') td.className = 'err'; tr.appendChild(td); tb.replaceChildren(tr); return; }
-    const rows = window.TMS.rows().slice(0, window.TMS.limit);
-    document.querySelectorAll('#f-more').forEach((b) => { b.hidden = window.TMS.rows().length <= window.TMS.limit; });
-    if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 10; td.textContent = 'ไม่พบ Staff ตามเงื่อนไข'; tr.appendChild(td); tb.replaceChildren(tr); return; }
-    tb.replaceChildren(...rows.map((r) => { const tr = document.createElement('tr');
-      const c = (t, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = t; tr.appendChild(td); };
-      c(r.shop_code); c(r.shop); c(r.staff_id); c(window.TMS.names[r.staff_id] || '—'); c(T.num(r.total), 'num'); c(T.num(r.complete), 'num'); c(T.num(r.incomplete), 'num'); c(T.num(r.xflag), 'num');
-      c(T.pct(r.pct_complete), r.pct_complete < 80 ? 'num bad' : 'num'); c(r.top_reason || '—');
-      return tr; }));
-  });
+
+
 
   function cell(tr, text, cls) { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.appendChild(td); return td; }
   function tableMsg(tb, d, cols) {
     if (d.status === 'ok' && d.data) return false;
     const tr = document.createElement('tr'); const td = cell(tr, d.status === 'error' ? 'โหลดข้อมูลตารางนี้ไม่สำเร็จ' : '—', d.status === 'error' ? 'err' : ''); td.colSpan = cols; tb.replaceChildren(tr); return true;
   }
-  dash.draw('shoptable', (tb) => {
-    const d = dash.data('shopTop'); if (tableMsg(tb, d, 8)) return;
-    if (!d.data.length) { const tr = document.createElement('tr'); cell(tr, 'ไม่มีสาขาที่มีเอกสารถึง 30 ฉบับในช่วงที่เลือก').colSpan = 8; tb.replaceChildren(tr); return; }
-    const ps = dash.params();
-    tb.replaceChildren(...d.data.map((r) => { const tr = document.createElement('tr'); tr.className = 'click' + (ps.shop === r.shop_code ? ' sel' : '');
-      tr.addEventListener('click', () => { dash.setParams({ shop: ps.shop === r.shop_code ? '' : r.shop_code }); document.querySelectorAll('#staff').forEach((s) => s.scrollIntoView({ behavior: 'smooth', block: 'start' })); });
-      cell(tr, r.shop_code); cell(tr, r.shop); cell(tr, r.region); cell(tr, T.num(r.total), 'num'); cell(tr, T.num(r.incomplete), 'num'); cell(tr, T.num(r.xflag), 'num'); cell(tr, T.pct(r.pct_complete), 'num'); cell(tr, T.pct(r.pct_bad), 'num bad'); return tr; }));
-  });
-  dash.draw('auditortable', (tb) => {
-    const d = dash.data('auditorStats'); if (tableMsg(tb, d, 5)) return;
-    tb.replaceChildren(...d.data.map((r) => { const tr = document.createElement('tr');
-      cell(tr, r.auditor); cell(tr, T.num(r.total), 'num'); cell(tr, T.pct(r.pct_complete), 'num'); cell(tr, T.pct(r.pct_bad), 'num'); cell(tr, r.avg_tat.toFixed(1), 'num'); return tr; }));
-  });
+
 })();
 </script>
 <p class="foot">ข้อมูล: ไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26) · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน · สร้างด้วย scripts/build_data.py</p>
