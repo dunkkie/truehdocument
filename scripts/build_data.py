@@ -74,6 +74,14 @@ top = it.item.value_counts().head(20).index
 it['item'] = it.item.where(it.item.isin(top), 'อื่นๆ')
 OUT['reasons_detail.csv'] = it.groupby(['month', 'rr', 'region', 'shop_code', 'item']).size().reset_index(name='n')
 
+# detailed causes per staff (each document can have several)
+si = bad[['month', 'rr', 'region', 'shop_code', 'staff_id', 'เหตุผลการตรวจสอบ อื่นๆ']].copy()
+si['item'] = si['เหตุผลการตรวจสอบ อื่นๆ'].fillna('').str.split(',')
+si = si.explode('item'); si['item'] = si['item'].str.strip().replace({'ขาด Workpermit': 'ขาด Work Permit'})
+si = si[si.item != '']
+top40 = si.item.value_counts().head(40).index
+si['item'] = si.item.where(si.item.isin(top40), 'อื่นๆ')
+OUT['staff_items.csv'] = si.groupby(['month', 'rr', 'region', 'shop_code', 'staff_id', 'item']).size().reset_index(name='n')
 OUT['staff.csv'] = d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n')
 
 if len(sys.argv) > 3:

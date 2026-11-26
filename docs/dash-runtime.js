@@ -2,7 +2,7 @@
    dash.calc / dash.data / dash.draw / dash.onData / dash.params / dash.setParams / dash.resetParams.
    Data comes from the CSV files in ./data. */
 (function () {
-  const FILES = { facts: 'data/facts.csv', reasons_detail: 'data/reasons_detail.csv', staff: 'data/staff.csv' };
+  const FILES = { facts: 'data/facts.csv', reasons_detail: 'data/reasons_detail.csv', staff: 'data/staff.csv', staff_items: 'data/staff_items.csv' };
   const DEFAULTS = { cur: '', prev: '', rr: '', region: '', shop: '' };
   const raw = {}; const state = {}; const calcs = {}; const draws = {}; const dataFns = [];
   let params = Object.assign({}, DEFAULTS); let cache = {}; let ready = false; let pending = false;

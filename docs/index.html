@@ -65,6 +65,21 @@ button,select,input{font:inherit}
 .mx td small{display:block;font-size:11px;opacity:.85}
 .mx td.cur{outline:2px solid var(--ink);outline-offset:-2px}
 .hist-mini{display:inline-flex;gap:3px}
+.rchips{display:flex;flex-wrap:wrap;gap:4px;max-width:420px}
+.rc{--c:#8a97a8;font-size:12px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--c) 14%,#fff);color:color-mix(in srgb,var(--c) 85%,#000);border:1px solid color-mix(in srgb,var(--c) 35%,#fff);white-space:nowrap}
+.rchips .none{font-size:12px;color:var(--good)}
+.caret{color:var(--blue);font-size:12px}
+#t-staff td:nth-child(2),#t-shop td:nth-child(3){min-width:210px}
+.dt td{vertical-align:top}
+tr.detail td{background:#f6f8ff;padding:10px 14px 14px}
+.dbox{max-width:760px}
+.dhead{font-size:14px;margin-bottom:8px}
+.itab{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:8px}
+.itab th{background:#eef2ff!important;color:var(--ink)!important;position:static!important;font-weight:600;padding:6px 10px;text-align:left}
+.itab th.n,.itab td.n{text-align:right;width:84px}
+.itab td{padding:6px 10px;border-top:1px solid #eef2f6;position:relative}
+.itab td .ibar{position:absolute;left:0;top:4px;bottom:4px;background:linear-gradient(90deg,rgba(224,56,62,.16),rgba(224,56,62,.06));border-radius:0 4px 4px 0}
+.itab td span{position:relative}
 .hist-mini span{font-size:11.5px;padding:1px 5px;border-radius:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .filterbar{position:sticky;top:0;z-index:10;background:var(--ink);border-top:1px solid #22345a;margin-top:22px}
 .filterbar .wrap{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 0}
@@ -287,7 +302,7 @@ body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
   </section>
 
   <section id="staff">
-    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน</p></div>
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น</p></div>
     <p class="names-note" id="names-note">ชื่อพนักงานไม่ได้เก็บไว้บนเว็บ เลือกไฟล์ <b>staff_names.csv</b> จากเครื่องของคุณเพื่อแสดงชื่อ (อ่านในเบราว์เซอร์เท่านั้น ไม่ถูกส่งไปที่ไหน)</p>
     <div class="ctrl">
       <label>สถานะ <select id="ft-tag"></select></label>
@@ -483,10 +498,10 @@ function compare(rows, keyFn, info, min, M) {
   return [...d3.group(rows, keyFn)].map(([, g]) => {
     const c = tally(g.filter((r) => r.month === M.cur)), p = tally(g.filter((r) => r.month === M.prev));
     const rs = d3.rollup(g.filter((r) => r.month === M.cur && r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
-    const top = [...rs].sort((a, b) => b[1] - a[1])[0];
+    const reasons = [...rs].sort((a, b) => b[1] - a[1]); const top = reasons[0];
     const hist = M.all.map((m) => { const x = tally(g.filter((r) => r.month === m)); return { m, pct: x.pct, n: x.total }; });
     const o = Object.assign(info(g[0]), { hist, prev_total: p.total, prev_pct: p.pct, cur_total: c.total, cur_pct: c.pct,
-      delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
+      delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, reasons, cur_bad: c.bad, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
     o.tag = tagOf(o, min); o.rank = TAGS.indexOf(o.tag); return o;
   }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
 }
@@ -882,7 +897,31 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   /* targets + tables */
   const S = { shop: { limit: 30, step: 30, tag: 'fs-tag', q: 'fs-q', more: 'fs-more', count: 'fs-count', table: 't-shop', src: 'shopCmp', unit: 'สาขา' },
               staff: { limit: 50, step: 50, tag: 'ft-tag', q: 'ft-q', more: 'ft-more', count: 'ft-count', table: 't-staff', src: 'staffCmp', unit: 'Staff' } };
-  let NAMES = {};
+  let NAMES = {}; const OPEN = new Set();
+  const RCOL = { 'เอกสารหลัก_ไม่แนบ': '#e0383e', 'เอกสารหลัก_ไม่ผ่านเงื่อนไข': '#ec6a1e', 'ใบสมัคร_ไม่เซ็น': '#7c5cd6', 'ใบสมัคร_ไม่ผ่านเงื่อนไข': '#3a6fd8', 'อื่นๆ': '#8a97a8' };
+  function staffDetail(r, M, cols) {
+    const tr = el('tr', 'detail'); const td = el('td'); td.colSpan = cols; tr.append(td);
+    const d = dash.data('staff_items');
+    if (d.status !== 'ok') { td.textContent = d.status === 'error' ? 'โหลดรายละเอียดสาเหตุไม่สำเร็จ' : 'กำลังโหลด…'; return tr; }
+    const mine = d.data.filter((x) => x.shop_code === r.shop_code && x.staff_id === r.staff_id);
+    const box = el('div', 'dbox');
+    const head = el('div', 'dhead'); head.append(el('b', null, `${NAMES[r.staff_id] || 'Staff ' + r.staff_id}`), ` · ${r.shop} · เอกสารไม่สมบูรณ์ ${num(r.cur_bad || 0)} จาก ${num(r.cur_total)} ฉบับใน ${ml(M.cur)}`);
+    box.append(head);
+    const months = M.prev ? [M.prev, M.cur] : [M.cur];
+    const items = [...new Set(mine.filter((x) => months.includes(x.month)).map((x) => x.item))];
+    const cnt = (m, it) => d3.sum(mine.filter((x) => x.month === m && x.item === it), (x) => +x.n);
+    items.sort((a, b) => cnt(M.cur, b) - cnt(M.cur, a) || (M.prev ? cnt(M.prev, b) - cnt(M.prev, a) : 0));
+    if (!items.length) { box.append(el('p', 'count', 'ไม่มีรายละเอียดสาเหตุในเดือนที่เลือก')); td.append(box); return tr; }
+    const t = el('table', 'itab'); const hr = el('tr'); hr.append(el('th', null, 'รายละเอียดสาเหตุ (เอกสาร 1 ฉบับอาจมีหลายข้อ)')); months.forEach((m) => hr.append(el('th', 'n', ml(m)))); if (M.prev) hr.append(el('th', 'n', 'เปลี่ยน'));
+    t.append(hr);
+    const max = d3.max(items, (it) => Math.max(...months.map((m) => cnt(m, it)))) || 1;
+    items.forEach((it) => { const row = el('tr'); const lab = el('td');
+      const bar = el('i', 'ibar'); bar.style.width = (100 * cnt(M.cur, it) / max) + '%'; lab.append(bar, el('span', null, it)); row.append(lab);
+      months.forEach((m) => row.append(el('td', 'n', cnt(m, it) ? String(cnt(m, it)) : '–')));
+      if (M.prev) { const dd = cnt(M.cur, it) - cnt(M.prev, it); row.append(el('td', 'n ' + (dd > 0 ? 'down' : dd < 0 ? 'up' : ''), dd ? (dd > 0 ? '▲ ' : '▼ ') + Math.abs(dd) : '–')); }
+      t.append(row); });
+    box.append(t); td.append(box); return tr;
+  }
   const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^﻿/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; P('names-note').hidden = Object.keys(m).length > 0; };
   try { const s = localStorage.getItem('tmh_staff_names'); if (s) setNames(s); } catch (e) {}
   P('f-names').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { setNames(t); try { localStorage.setItem('tmh_staff_names', t); } catch (x) {} targets(D('M')); }); });
@@ -911,24 +950,30 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const t = P(s.table); t.replaceChildren();
       const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
       H.forEach((h) => hd.append(el('th', null, h)));
-      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุหลัก', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุที่ไม่สมบูรณ์ (เดือนนี้)', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุที่ไม่สมบูรณ์', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
       rows.slice(0, s.limit).forEach((r) => {
         const tr = el('tr'); const c = (v, cls) => { const td = el('td', cls); if (v instanceof Node) td.append(v); else td.textContent = v; tr.append(td); return td; };
         c(el('span', 'pill ' + TCLS[r.tag], r.tag));
         if (k === 'shop') { tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : ''); tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }); c(r.shop_code); c(r.shop); c(r.region); }
-        else { c(r.shop); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
+        else { const key = r.shop_code + '|' + r.staff_id; tr.className = 'click' + (OPEN.has(key) ? ' sel' : '');
+          tr.addEventListener('click', () => { OPEN.has(key) ? OPEN.delete(key) : OPEN.add(key); targets(M); });
+          const nm = el('span'); nm.append(el('span', 'caret', OPEN.has(key) ? '▾ ' : '▸ '), document.createTextNode(r.shop)); c(nm); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
         if (M.prev) { c(num(r.prev_total), 'n'); c(pct(r.prev_pct), 'n'); } c(num(r.cur_total), 'n');
         const mini = el('span', 'mini'); const tr_ = el('span', 'tr'); const fill = el('i'); fill.style.width = (r.cur_pct || 0) + '%';
         fill.style.background = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)'; const gl = el('em'); gl.style.left = GOAL + '%'; tr_.append(fill, gl);
         mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
         if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
-        c(r.top_reason || '—');
+        const ch = el('span', 'rchips');
+        if (!r.reasons.length) ch.append(el('span', 'none', r.cur_total ? 'ไม่มี' : '—'));
+        r.reasons.forEach(([k, n]) => { const x = el('span', 'rc', `${k.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[k] || '#8a97a8'); ch.append(x); });
+        c(ch);
         const hm = el('span', 'hist-mini'); r.hist.forEach((h) => { const sp = el('span', null, h.pct == null ? '–' : h.pct.toFixed(0) + '%');
           sp.style.background = h.pct == null ? '#f4f7fa' : h.pct >= GOAL ? '#d7f1ec' : h.pct >= URGENT ? '#fdf0cc' : '#fbd9da'; if (h.m === M.cur) sp.style.outline = '1.5px solid var(--ink)';
           sp.title = `${ml(h.m)}: ${pct(h.pct)} (${num(h.n)} ฉบับ)`; hm.append(sp); }); c(hm);
         tb.append(tr);
+        if (k === 'staff' && OPEN.has(r.shop_code + '|' + r.staff_id)) tb.append(staffDetail(r, M, tr.children.length));
       });
       if (!rows.length) { const tr = el('tr'); const td = el('td', null, 'ไม่พบรายการตามเงื่อนไข'); td.colSpan = 10; tr.append(td); tb.append(tr); }
     });
