@@ -235,9 +235,33 @@ body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
 .tw{box-shadow:0 8px 24px -14px rgba(19,32,58,.18)}
 .read{background:linear-gradient(90deg,#eef2ff,#f0fdfa);border-left:4px solid #6366f1}
 .divider h2{background:linear-gradient(90deg,#4f46e5,#0d9488);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gate{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:20px;background:radial-gradient(900px 500px at 85% 0%,rgba(20,184,166,.45),transparent 60%),radial-gradient(800px 500px at 0% 100%,rgba(99,102,241,.5),transparent 60%),linear-gradient(135deg,#101a3a,#1b2f6b 55%,#123a4f)}
+body.locked .gate{display:grid}
+body.locked .hero,body.locked main{display:none}
+.gate-card{width:min(100%,400px);background:#fff;border-radius:20px;padding:30px 28px;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px;text-align:center}
+.gate-mark{display:flex;justify-content:center}
+.gate-card h1{margin:0;font-size:22px;color:var(--ink)}
+.gate-card p{margin:0;color:var(--muted);font-size:14px}
+.gate-card input[type=password]{font:inherit;font-size:18px;text-align:center;letter-spacing:.08em;border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.gate-card input[type=password]:focus{border-color:#6366f1;outline:none;box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+.gate-rem{font-size:13px;color:var(--muted);display:flex;justify-content:center;align-items:center;gap:6px}
+#gate-go{font:inherit;font-weight:600;font-size:16px;border:0;border-radius:12px;padding:12px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#4f46e5,#0d9488)}
+#gate-go:disabled{opacity:.6;cursor:wait}
+.gate-err{color:var(--bad)!important;min-height:20px}
 </style>
 </head>
-<body>
+<body class="locked">
+<div class="gate" id="gate">
+  <form class="gate-card" id="gate-form" autocomplete="off">
+    <div class="gate-mark" aria-hidden="true"><svg viewBox="0 0 64 64" width="56" height="56"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><rect x="8" y="6" width="40" height="50" rx="7" fill="url(#gg)"/><rect x="16" y="18" width="24" height="4" rx="2" fill="#fff" opacity=".9"/><rect x="16" y="27" width="18" height="4" rx="2" fill="#fff" opacity=".7"/><circle cx="46" cy="44" r="13" fill="#fff"/><path d="M40 44l4.5 4.5L53 39.5" fill="none" stroke="#0e9f8a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h1>ผลตรวจเอกสาร TMH Postpaid</h1>
+    <p>ใส่รหัสผ่านเพื่อเข้าดู Dashboard</p>
+    <input id="gate-pw" type="password" placeholder="รหัสผ่าน" aria-label="รหัสผ่าน" autofocus>
+    <label class="gate-rem"><input id="gate-rem" type="checkbox" checked> จำบนเครื่องนี้</label>
+    <button type="submit" id="gate-go">เข้าสู่ Dashboard</button>
+    <p class="gate-err" id="gate-err" role="alert"></p>
+  </form>
+</div>
 
 <div class="hero">
   <div class="wrap">
@@ -256,6 +280,7 @@ body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
       <label>สาขา <select id="f-shop"><option value="">ทุกสาขา</option></select></label>
       <label>เทียบกับ <select id="f-prev"></select></label>
       <button class="reset" id="f-reset" type="button">ล้างตัวกรอง</button>
+      <button class="reset" id="logout" type="button">ออกจากระบบ</button>
     </div>
   </div>
 </div>
@@ -311,16 +336,7 @@ body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
   </section>
 
   <section id="staff">
-    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น · ค้นหาด้วยชื่อได้เมื่อปลดล็อกชื่อแล้ว</p></div>
-    <form class="unlock" id="unlock" autocomplete="off">
-      <span class="lk">🔒</span>
-      <span class="ut" id="unlock-text">ชื่อพนักงานถูกล็อกไว้ ใส่รหัสผ่านเพื่อแสดงชื่อ Staff</span>
-      <input id="pw" type="password" placeholder="รหัสผ่าน" aria-label="รหัสผ่านสำหรับแสดงชื่อพนักงาน">
-      <label class="rem"><input id="pw-rem" type="checkbox" checked> จำบนเครื่องนี้</label>
-      <button type="submit" id="pw-go">แสดงชื่อ</button>
-      <button type="button" id="pw-lock" hidden>ล็อกชื่อ</button>
-      <span class="err" id="pw-err" role="alert"></span>
-    </form>
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น · ค้นหาด้วยรหัสหรือชื่อได้</p></div>
     <div class="ctrl">
       <label>สถานะ <select id="ft-tag"></select></label>
       <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
@@ -938,29 +954,8 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       t.append(row); });
     box.append(t); td.append(box); return tr;
   }
-  const KEEP = 'tmh_staff_names_v2';
-  const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^﻿/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; return Object.keys(m).length; };
-  const showUnlocked = (n) => { const u = P('unlock'); u.classList.toggle('open', n > 0); P('pw').hidden = P('pw-go').hidden = n > 0; P('pw-rem').parentElement.hidden = n > 0; P('pw-lock').hidden = !n;
-    P('unlock-text').textContent = n ? `แสดงชื่อพนักงานแล้ว (${num(n)} คน)` : 'ชื่อพนักงานถูกล็อกไว้ ใส่รหัสผ่านเพื่อแสดงชื่อ Staff'; u.querySelector('.lk').textContent = n ? '🔓' : '🔒'; };
-  const b64 = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
-  async function unlock(pw) {
-    const enc = await fetch('data/staff_names.enc.json').then((r) => { if (!r.ok) throw new Error('nofile'); return r.json(); });
-    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
-    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(enc.salt), iterations: enc.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(enc.iv) }, key, b64(enc.ct));
-    return new TextDecoder().decode(plain);
-  }
-  try { const s0 = localStorage.getItem(KEEP); if (s0) showUnlocked(setNames(s0)); } catch (e) {}
-  P('unlock').addEventListener('submit', async (e) => {
-    e.preventDefault(); const pw = P('pw').value; P('pw-err').textContent = ''; if (!pw) return;
-    P('pw-go').disabled = true; P('pw-go').textContent = 'กำลังตรวจ…';
-    try { const t = await unlock(pw); const n = setNames(t); P('pw').value = '';
-      try { if (P('pw-rem').checked) localStorage.setItem(KEEP, t); } catch (x) {}
-      showUnlocked(n); targets(D('M'));
-    } catch (err) { P('pw-err').textContent = String(err.message) === 'nofile' ? 'ไม่พบไฟล์รายชื่อบนเว็บ' : 'รหัสผ่านไม่ถูกต้อง'; }
-    P('pw-go').disabled = false; P('pw-go').textContent = 'แสดงชื่อ';
-  });
-  P('pw-lock').addEventListener('click', () => { NAMES = {}; try { localStorage.removeItem(KEEP); localStorage.removeItem('tmh_staff_names'); } catch (e) {} showUnlocked(0); targets(D('M')); });
+  const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^\ufeff/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; };
+  window.TMH_setNames = (t) => { setNames(t || 'staff_id,staff\n'); if (ok('M')) targets(D('M')); };
   Object.values(S).forEach((s) => {
     P(s.tag).replaceChildren(new Option('ทุกสถานะ', ''), ...TAGS.map((t) => new Option(t, t)));
     P(s.tag).addEventListener('change', () => { s.limit = s.step; targets(D('M')); });
@@ -1014,6 +1009,43 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       if (!rows.length) { const tr = el('tr'); const td = el('td', null, 'ไม่พบรายการตามเงื่อนไข'); td.colSpan = 10; tr.append(td); tb.append(tr); }
     });
   }
+})();
+</script>
+<script>
+(function () {
+  const KEY = 'tmh_site_pw';
+  const $ = (id) => document.getElementById(id);
+  const b64 = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
+  let bundle = null;
+  async function open(pw) {
+    if (!bundle) bundle = await fetch('data/site.enc.json', { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error('nofile'); return r.json(); });
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(bundle.salt), iterations: bundle.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    let plain;
+    try { plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(bundle.iv) }, key, b64(bundle.ct)); } catch (e) { throw new Error('badpw'); }
+    const txt = await new Response(new Blob([plain]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    return JSON.parse(txt);
+  }
+  function enter(files) {
+    document.body.classList.remove('locked');
+    window.TMH_setNames(files['staff_names.csv']);
+    dash.__load(files);
+  }
+  async function tryPw(pw, remember) {
+    const files = await open(pw);
+    try { if (remember) localStorage.setItem(KEY, pw); else localStorage.removeItem(KEY); } catch (e) {}
+    enter(files);
+  }
+  $('gate-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); const pw = $('gate-pw').value; if (!pw) return;
+    $('gate-err').textContent = ''; $('gate-go').disabled = true; $('gate-go').textContent = 'กำลังเปิด…';
+    try { await tryPw(pw, $('gate-rem').checked); $('gate-pw').value = ''; }
+    catch (err) { $('gate-err').textContent = err.message === 'badpw' ? 'รหัสผ่านไม่ถูกต้อง' : err.message === 'nofile' ? 'ไม่พบไฟล์ข้อมูล' : 'เปิดข้อมูลไม่สำเร็จ ลองใช้เบราว์เซอร์รุ่นใหม่'; $('gate-pw').select(); }
+    $('gate-go').disabled = false; $('gate-go').textContent = 'เข้าสู่ Dashboard';
+  });
+  $('logout').addEventListener('click', () => { try { localStorage.removeItem(KEY); localStorage.removeItem('tmh_staff_names'); localStorage.removeItem('tmh_staff_names_v2'); } catch (e) {} location.reload(); });
+  let saved = null; try { saved = localStorage.getItem(KEY); } catch (e) {}
+  if (saved) tryPw(saved, true).catch(() => { try { localStorage.removeItem(KEY); } catch (e) {} });
 })();
 </script>
 </body>

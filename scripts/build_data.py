@@ -2,9 +2,10 @@
 
 Usage:
     pip install pyxlsb pandas
-    python scripts/build_data.py "DPS_xxx.xlsb" docs/data [private/staff_names.csv]
+    python scripts/build_data.py "DPS_xxx.xlsb" private/data private/staff_names.csv
+    TMH_PASSWORD='...' python scripts/encrypt_site.py private/data private/staff_names.csv docs/data/site.enc.json
 
-History is kept: months already in docs/data that are not in the new file
+History is kept: months already in private/data that are not in the new file
 stay as they are, and months in the new file replace the old rows for those
 months. So files can be added in any order (an older file fills in history).
 

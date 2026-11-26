@@ -13,23 +13,23 @@ Dashboard ผลตรวจเอกสาร DPS (TMH Postpaid): % สมบ�
 | `docs/data/*.csv` | ข้อมูลสรุป (ยอดรวมเท่านั้น) |
 | `scripts/build_data.py` | แปลงไฟล์ DPS `.xlsb` เป็นไฟล์ใน `docs/data/` |
 
+## เข้าเว็บด้วยรหัสผ่าน
+
+หน้าเว็บเปิดด้วยหน้าใส่รหัสผ่าน ข้อมูลทั้งหมด (รวมชื่อ Staff) อยู่ใน `docs/data/site.enc.json` แบบเข้ารหัส (gzip + AES-256-GCM, คีย์จาก PBKDF2-SHA256 600,000 รอบ) ใส่รหัสถูกแล้วเบราว์เซอร์ถอดรหัสและแสดงข้อมูลทันที ไม่มีไฟล์ข้อมูลแบบอ่านได้บนเว็บ
+
 ## อัปเดตข้อมูลรอบใหม่ (ข้อมูลเก่าถูกเก็บไว้)
 
 ```bash
-pip install pyxlsb pandas
-python scripts/build_data.py "DPS_xxx.xlsb" docs/data private/staff_names.csv
-git add docs/data && git commit -m "อัปเดตข้อมูล DPS รอบ ..." && git push
+pip install pyxlsb pandas cryptography
+python scripts/build_data.py "DPS_xxx.xlsb" private/data private/staff_names.csv
+TMH_PASSWORD='รหัสผ่าน' python scripts/encrypt_site.py private/data private/staff_names.csv docs/data/site.enc.json
+git add docs/data/site.enc.json && git commit -m "อัปเดตข้อมูล DPS รอบ ..." && git push
 ```
 
-แล้วแก้ `DATA_NOTE` ใน `docs/index.html` ให้ตรงกับไฟล์รอบใหม่
-
-สคริปต์เก็บเดือนเก่าที่มีอยู่แล้วไว้ และแทนที่เฉพาะเดือนที่อยู่ในไฟล์ใหม่ จะเติมไฟล์เดือนก่อนๆ ย้อนหลังก็ได้ ในหน้าเว็บเลือก **เดือน** และ **เทียบกับ** ได้ที่แถบด้านบน และกราฟ **ย้อนหลังรายเดือน** แสดงทุกเดือนที่มีข้อมูล
-
-> อย่า commit ไฟล์ DPS ต้นฉบับ (`.xlsb`) เพราะมีข้อมูลลูกค้า (`.gitignore` กันไว้แล้ว)
-
-## เปิด GitHub Pages
-
-Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: `main` / folder `/docs` → Save
+- `private/` เก็บไฟล์ข้อมูลแบบอ่านได้ ไม่ถูก commit (อยู่ใน `.gitignore`) ต้องเก็บโฟลเดอร์นี้ไว้เพื่อให้ข้อมูลเดือนเก่าต่อเนื่อง
+- เปลี่ยนรหัสผ่าน: รันคำสั่ง `encrypt_site.py` ด้วยรหัสใหม่ แล้ว push รหัสเก่าจะใช้ไม่ได้ทันที
+- แก้ `DATA_NOTE` ใน `docs/index.html` ให้ตรงกับไฟล์รอบใหม่
+- อย่า commit ไฟล์ DPS ต้นฉบับ (`.xlsb`)
 
 ## เกณฑ์ชี้เป้า
 
@@ -46,16 +46,7 @@ Settings → Pages → Build and deployment → Source: **Deploy from a branch**
 
 ## ข้อมูลส่วนบุคคล
 
-Repo นี้เป็น Public จึงเก็บเฉพาะยอดรวม ไม่มีชื่อ เบอร์ BAN หรือ SIM ของลูกค้า
+Repo นี้เป็น Public ข้อมูลบนเว็บจึงเข้ารหัสทั้งหมด และเก็บเฉพาะยอดรวม ไม่มีชื่อ เบอร์ BAN หรือ SIM ของลูกค้า
 Staff แสดงเป็น Sales ID Code และผู้ตรวจแสดงเป็นรหัส ไม่มีชื่อพนักงานใน repo
 
-**ดูชื่อ Staff:** ชื่อพนักงานเก็บใน `docs/data/staff_names.enc.json` แบบเข้ารหัส (AES-256-GCM, PBKDF2 600,000 รอบ) ในหน้าเว็บส่วน "ราย Staff" ใส่รหัสผ่านเพื่อแสดงชื่อ ถ้าไม่มีรหัสผ่านจะอ่านไฟล์นี้ไม่ได้
-
-เปลี่ยนรหัสผ่านหรืออัปเดตรายชื่อ:
-
-```bash
-pip install cryptography
-TMH_NAMES_PASSWORD='รหัสผ่านใหม่' python scripts/encrypt_names.py private/staff_names.csv docs/data/staff_names.enc.json
-```
-
-ใช้รหัสผ่านยาวและเดายาก เพราะใครก็ดาวน์โหลดไฟล์ที่เข้ารหัสไปลองเดาได้
+ชื่อ Staff แสดงหลังเข้าสู่ระบบ ใช้รหัสผ่านที่ยาวและเดายาก เพราะใครก็ดาวน์โหลดไฟล์ที่เข้ารหัสไปลองเดาได้

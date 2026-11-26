@@ -1,6 +1,7 @@
 /* Minimal runtime that gives the dashboard page the same `dash` API it uses in Claude:
    dash.calc / dash.data / dash.draw / dash.onData / dash.params / dash.setParams / dash.resetParams.
-   Data comes from the CSV files in ./data. */
+   Data comes from the encrypted bundle data/site.enc.json, opened by the login screen
+   in index.html, which hands the CSV texts to dash.__load(). */
 (function () {
   const FILES = { facts: 'data/facts.csv', reasons_detail: 'data/reasons_detail.csv', staff: 'data/staff.csv', staff_items: 'data/staff_items.csv' };
   const DEFAULTS = { cur: '', prev: '', rr: '', region: '', shop: '' };
@@ -50,12 +51,11 @@
     draw(name, fn) { if (fn) { draws[name] = fn; } else { runDraw(name); } }
   };
 
-  Object.entries(FILES).forEach(([id, url]) => {
-    fetch(url).then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); })
-      .then((t) => { raw[id] = d3.csvParse(t); state[id] = 'ok'; })
-      .catch(() => { state[id] = 'error'; })
-      .finally(() => { cache = {}; schedule(); });
-  });
+  // the login screen decrypts the data and passes { 'facts.csv': text, ... }
+  window.dash.__load = (texts) => {
+    Object.keys(FILES).forEach((id) => { const t = texts[id + '.csv']; if (t == null) { state[id] = 'error'; return; } raw[id] = d3.csvParse(t); state[id] = 'ok'; });
+    cache = {}; schedule();
+  };
   document.addEventListener('DOMContentLoaded', () => { ready = true; schedule(); });
   let w = 0; window.addEventListener('resize', () => { if (Math.abs(window.innerWidth - w) > 20) { w = window.innerWidth; schedule(); } });
 })();
