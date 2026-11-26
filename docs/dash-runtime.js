@@ -3,7 +3,7 @@
    Data comes from the CSV files in ./data. */
 (function () {
   const FILES = { facts: 'data/facts.csv', reasons_detail: 'data/reasons_detail.csv', staff: 'data/staff.csv' };
-  const DEFAULTS = { month: '', rr: '', region: '', shop: '' };
+  const DEFAULTS = { cur: '', prev: '', rr: '', region: '', shop: '' };
   const raw = {}; const state = {}; const calcs = {}; const draws = {}; const dataFns = [];
   let params = Object.assign({}, DEFAULTS); let cache = {}; let ready = false; let pending = false;
 

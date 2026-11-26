@@ -191,6 +191,8 @@ details.rules summary{cursor:pointer;color:var(--text)}
       <label>Region <select id="f-rr"><option value="">ทั้งหมด</option><option>BMA</option><option>UPC1</option><option>UPC2</option></select></label>
       <label>Area <select id="f-region"><option value="">ทั้งหมด</option></select></label>
       <label>สาขา <select id="f-shop"><option value="">ทุกสาขา</option></select></label>
+      <label>เดือน <select id="f-cur"></select></label>
+      <label>เทียบกับ <select id="f-prev"></select></label>
       <button class="reset" id="f-reset" type="button">ล้างตัวกรอง</button>
       <span class="note" id="f-note"></span>
     </div>
@@ -208,6 +210,11 @@ details.rules summary{cursor:pointer;color:var(--text)}
     <div class="sec-h"><h2>1. ราย Region: BMA · UPC1 · UPC2</h2><p>เดือนก่อน → เดือนนี้ · คลิกการ์ดเพื่อเจาะดู Area ของ Region นั้น</p></div>
     <div class="rrgrid" id="rr-cards"></div>
     <p class="read" id="read-rr"></p>
+  </section>
+
+  <section id="history">
+    <div class="sec-h"><h2>ย้อนหลังรายเดือน</h2><p>% สมบูรณ์ทุกเดือนที่มีข้อมูล · คลิกจุดเพื่อเลือกเป็นเดือนที่ดู</p></div>
+    <div class="panel"><div class="legend" id="hist-legend"></div><div class="chart" id="hist" style="min-height:240px"></div><p class="read" id="read-hist"></p></div>
   </section>
 
   <section id="regions">
@@ -330,7 +337,18 @@ function tip(box) {
 }
 
 /* ---------- calcs ---------- */
-dash.calc('M', { inputs: ['facts'], fn: (facts) => monthsOf(facts) });
+dash.calc('allMonths', { inputs: ['facts'], fn: (facts) => [...new Set(facts.map((r) => r.month))].sort() });
+dash.calc('M', { inputs: ['allMonths'], fn: (ms) => {
+  const p = dash.params(); const cur = ms.includes(p.cur) ? p.cur : ms[ms.length - 1];
+  const i = ms.indexOf(cur); const prev = ms.includes(p.prev) && p.prev !== cur ? p.prev : ms[i - 1] || null;
+  return { prev, cur, all: ms };
+} });
+dash.calc('monthly', { inputs: ['facts', 'allMonths'], fn: (facts, ms) => {
+  const rows = filt(facts, dash.params());
+  return ms.map((m) => { const g = rows.filter((r) => r.month === m); const o = tally(g);
+    const byRR = {}; ['BMA', 'UPC1', 'UPC2'].forEach((rr) => { byRR[rr] = tally(facts.filter((r) => r.month === m && r.rr === rr)).pct; });
+    return { month: m, total: o.total, pct: o.pct, pct_x: o.total ? r1(100 * o.xflag / o.total) : null, byRR }; });
+} });
 
 dash.calc('kpi', { inputs: ['facts', 'M'], fn: (facts, M) => {
   const p = dash.params(); const rows = filt(facts, p);
@@ -338,7 +356,8 @@ dash.calc('kpi', { inputs: ['facts', 'M'], fn: (facts, M) => {
     const late = d3.sum(mr.filter((r) => r.tat_bucket === '8-14 วัน' || r.tat_bucket === '15+ วัน'), (r) => +r.n);
     return Object.assign(o, { pct_x: o.total ? r1(100 * o.xflag / o.total) : null, pct_inc: o.total ? r1(100 * o.incomplete / o.total) : null,
       avg_tat: o.total ? r1(o.tat / o.total) : null, late: r1(100 * late / tt) }); };
-  return { prev: one(M.prev), cur: one(M.cur) };
+  const empty = { total: null, complete: null, bad: null, pct: null, pct_x: null, pct_inc: null, avg_tat: null, late: null };
+  return { prev: M.prev ? one(M.prev) : empty, cur: one(M.cur) };
 } });
 
 dash.calc('regionCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
@@ -358,7 +377,7 @@ dash.calc('rrCmp', { inputs: ['facts', 'staff', 'M'], fn: (facts, staff, M) => {
     return { rr, prev: a.pct, cur: b.pct, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null, prev_n: a.total, cur_n: b.total,
       prev_x: a.total ? r1(100 * a.xflag / a.total) : null, cur_x: b.total ? r1(100 * b.xflag / b.total) : null,
       areas: areas.length, areas_worse: areas.filter((d) => d < 0).length,
-      urgent: shops.filter((x) => x.tag === 'เร่งด่วน').length, worse: shops.filter((x) => x.tag === 'แย่ลง').length };
+      urgent: shops.filter((x) => x.tag === 'เร่งด่วน').length, worse: shops.filter((x) => x.tag === 'แย่ลง').length, below: shops.filter((x) => x.tag === 'ต่ำกว่าเป้า').length };
   });
 } });
 
@@ -384,9 +403,9 @@ function rateCmp(src, key, kpi, M, p) {
 dash.calc('reasonCmp', { inputs: ['facts', 'kpi', 'M'], fn: (facts, kpi, M) => rateCmp(facts.filter((r) => r.result !== 'complete'), 'reason', kpi, M, dash.params()).sort((a, b) => b.cur - a.cur) });
 dash.calc('itemCmp', { inputs: ['reasons_detail', 'kpi', 'M'], fn: (rd, kpi, M) => rateCmp(rd, 'item', kpi, M, dash.params()).filter((r) => r.key !== 'อื่นๆ').sort((a, b) => b.cur - a.cur).slice(0, 12) });
 
-dash.calc('daily', { inputs: ['facts'], fn: (facts) => {
+dash.calc('daily', { inputs: ['facts', 'M'], fn: (facts, M) => {
   const m = new Map();
-  filt(facts, dash.params()).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
+  filt(facts, dash.params()).filter((r) => r.month === M.prev || r.month === M.cur).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
   return [...m.values()].sort((a, b) => (a.date < b.date ? -1 : 1)).map((o) => Object.assign(o, { pct: r1(100 * o.complete / o.total) }));
 } });
 
@@ -437,6 +456,8 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   P('f-region').addEventListener('change', (e) => dash.setParams({ region: e.target.value, shop: '' }));
   P('f-shop').addEventListener('change', (e) => dash.setParams({ shop: e.target.value }));
   P('f-reset').addEventListener('click', () => dash.resetParams());
+  P('f-cur').addEventListener('change', (e) => dash.setParams({ cur: e.target.value, prev: '' }));
+  P('f-prev').addEventListener('change', (e) => dash.setParams({ prev: e.target.value }));
 
   dash.onData(() => {
     const p = dash.params(); P('f-rr').value = p.rr || '';
@@ -445,7 +466,10 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     P('f-note').textContent = 'ตัวกรองมีผลทั้งหน้า';
     if (ok('M')) {
       const M = D('M');
-      document.querySelectorAll('.m-prev').forEach((e) => { e.textContent = ml(M.prev); });
+      const fc = P('f-cur'); fc.replaceChildren(...M.all.slice().reverse().map((m) => new Option(ml(m), m))); fc.value = M.cur;
+      const fp = P('f-prev'); fp.replaceChildren(...M.all.filter((m) => m !== M.cur).reverse().map((m) => new Option(ml(m), m))); fp.value = M.prev || '';
+      fp.disabled = M.all.length < 2;
+      document.querySelectorAll('.m-prev').forEach((e) => { e.textContent = ml(M.prev); e.parentElement.hidden = !M.prev; });
       document.querySelectorAll('.m-cur').forEach((e) => { e.textContent = ml(M.cur); });
     }
     drawAll();
@@ -454,10 +478,11 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   function drawAll() {
     if (!ok('M', 'kpi')) return;
     const M = D('M'), K = D('kpi');
-    P('period').textContent = `เทียบ ${ml(M.cur)} กับ ${ml(M.prev)} · ${scope()} · ${DATA_NOTE}`;
+    P('period').textContent = (M.prev ? `เทียบ ${ml(M.cur)} กับ ${ml(M.prev)}` : `ดู ${ml(M.cur)} (ไม่มีเดือนก่อนหน้าในข้อมูลให้เทียบ)`) + ` · ${scope()} · ${DATA_NOTE}`;
     P('foot').textContent = `ข้อมูล: ${DATA_NOTE} · เดือนล่าสุดอาจยังไม่ครบเดือน · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน`;
     gauge(K, M); verdict(K, M); insights(K, M);
     if (ok('rrCmp')) rrCards(D('rrCmp'), M);
+    if (ok('monthly')) history(D('monthly'), M);
     if (ok('regionCmp')) { dumbbell(P('db-region'), D('regionCmp'), M, (r) => dash.setParams({ region: dash.params().region === r.key ? '' : r.key, shop: '' }), dash.params().region); readRegion(D('regionCmp')); }
     if (ok('dimCmp')) { const dc = D('dimCmp'); ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => dumbbell(P('db-' + k), dc[k], M)); }
     if (ok('reasonCmp')) { paired(P('pb-reason'), D('reasonCmp')); readReason(D('reasonCmp'), M); }
@@ -488,11 +513,11 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     const c = el('div', 'center');
     c.append(el('div', 'big', pct(K.cur.pct)), el('div', 'cap', '% สมบูรณ์ ' + ml(M.cur)));
     const d = K.cur.pct != null && K.prev.pct != null ? r1(K.cur.pct - K.prev.pct) : null;
-    c.append(el('span', 'chip ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat'), d == null ? '—' : `${arrow(d)} ${Math.abs(d).toFixed(1)} จุด จาก ${ml(M.prev)}`));
+    c.append(el('span', 'chip ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat'), d == null ? 'ไม่มีเดือนก่อนให้เทียบ' : `${arrow(d)} ${Math.abs(d).toFixed(1)} จุด จาก ${ml(M.prev)}`));
     const lg = el('div', 'glegend');
     const item = (sw, txt) => { const s = el('span'); const i = el('i'); i.style.cssText = sw; s.append(i, txt); lg.append(s); };
     item('background:' + col, ml(M.cur) + ' ' + pct(K.cur.pct));
-    item('background:var(--prev);width:4px;border-radius:1px', ml(M.prev) + ' ' + pct(K.prev.pct));
+    if (M.prev) item('background:var(--prev);width:4px;border-radius:1px', ml(M.prev) + ' ' + pct(K.prev.pct));
     item('background:#fff;width:2px;border-radius:0', 'เป้า ' + GOAL + '%');
     box.append(c, lg);
   }
@@ -500,6 +525,18 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   /* hero verdict + KPI table */
   function verdict(K, M) {
     const v = P('verdict'); v.replaceChildren();
+    if (!M.prev) {
+      const gap = r1(GOAL - K.cur.pct);
+      v.append(el('h2', null, `${scope()}: ${ml(M.cur)}`));
+      const p1 = el('p'); p1.append('% สมบูรณ์ ', el('b', null, pct(K.cur.pct)), ' ', gap > 0 ? `ต่ำกว่าเป้า ${GOAL}% อยู่ ${gap.toFixed(1)} จุด` : `ผ่านเป้า ${GOAL}%`);
+      const p2 = el('p', null, `เอกสารไม่สมบูรณ์ ${num(K.cur.bad)} จาก ${num(K.cur.total)} ฉบับ · ไม่มีเดือนก่อนหน้าในข้อมูลให้เทียบ`);
+      v.append(p1, p2);
+      const t = el('table', 'kt'); const hr = el('tr'); ['', ml(M.cur), 'เทียบเป้า'].forEach((h) => hr.append(el('th', null, h))); t.append(hr);
+      [['% สมบูรณ์', pct(K.cur.pct), K.cur.pct >= GOAL ? ['g', 'ผ่านเป้า'] : ['r', 'ต่ำกว่าเป้า']], ['% X Flag (ไม่แนบ/ไม่ครบ)', pct(K.cur.pct_x), ['z', '—']], ['% ไม่ผ่านเงื่อนไข', pct(K.cur.pct_inc), ['z', '—']],
+       ['% ตรวจเกิน 7 วัน', pct(K.cur.late), ['z', '—']], ['วันตรวจเฉลี่ย', K.cur.avg_tat == null ? '—' : K.cur.avg_tat.toFixed(1), ['z', '—']], ['จำนวนเอกสาร', num(K.cur.total), ['z', '—']]]
+        .forEach(([n, val, [c, m]]) => { const tr = el('tr'); tr.append(el('td', null, n), el('td', null, val), el('td', 'd ' + c, m)); t.append(tr); });
+      v.append(t); return;
+    }
     const d = r1(K.cur.pct - K.prev.pct); const gap = r1(GOAL - K.cur.pct);
     const head = d >= 1 ? 'ดีขึ้นจากเดือนก่อน' : d <= -1 ? 'แย่ลงจากเดือนก่อน' : 'ทรงตัวจากเดือนก่อน';
     v.append(el('h2', null, `${scope()}: ${head}`));
@@ -538,6 +575,14 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   function insights(K, M) {
     const ul = P('ins'); ul.replaceChildren();
     const add = (cls, title, body, act) => { const li = el('li', cls); li.append(el('h3', null, title), el('p', null, body)); if (act) li.append(el('p', 'act', '→ ' + act)); ul.append(li); };
+    if (!M.prev) {
+      add(K.cur.pct >= GOAL ? 'good' : 'bad', `% สมบูรณ์ ${ml(M.cur)}: ${pct(K.cur.pct)}`, `X Flag ${pct(K.cur.pct_x)} · ไม่ผ่านเงื่อนไข ${pct(K.cur.pct_inc)} · เป้า ${GOAL}%`, 'ไม่มีเดือนก่อนหน้าในข้อมูลให้เทียบ เลือกเดือนที่ใหม่กว่าเพื่อดูว่าดีขึ้นหรือแย่ลง');
+      if (ok('reasonCmp') && D('reasonCmp')[0]) { const t = D('reasonCmp')[0]; add('warn', `สาเหตุอันดับหนึ่ง: ${t.key}`, `เกิด ${t.cur.toFixed(1)} ครั้งต่อเอกสาร 100 ฉบับ (${num(t.cur_n)} ครั้ง)`, 'บังคับแนบเอกสารหลักก่อนส่ง และแจ้งหน้าร้านทันทีที่ถูก Flag'); }
+      if (ok('regionCmp')) { const w = D('regionCmp').filter((r) => r.cur_n >= 30)[0]; if (w) add(w.cur < GOAL ? 'bad' : 'good', `Area ที่ต่ำสุด: ${w.key}`, `% สมบูรณ์ ${pct(w.cur)} จาก ${num(w.cur_n)} ฉบับ`, 'เจาะดูราย Shop สถานะ "เร่งด่วน" ของ Area นี้'); }
+      if (ok('dimCmp')) { const w = D('dimCmp').channel[0]; if (w) add(w.cur < GOAL ? 'warn' : 'good', `ช่องทางที่ต่ำสุด: ${w.key}`, `% สมบูรณ์ ${pct(w.cur)} จาก ${num(w.cur_n)} ฉบับ`, 'ทบทวนขั้นตอนรับเอกสารของช่องทางนี้'); }
+      add(K.cur.late > 30 ? 'bad' : 'good', 'ความเร็วในการตรวจ', `ตรวจเกิน 7 วัน ${pct(K.cur.late)} · เฉลี่ย ${K.cur.avg_tat} วัน`, 'ตั้ง SLA ตรวจเสร็จภายใน 7 วัน');
+      return;
+    }
     const d = r1(K.cur.pct - K.prev.pct);
     add(d < 0 ? 'bad' : 'good', d < 0 ? `% สมบูรณ์ลดลง ${Math.abs(d).toFixed(1)} จุด` : `% สมบูรณ์เพิ่มขึ้น ${d.toFixed(1)} จุด`,
       `${ml(M.prev)} ${pct(K.prev.pct)} → ${ml(M.cur)} ${pct(K.cur.pct)} · X Flag ${pct(K.prev.pct_x)} → ${pct(K.cur.pct_x)} · ไม่ผ่านเงื่อนไข ${pct(K.prev.pct_inc)} → ${pct(K.cur.pct_inc)}`,
@@ -578,6 +623,41 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       'ตั้ง SLA ตรวจเสร็จภายใน 7 วัน (เดือนล่าสุดยังไม่ครบเดือน งานที่ยังรอตรวจอาจทำให้ตัวเลขดูดีกว่าความจริง)');
   }
 
+  /* monthly history */
+  function history(rows, M) {
+    const box = P('hist'); box.replaceChildren(); const tp = tip(box); const p = dash.params();
+    const RRC = { BMA: '#3a6fd8', UPC1: '#0e9f8a', UPC2: '#ec6a1e' };
+    const lg = P('hist-legend'); lg.replaceChildren();
+    const li = (c, t, sq) => { const s = el('span'); const i = el('i', sq ? 'sq' : null); i.style.background = c; s.append(i, t); lg.append(s); };
+    li('var(--ink)', scope()); if (!p.rr && !p.region && !p.shop) Object.entries(RRC).forEach(([k, c]) => li(c, k));
+    li('#8a97a8', 'เป้า ' + GOAL + '%', true);
+    const W = box.clientWidth || 800, H = 240, m = { t: 16, r: 24, b: 30, l: 44 };
+    const x = d3.scalePoint().domain(rows.map((r) => r.month)).range([m.l + 30, W - m.r - 30]);
+    const vals = rows.flatMap((r) => [r.pct, ...Object.values(r.byRR)]).filter((v) => v != null);
+    const y = d3.scaleLinear().domain([Math.min(GOAL - 5, Math.floor(((d3.min(vals) || 80) - 2) / 5) * 5), 100]).range([H - m.b, m.t]);
+    const svg = d3.select(box).append('svg').attr('width', W).attr('height', H).attr('role', 'img').attr('aria-label', '% สมบูรณ์รายเดือน');
+    svg.append('g').attr('class', 'gridl').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)).tickFormat(''));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat((v) => v + '%'));
+    svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickFormat(ml));
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(GOAL)).attr('y2', y(GOAL)).style('stroke', '#8a97a8').attr('stroke-dasharray', '5 4');
+    [M.prev, M.cur].forEach((mm) => { if (mm) svg.append('rect').attr('x', x(mm) - 26).attr('width', 52).attr('y', m.t).attr('height', H - m.b - m.t).style('fill', mm === M.cur ? '#e3ebf7' : '#f0f3f7'); });
+    if (!p.rr && !p.region && !p.shop) Object.entries(RRC).forEach(([k, c]) => {
+      const seg = rows.filter((r) => r.byRR[k] != null);
+      svg.append('path').datum(seg).attr('fill', 'none').style('stroke', c).attr('stroke-width', 1.5).attr('opacity', .8).attr('d', d3.line().x((r) => x(r.month)).y((r) => y(r.byRR[k])));
+      svg.append('g').selectAll('circle').data(seg).join('circle').attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r.byRR[k])).attr('r', 3).style('fill', c);
+    });
+    const main = rows.filter((r) => r.pct != null);
+    svg.append('path').datum(main).attr('fill', 'none').style('stroke', 'var(--ink)').attr('stroke-width', 3).attr('d', d3.line().x((r) => x(r.month)).y((r) => y(r.pct)));
+    svg.append('g').selectAll('circle').data(main).join('circle').attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r.pct)).attr('r', 6).style('fill', 'var(--ink)').style('stroke', '#fff').attr('stroke-width', 2).style('cursor', 'pointer')
+      .on('mousemove', (ev, r) => tp.show(ev, [[ml(r.month)], ['% สมบูรณ์', pct(r.pct)], ['X Flag', pct(r.pct_x)], ['เอกสาร', num(r.total)], ...Object.entries(r.byRR).map(([k, v]) => [k, pct(v)])]))
+      .on('mouseleave', () => tp.hide()).on('click', (ev, r) => dash.setParams({ cur: r.month, prev: '' }));
+    svg.append('g').selectAll('text').data(main).join('text').attr('x', (r) => x(r.month)).attr('y', (r) => y(r.pct) - 12).attr('text-anchor', 'middle').style('fill', 'var(--ink)').style('font-weight', 700).text((r) => pct(r.pct));
+    const rd = P('read-hist'); rd.replaceChildren();
+    if (rows.length < 3) rd.append('ตอนนี้มีข้อมูล ', el('b', null, rows.length + ' เดือน'), ` (${rows.map((r) => ml(r.month)).join(', ')}) ส่งไฟล์ DPS ของเดือนก่อนหน้ามาเพิ่ม แล้วกราฟนี้จะย้อนหลังได้ยาวขึ้น ข้อมูลเดิมจะถูกเก็บไว้ทุกครั้งที่อัปเดต`);
+    else { const best = [...main].sort((a, b) => b.pct - a.pct)[0], worst = [...main].sort((a, b) => a.pct - b.pct)[0];
+      rd.append('อ่านผล: ดีที่สุด ', el('b', null, `${ml(best.month)} ${pct(best.pct)}`), ` · แย่ที่สุด ${ml(worst.month)} ${pct(worst.pct)}`); }
+  }
+
   /* region cards */
   function rrCards(rows, M) {
     const box = P('rr-cards'); box.replaceChildren(); const p = dash.params();
@@ -587,18 +667,18 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const top = el('div', 'top'); top.append(el('span', 'name', r.rr), el('span', 'vol', `${num(r.cur_n)} ฉบับเดือนนี้`));
       const col = r.cur >= GOAL ? 'var(--good)' : r.cur >= URGENT ? 'var(--warn)' : 'var(--bad)';
       const vals = el('div', 'vals'); const cur = el('span', 'cur', pct(r.cur)); cur.style.color = col;
-      vals.append(cur, el('span', 'chip ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : 'flat'), r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
-      b.append(top, vals, el('span', 'from', `${ml(M.prev)} ${pct(r.prev)} → ${ml(M.cur)} ${pct(r.cur)}`));
+      vals.append(cur); if (M.prev) vals.append(el('span', 'chip ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : 'flat'), r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+      b.append(top, vals, el('span', 'from', M.prev ? `${ml(M.prev)} ${pct(r.prev)} → ${ml(M.cur)} ${pct(r.cur)}` : `% สมบูรณ์ ${ml(M.cur)}`));
       const lo = 50, x = (v) => Math.max(0, (v - lo) / (100 - lo) * 100) + '%';
       const mtr = el('div', 'meter'); const f = el('i'); f.style.width = x(r.cur); f.style.background = col;
       const gl = el('em'); gl.style.left = x(GOAL); const pv = el('b'); pv.style.left = x(r.prev); pv.title = ml(M.prev);
-      mtr.append(f, gl, pv); b.append(mtr);
+      mtr.append(f, gl); if (M.prev) mtr.append(pv); b.append(mtr);
       const facts = el('div', 'facts');
       const fact = (label, val) => { const d = el('span'); d.append(label + ' ', el('b', null, val)); facts.append(d); };
-      fact('X Flag', `${pct(r.prev_x)} → ${pct(r.cur_x)}`);
-      fact('Area แย่ลง', `${r.areas_worse} จาก ${r.areas}`);
+      fact('X Flag', M.prev ? `${pct(r.prev_x)} → ${pct(r.cur_x)}` : pct(r.cur_x));
+      if (M.prev) fact('Area แย่ลง', `${r.areas_worse} จาก ${r.areas}`); else fact('จำนวน Area', String(r.areas));
       fact('Shop เร่งด่วน', num(r.urgent));
-      fact('Shop แย่ลง', num(r.worse));
+      if (M.prev) fact('Shop แย่ลง', num(r.worse)); else fact('Shop ต่ำกว่าเป้า', num(r.below));
       b.append(facts, el('span', 'go', p.rr === r.rr ? 'กดอีกครั้งเพื่อดูทุก Region' : 'ดู Area ของ ' + r.rr));
       b.addEventListener('click', () => { dash.setParams({ rr: p.rr === r.rr ? '' : r.rr, region: '', shop: '' }); if (p.rr !== r.rr) P('regions').scrollIntoView({ behavior: 'smooth' }); });
       box.append(b);
@@ -606,6 +686,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     const rd = P('read-rr'); rd.replaceChildren();
     const worst = [...rows].sort((a, b) => (a.delta ?? 0) - (b.delta ?? 0))[0], low = [...rows].sort((a, b) => (a.cur ?? 999) - (b.cur ?? 999))[0];
     const allDown = rows.every((r) => r.delta < 0);
+    if (!M.prev) { rd.append('อ่านผล: ', el('b', null, `ต่ำสุดใน ${ml(M.cur)} คือ ${low.rr} (${pct(low.cur)})`), ` · ${rows.filter((r) => r.cur < GOAL).length} จาก 3 Region ต่ำกว่าเป้า ${GOAL}%`); return; }
     rd.append('อ่านผล: ', el('b', null, allDown ? 'ทั้ง 3 Region แย่ลง' : `${rows.filter((r) => r.delta < 0).length} จาก 3 Region แย่ลง`),
       ` · ลดลงมากสุดคือ ${worst.rr} (${sgn(worst.delta, ' จุด')}) · ต่ำสุดเดือนนี้คือ ${low.rr} (${pct(low.cur)})`,
       allDown ? ' แปลว่าเป็นปัญหาทั้งประเทศ ควรแก้ที่ระบบหรือขั้นตอนกลางก่อน แล้วค่อยเจาะราย Area' : ' ควรเริ่มเจาะจาก Region ที่ลดลงมากสุด');
@@ -622,12 +703,12 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const row = el('div', 'row' + (selected === r.key ? ' sel' : ''));
       const lab = el('div', 'lab', r.label); if (r.sub) lab.append(el('small', null, r.sub));
       const lane = el('div', 'lane'); const g = el('div', 'goal'); g.style.left = x(GOAL); lane.append(g);
-      const col = r.delta == null ? 'var(--muted)' : r.delta >= 0 ? 'var(--good)' : 'var(--bad)';
+      const col = r.delta == null ? (r.cur >= GOAL ? 'var(--good)' : 'var(--bad)') : r.delta >= 0 ? 'var(--good)' : 'var(--bad)';
       if (r.prev != null && r.cur != null) { const b = el('div', 'bar'); b.style.left = x(Math.min(r.prev, r.cur)); b.style.width = (100 * Math.abs(r.cur - r.prev) / (hi - lo)) + '%'; b.style.background = col; b.style.opacity = .5; lane.append(b); }
       if (r.prev != null) { const a = el('div', 'dot'); a.style.left = x(r.prev); a.style.background = 'var(--prev)'; lane.append(a); }
       if (r.cur != null) { const c = el('div', 'dot'); c.style.left = x(r.cur); c.style.background = col; lane.append(c); }
       const val = el('div', 'val'); val.append(el('b', null, pct(r.cur)), document.createElement('br'));
-      val.append(el('span', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', r.delta == null ? 'ไม่มีข้อมูลเดือนก่อน' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+      val.append(el('span', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', r.delta == null ? (M.prev ? 'ไม่มีข้อมูลเดือนก่อน' : '') : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
       row.append(lab, lane, val);
       row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.label], [ml(M.prev), `${pct(r.prev)} (${num(r.prev_n)} ฉบับ)`], [ml(M.cur), `${pct(r.cur)} (${num(r.cur_n)} ฉบับ)`], ['เปลี่ยน', sgn(r.delta, ' จุด')]]));
       row.addEventListener('mouseleave', () => tp.hide());
@@ -639,7 +720,9 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     ax.append(tk, el('div')); box.append(ax);
   }
   function readRegion(rows) {
-    const r = P('read-region'); r.replaceChildren(); const up = rows.filter((x) => x.delta > 0).length, dn = rows.filter((x) => x.delta < 0).length;
+    const r = P('read-region'); r.replaceChildren();
+    if (!D('M').prev) { r.append('อ่านผล: ', el('b', null, `ต่ำกว่าเป้า ${GOAL}% อยู่ ${rows.filter((x) => x.cur != null && x.cur < GOAL).length} จาก ${rows.length} Area`)); return; }
+    const up = rows.filter((x) => x.delta > 0).length, dn = rows.filter((x) => x.delta < 0).length;
     const below = rows.filter((x) => x.cur != null && x.cur < GOAL).length;
     r.append('อ่านผล: ', el('b', null, `แย่ลง ${dn} Area`), ` · ดีขึ้น ${up} Area · ต่ำกว่าเป้า ${GOAL}% อยู่ ${below} จาก ${rows.length} Area`);
     if (dn > up) r.append(' ส่วนใหญ่แย่ลง แปลว่าปัญหาเป็นวงกว้าง ไม่ใช่แค่บางพื้นที่ ควรแก้ที่ระบบหรือขั้นตอนกลาง');
@@ -653,8 +736,8 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     rows.forEach((r) => {
       const row = el('div', 'row'); const bars = el('div', 'bars');
       const a = el('div', 'b'); a.style.width = (100 * r.prev / max) + '%'; a.style.background = 'var(--prev)';
-      const b = el('div', 'b'); b.style.width = (100 * r.cur / max) + '%'; b.style.background = 'var(--ink)'; bars.append(a, b);
-      const v = el('div', 'val'); v.append(el('b', null, r.cur.toFixed(1)), document.createElement('br'), el('span', r.delta > 0 ? 'down' : r.delta < 0 ? 'up' : '', `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`));
+      const b = el('div', 'b'); b.style.width = (100 * r.cur / max) + '%'; b.style.background = 'var(--ink)'; if (D('M').prev) bars.append(a); bars.append(b);
+      const v = el('div', 'val'); v.append(el('b', null, r.cur.toFixed(1))); if (D('M').prev) v.append(document.createElement('br'), el('span', r.delta > 0 ? 'down' : r.delta < 0 ? 'up' : '', `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`));
       row.append(el('div', 'lab', r.key), bars, v);
       row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.key], ['เดือนก่อน', `${r.prev.toFixed(1)} ต่อ 100 ฉบับ (${num(r.prev_n)})`], ['เดือนนี้', `${r.cur.toFixed(1)} ต่อ 100 ฉบับ (${num(r.cur_n)})`]]));
       row.addEventListener('mouseleave', () => tp.hide());
@@ -662,7 +745,9 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     });
   }
   function readReason(rows) {
-    const r = P('read-reason'); r.replaceChildren(); const up = rows.filter((x) => x.delta >= 0.1).sort((a, b) => b.delta - a.delta);
+    const r = P('read-reason'); r.replaceChildren();
+    if (!D('M').prev) { r.append('อ่านผล: ตัวเลขคือจำนวนครั้งต่อเอกสาร 100 ฉบับใน ' + ml(D('M').cur)); return; }
+    const up = rows.filter((x) => x.delta >= 0.1).sort((a, b) => b.delta - a.delta);
     if (!up.length) { r.append('อ่านผล: ไม่มีสาเหตุไหนเกิดบ่อยขึ้น'); return; }
     r.append('อ่านผล: เกิดบ่อยขึ้น ', el('b', null, up.map((x) => `${x.key} (${sgn(x.delta)})`).join(', ')), ' ตัวเลขแดง ▲ คือเกิดบ่อยขึ้น (แย่ลง) เขียว ▼ คือลดลง (ดีขึ้น)');
   }
@@ -708,12 +793,13 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   function tatBox(T, M, K) {
     const box = P('tat-box'); box.replaceChildren();
     const cols = ['#0e9f8a', '#58b9a6', '#f0c14b', '#ec8a3c', '#e0383e'];
-    [[M.prev, T.prev], [M.cur, T.cur]].forEach(([mm, rows]) => {
+    (M.prev ? [[M.prev, T.prev], [M.cur, T.cur]] : [[M.cur, T.cur]]).forEach(([mm, rows]) => {
       box.append(el('div', 'strip-l', ml(mm)));
       const s = el('div', 'strip'); rows.forEach((r, i) => { const d = el('div', null, r.share >= 7 ? `${r.bucket} ${r.share.toFixed(0)}%` : ''); d.style.width = r.share + '%'; d.style.background = cols[i]; d.title = `${r.bucket}: ${pct(r.share)} (${num(r.n)})`; s.append(d); });
       box.append(s);
     });
     const p = el('p', 'read'); const d = r1(K.cur.late - K.prev.late);
+    if (!M.prev) { p.append('อ่านผล: เอกสารที่ตรวจเกิน 7 วัน ', el('b', null, pct(K.cur.late))); box.append(p); return; }
     p.append('อ่านผล: เอกสารที่ตรวจเกิน 7 วัน ', el('b', null, `${pct(K.prev.late)} → ${pct(K.cur.late)}`), d > 0 ? ' ช้าลง' : ' เร็วขึ้น', ' (เดือนล่าสุดยังไม่ครบเดือน งานที่ยังรอตรวจยังไม่ถูกนับ ตัวเลขจึงอาจดูดีกว่าความจริง)');
     box.append(p);
   }
@@ -738,7 +824,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     Object.entries(S).forEach(([k, s]) => {
       const d = dash.data(s.src); if (d.status !== 'ok' || !d.data) return;
       const cnt = d3.rollup(d.data, (v) => v.length, (r) => r.tag);
-      const tiles = P('tiles-' + k); tiles.replaceChildren(...TAGS.filter((t) => t !== 'เดือนนี้ไม่มีงาน').map((t) => {
+      const tiles = P('tiles-' + k); tiles.replaceChildren(...TAGS.filter((t) => t !== 'เดือนนี้ไม่มีงาน' && (M.prev || (t !== 'แย่ลง' && t !== 'ดีขึ้น'))).map((t) => {
         const b = el('button', 'tile ' + TCLS[t]); b.type = 'button'; b.append(el('div', 'n', num(cnt.get(t) || 0)), el('div', 'l', t));
         b.addEventListener('click', () => { P(s.tag).value = t; s.limit = s.step; targets(M); P(k === 'shop' ? 'shops' : 'staff').scrollIntoView({ behavior: 'smooth' }); });
         return b;
@@ -750,7 +836,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const t = P(s.table); t.replaceChildren();
       const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
       H.forEach((h) => hd.append(el('th', null, h)));
-      [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]].forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุหลัก', 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
       rows.slice(0, s.limit).forEach((r) => {
@@ -758,11 +844,11 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
         c(el('span', 'pill ' + TCLS[r.tag], r.tag));
         if (k === 'shop') { tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : ''); tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }); c(r.shop_code); c(r.shop); c(r.region); }
         else { c(r.shop); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
-        c(num(r.prev_total), 'n'); c(pct(r.prev_pct), 'n'); c(num(r.cur_total), 'n');
+        if (M.prev) { c(num(r.prev_total), 'n'); c(pct(r.prev_pct), 'n'); } c(num(r.cur_total), 'n');
         const mini = el('span', 'mini'); const tr_ = el('span', 'tr'); const fill = el('i'); fill.style.width = (r.cur_pct || 0) + '%';
         fill.style.background = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)'; const gl = el('em'); gl.style.left = GOAL + '%'; tr_.append(fill, gl);
         mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
-        c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
+        if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
         c(r.top_reason || '—');
         tb.append(tr);
       });

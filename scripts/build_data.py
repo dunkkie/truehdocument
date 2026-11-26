@@ -4,6 +4,10 @@ Usage:
     pip install pyxlsb pandas
     python scripts/build_data.py "DPS_xxx.xlsb" docs/data [private/staff_names.csv]
 
+History is kept: months already in docs/data that are not in the new file
+stay as they are, and months in the new file replace the old rows for those
+months. So files can be added in any order (an older file fills in history).
+
 The optional third path writes a staff_id -> name list for loading in the
 browser. Keep it on your own computer: private/ is in .gitignore.
 
@@ -57,7 +61,8 @@ d.loc[(d.result != 'complete') & (d.reason == ''), 'reason'] = 'อื่นๆ'
 
 # one fact table: every filter (Region, Area, Shop) applies to every chart
 facts = ['month', 'rr', 'region', 'shop_code', 'date', 'channel', 'order_type', 'smartdoc', 'delivery', 'result', 'reason', 'tat_bucket']
-d.groupby(facts).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index().to_csv(f'{out}/facts.csv', index=False)
+OUT = {}
+OUT['facts.csv'] = d.groupby(facts).agg(n=('tat', 'size'), tat_sum=('tat', 'sum')).reset_index()
 
 bad = d[d.result != 'complete']
 it = bad[['month', 'rr', 'region', 'shop_code', 'เหตุผลการตรวจสอบ อื่นๆ']].copy()
@@ -67,9 +72,9 @@ it = it[it.item != '']
 it['item'] = it['item'].replace({'ขาด Workpermit': 'ขาด Work Permit'})
 top = it.item.value_counts().head(20).index
 it['item'] = it.item.where(it.item.isin(top), 'อื่นๆ')
-it.groupby(['month', 'rr', 'region', 'shop_code', 'item']).size().reset_index(name='n').to_csv(f'{out}/reasons_detail.csv', index=False)
+OUT['reasons_detail.csv'] = it.groupby(['month', 'rr', 'region', 'shop_code', 'item']).size().reset_index(name='n')
 
-d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n').to_csv(f'{out}/staff.csv', index=False)
+OUT['staff.csv'] = d.groupby(['month', 'rr', 'region', 'shop_code', 'shop', 'staff_id', 'result', 'reason']).size().reset_index(name='n')
 
 if len(sys.argv) > 3:
     names = d[['staff_id', 'Sales Name']].rename(columns={'Sales Name': 'staff'})
@@ -79,4 +84,14 @@ if len(sys.argv) > 3:
     names.to_csv(sys.argv[3], index=False, encoding='utf-8-sig')
     print('staff names:', len(names), '->', sys.argv[3], '(do not commit)')
 
-print('rows checked:', len(d), '->', out)
+def keep_history(name, new):
+    path = f'{out}/{name}'
+    if os.path.exists(path) and os.path.getsize(path):
+        old = pd.read_csv(path, dtype=str)
+        old = old[~old['month'].isin(set(new['month'].astype(str)))]
+        new = pd.concat([old, new.astype(str)], ignore_index=True)
+    new.sort_values('month', kind='stable').to_csv(path, index=False)
+
+for name, frame in OUT.items():
+    keep_history(name, frame)
+print('rows checked:', len(d), '->', out, '| months in data:', sorted(pd.read_csv(f'{out}/facts.csv', dtype=str).month.unique()))
