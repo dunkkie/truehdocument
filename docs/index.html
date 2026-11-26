@@ -393,8 +393,80 @@ table.dt{table-layout:auto}
 .pi-v b{font-size:17px}.pi-v small{font-size:11.5px;color:var(--muted);white-space:nowrap}
 .pi-v small.up{color:var(--good)}.pi-v small.down{color:var(--bad)}
 .pi-why{margin:6px 0 0 38px;font-size:13px}
+.pi-det{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 .pi-act{margin:4px 0 0 38px;font-size:13px;color:var(--ink);background:#eef2ff;border-radius:8px;padding:6px 10px}
 @media (max-width:600px){.pi-why,.pi-act{margin-left:0}}
+
+/* ---- clean shop/staff tables ---- */
+table.dt.clean{font-size:14.5px}
+.dt.clean tbody tr:nth-child(4n+1) td,.dt.clean tbody tr:nth-child(odd):not(.detail) td{background:#fff}
+.dt.clean tbody tr:nth-child(even):not(.detail) td{background:#f8fafd}
+.dt.clean td{padding:10px 12px;vertical-align:middle}
+.dt.clean th{padding:10px 12px;font-size:13px}
+.dt.clean td.rkc{color:var(--faint);font-weight:600;width:36px}
+.dt.clean .who b{font-size:15px}
+.dt.clean .who small{font-size:12.5px}
+.bigp,.bigc{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}
+.bigp b,.bigc b{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.bigp small,.bigc small{font-size:12px;color:var(--muted);white-space:nowrap}
+.bigp small.up{color:var(--good)}.bigp small.down{color:var(--bad)}
+.cause{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.cause .rc{font-size:12.5px;padding:2px 10px}
+.cause small{font-size:12px;color:var(--muted)}
+.cause .none{color:var(--good);font-size:13px}
+.dt.clean tr.sel td{background:#eef4ff!important}
+@media (max-width:900px){
+  table.dt.clean.stack > tbody > tr{grid-template-columns:minmax(0,1fr) auto;padding:12px 14px}
+  table.dt.clean.stack > tbody > tr > td.rkc{display:none}
+  table.dt.clean.stack > tbody > tr > td.whocell{grid-column:1;order:-2}
+  table.dt.clean.stack > tbody > tr > td:last-child{grid-column:2;order:-1;justify-content:flex-end}
+  table.dt.clean.stack > tbody > tr > td:last-child::before{content:none}
+  table.dt.clean.stack > tbody > tr > td{background:none!important}
+  table.dt.clean.stack > tbody > tr{background:#fff}
+}
+
+@media (max-width:600px){
+  .itab,.itab tbody{display:block;width:100%}
+  .itab tr{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 56px;align-items:center}
+  .itab th,.itab td{display:block;padding:6px 4px!important;font-size:12.5px;border-top:1px solid #eef2f6}
+  .itab th:first-child,.itab td:first-child{padding-left:8px!important}
+  .itab td .ibar{top:3px;bottom:3px}
+  .dbox .dhead{font-size:13px}
+}
+
+/* ---- shop / staff cards ---- */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:14px;align-items:start}
+.pc{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px 12px;cursor:pointer;box-shadow:0 6px 18px -14px rgba(19,32,58,.35);transition:box-shadow .15s,border-color .15s;overflow:hidden}
+.pc::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:var(--tc,var(--faint))}
+.pc:hover{box-shadow:0 10px 26px -14px rgba(19,32,58,.45);border-color:#c9d3e2}
+.pc:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.pc.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(58,111,216,.25)}
+.pc-top{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center}
+.dn{width:56px;height:56px}
+.dn-t{font:700 14px var(--font);fill:var(--text)}
+.pc-who{min-width:0}
+.pc-who b{display:block;font-size:15.5px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.pc-who small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.pc .pill{align-self:start}
+.pc-mid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 10px;padding:10px 0;border-top:1px dashed #e3e8ef;border-bottom:1px dashed #e3e8ef}
+.pc-stat{display:flex;flex-direction:column}
+.pc-stat span{font-size:12px;color:var(--muted)}
+.pc-stat b{font-size:22px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.pc-stat b.bad,.pc-stat b.down{color:var(--bad)}.pc-stat b.up{color:var(--good)}
+.pc-stat small{font-size:12px;color:var(--muted)}
+.pc-cause{display:flex;flex-wrap:wrap;gap:5px}
+.pc-cause .rc{font-size:12.5px;padding:2px 10px}
+.pc-cause .none{color:var(--good);font-size:13px;font-weight:600}
+.pc-go{display:block;margin-top:10px;font-size:13px;color:var(--blue);font-weight:600}
+.pc .detail{margin-top:10px;cursor:default;background:#f6f8ff;border-radius:12px;padding:10px}
+.pc .detail .dbox{max-width:none}
+@media (max-width:600px){.pc{padding:12px 13px}.pc-top{grid-template-columns:50px minmax(0,1fr)}.pc-top .pill{grid-column:2;justify-self:start}.dn{width:50px;height:50px}.pc-stat b{font-size:20px}}
+
+@media (max-width:600px){
+  .itab tr > :nth-child(1){grid-column:1}.itab tr > :nth-child(2){grid-column:2}.itab tr > :nth-child(3){grid-column:3}.itab tr > :nth-child(4){grid-column:4}
+  .itab td,.itab th{width:auto!important;min-width:0!important}
+  .itab td.n,.itab th.n{text-align:right}
+}
 </style>
 </head>
 <body class="locked">
@@ -484,13 +556,13 @@ table.dt{table-layout:auto}
   </section>
 
   <section id="shops">
-    <div class="sec-h"><h2>ราย Shop</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดู Staff ของสาขานั้น</p></div>
+    <div class="sec-h"><h2>ราย Shop</h2><p>เรียงตามความเร่งด่วน · คลิกการ์ดเพื่อดู Staff ของสาขานั้น</p></div>
     <div class="ctrl">
       <label>สถานะ <select id="fs-tag"></select></label>
       <label>ค้นหา <input id="fs-q" type="search" placeholder="ชื่อหรือรหัสสาขา"></label>
     </div>
     <p class="count" id="fs-count"></p>
-    <div class="tw"><table class="dt" id="t-shop"></table></div>
+    <div class="cgrid" id="t-shop"></div>
     <button class="more" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button>
   </section>
 
@@ -503,13 +575,13 @@ table.dt{table-layout:auto}
   </section>
 
   <section id="staff">
-    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น · ค้นหาด้วยรหัสหรือชื่อได้</p></div>
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกการ์ดเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น · ค้นหาด้วยรหัสหรือชื่อได้</p></div>
     <div class="ctrl">
       <label>สถานะ <select id="ft-tag"></select></label>
       <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
     </div>
     <p class="count" id="ft-count"></p>
-    <div class="tw"><table class="dt" id="t-staff"></table></div>
+    <div class="cgrid" id="t-staff"></div>
     <button class="more" id="ft-more" type="button">แสดงเพิ่มอีก 50 แถว</button>
   </section>
 
@@ -1106,7 +1178,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   let NAMES = {}; const OPEN = new Set();
   const RCOL = { 'เอกสารหลัก_ไม่แนบ': '#e0383e', 'เอกสารหลัก_ไม่ผ่านเงื่อนไข': '#ec6a1e', 'ใบสมัคร_ไม่เซ็น': '#7c5cd6', 'ใบสมัคร_ไม่ผ่านเงื่อนไข': '#3a6fd8', 'อื่นๆ': '#8a97a8' };
   function staffDetail(r, M, cols) {
-    const tr = el('tr', 'detail'); const td = el('td'); td.colSpan = cols; tr.append(td);
+    const tr = el('div', 'detail'); const td = tr;
     const d = dash.data('staff_items');
     if (d.status !== 'ok') { td.textContent = d.status === 'error' ? 'โหลดรายละเอียดสาเหตุไม่สำเร็จ' : 'กำลังโหลด…'; return tr; }
     const mine = d.data.filter((x) => x.shop_code === r.shop_code && x.staff_id === r.staff_id);
@@ -1180,7 +1252,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
         if (M.prev && r.delta != null) v.append(el('small', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
         head.append(who, v); li.append(head);
         const why = el('p', 'pi-why'); why.append(el('span', 'pill ' + TCLS[r.tag], r.tag), ' ', el('b', null, 'พลาดเรื่อง: '), main.replace('_', ' ') + (r.reasons[0] ? ` (${r.reasons[0][1]})` : ''));
-        if (ti.length) why.append(' · ' + ti.map(([k, n]) => `${k} ${n}`).join(', '));
+        if (ti.length) why.append(el('small', 'pi-det', 'เช่น ' + ti.slice(0, 2).map(([k, n]) => `${k} ${n}`).join(', ')));
         li.append(why, el('p', 'pi-act', '→ ' + (ACT[main] || ACT['อื่นๆ'])));
         li.addEventListener('click', () => {
           if (kind === 'shop') { dash.setParams({ shop: r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }
@@ -1242,55 +1314,46 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       P(s.count).textContent = `แสดง ${num(Math.min(rows.length, s.limit))} จาก ${num(rows.length)} ${s.unit}`;
       P(s.more).hidden = rows.length <= s.limit;
       const t = P(s.table); t.replaceChildren();
-      const showHist = M.all.length > 2;
-      const heads = [['สถานะ', ''], [k === 'shop' ? 'Shop' : 'Staff', '']];
-      if (M.prev) heads.push([ml(M.prev), 'n']);
-      heads.push([ml(M.cur), 'n']);
-      if (M.prev) heads.push(['เปลี่ยน', 'n']);
-      heads.push(['สาเหตุที่ไม่สมบูรณ์ (' + ml(M.cur) + ')', '']);
-      if (showHist) heads.push(['ย้อนหลัง', '']);
-      const hd = el('tr'); heads.forEach(([h, cls]) => hd.append(el('th', cls || null, h)));
-      t.classList.add('stack');
-      const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
-      const monthCell = (pc, bad, tot, isCur) => {
-        const w = el('div', 'mc'); const top = el('div', 'mc-top'); top.append(el('b', null, pct(pc)));
-        const bar = el('span', 'tr'); const fill = el('i'); fill.style.width = (pc || 0) + '%';
-        fill.style.background = pc == null ? 'transparent' : pc >= GOAL ? 'var(--good)' : pc >= URGENT ? 'var(--warn)' : 'var(--bad)';
-        const gl = el('em'); gl.style.left = GOAL + '%'; bar.append(fill, gl); top.append(bar);
-        const sm = el('small', null, tot ? `ไม่สมบูรณ์ ${num(bad || 0)}/${num(tot)}` : 'ไม่มีงาน'); if (bad && isCur) sm.style.color = 'var(--bad)';
-        w.append(top, sm); return w;
+      const col = (v) => (v == null ? '#9aa6b8' : v >= GOAL ? '#0e9f8a' : v >= URGENT ? '#e0a100' : '#e0383e');
+      const donut = (v) => {
+        const NS = 'http://www.w3.org/2000/svg'; const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('viewBox', '0 0 64 64'); sv.setAttribute('class', 'dn');
+        sv.setAttribute('role', 'img'); sv.setAttribute('aria-label', '% สมบูรณ์ ' + pct(v));
+        const mk = (attrs) => { const c = document.createElementNS(NS, 'circle'); Object.entries(attrs).forEach(([kk, vv]) => c.setAttribute(kk, vv)); sv.append(c); return c; };
+        const R = 26, C = 2 * Math.PI * R;
+        mk({ cx: 32, cy: 32, r: R, fill: 'none', stroke: '#e8edf3', 'stroke-width': 7 });
+        mk({ cx: 32, cy: 32, r: R, fill: 'none', stroke: col(v), 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-dasharray': `${C * (v || 0) / 100} ${C}`, transform: 'rotate(-90 32 32)' });
+        const tx = document.createElementNS(NS, 'text'); tx.setAttribute('x', 32); tx.setAttribute('y', 36.5); tx.setAttribute('text-anchor', 'middle'); tx.setAttribute('class', 'dn-t');
+        tx.textContent = v == null ? '—' : (v >= 99.95 ? '100' : v.toFixed(v < 10 ? 1 : 0)) + '%'; sv.append(tx); return sv;
       };
-      rows.slice(0, s.limit).forEach((r) => {
-        const tr = el('tr'); let ci = 0;
-        const c = (v, cls) => { const td = el('td', cls); td.dataset.l = heads[ci++][0]; if (v instanceof Node) td.append(v); else td.textContent = v; tr.append(td); return td; };
-        c(el('span', 'pill ' + TCLS[r.tag], r.tag));
-        const who = el('div', 'who');
-        if (k === 'shop') {
-          tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : '');
-          tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); });
-          who.append(el('b', null, r.shop), el('small', null, `${r.shop_code} · ${r.region}`));
-        } else {
-          const key = r.shop_code + '|' + r.staff_id; tr.className = 'click' + (OPEN.has(key) ? ' sel' : '');
-          tr.addEventListener('click', () => { OPEN.has(key) ? OPEN.delete(key) : OPEN.add(key); targets(M); });
-          const nmb = el('b'); nmb.append(el('span', 'caret', OPEN.has(key) ? '▾ ' : '▸ '), document.createTextNode(NAMES[r.staff_id] || r.staff_id));
-          who.append(nmb, el('small', null, `${r.staff_id} · ${r.shop}`));
-        }
-        c(who, 'whocell');
-        if (M.prev) c(monthCell(r.prev_pct, r.prev_bad, r.prev_total, false), 'n');
-        c(monthCell(r.cur_pct, r.cur_bad, r.cur_total, true), 'n');
-        if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`, 'n dl ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
-        const ch = el('span', 'rchips');
-        if (!r.reasons.length) ch.append(el('span', 'none', r.cur_total ? 'ไม่มี' : '—'));
-        r.reasons.forEach(([kk, n]) => { const x = el('span', 'rc', `${kk.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[kk] || '#8a97a8'); ch.append(x); });
-        c(ch);
-        if (showHist) { const hm = el('span', 'hist-mini'); r.hist.forEach((h) => { const sp = el('span', null, h.pct == null ? '–' : h.pct.toFixed(0) + '%');
-          sp.style.background = h.pct == null ? '#f4f7fa' : h.pct >= GOAL ? '#d7f1ec' : h.pct >= URGENT ? '#fdf0cc' : '#fbd9da'; if (h.m === M.cur) sp.style.outline = '1.5px solid var(--ink)';
-          sp.title = `${ml(h.m)}: ${pct(h.pct)} (${num(h.n)} ฉบับ)`; hm.append(sp); }); c(hm); }
-        tb.append(tr);
-        if (k === 'staff' && OPEN.has(r.shop_code + '|' + r.staff_id)) tb.append(staffDetail(r, M, tr.children.length));
+      rows.slice(0, s.limit).forEach((r, idx) => {
+        const key = r.shop_code + '|' + (r.staff_id || ''); const open = k === 'staff' && OPEN.has(key);
+        const card = el('article', 'pc ' + TCLS[r.tag] + ((k === 'shop' && p.shop === r.shop_code) || open ? ' sel' : ''));
+        card.tabIndex = 0;
+        const top = el('div', 'pc-top');
+        const who = el('div', 'pc-who');
+        if (k === 'shop') who.append(el('b', null, r.shop), el('small', null, `${r.shop_code} · ${r.region}`));
+        else who.append(el('b', null, NAMES[r.staff_id] || r.staff_id), el('small', null, NAMES[r.staff_id] ? `${r.staff_id} · ${r.shop}` : r.shop));
+        top.append(donut(r.cur_pct), who, el('span', 'pill ' + TCLS[r.tag], r.tag));
+        const mid = el('div', 'pc-mid');
+        const bad = el('div', 'pc-stat'); bad.append(el('span', null, 'ไม่สมบูรณ์'), el('b', r.cur_bad ? 'bad' : null, num(r.cur_bad || 0)), el('small', null, `จาก ${num(r.cur_total)} ฉบับ`));
+        mid.append(bad);
+        if (M.prev) { const ch = el('div', 'pc-stat'); ch.append(el('span', null, 'เทียบ ' + ml(M.prev)),
+          el('b', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : null, r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`), el('small', null, r.delta == null ? 'ไม่มีข้อมูล' : `จาก ${pct(r.prev_pct)}`)); mid.append(ch); }
+        const cz = el('div', 'pc-cause');
+        if (!r.reasons.length) cz.append(el('span', 'none', r.cur_total ? '✓ ไม่มีเอกสารไม่สมบูรณ์' : '—'));
+        else r.reasons.slice(0, 3).forEach(([kk, n]) => { const x = el('span', 'rc', `${kk.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[kk] || '#8a97a8'); cz.append(x); });
+        card.append(top, mid, cz);
+        const go = () => {
+          if (k === 'shop') { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }
+          else { OPEN.has(key) ? OPEN.delete(key) : OPEN.add(key); targets(M); }
+        };
+        card.addEventListener('click', go); card.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+        card.append(el('span', 'pc-go', k === 'shop' ? 'ดู Staff ของสาขานี้ →' : open ? 'ซ่อนรายละเอียด ▴' : 'ดูรายละเอียดสาเหตุ ▾'));
+        if (open) { const dt = staffDetail(r, M, 1); dt.addEventListener('click', (e) => e.stopPropagation()); card.append(dt); }
+        t.append(card);
       });
-      if (!rows.length) { const tr = el('tr'); const td = el('td', null, 'ไม่พบรายการตามเงื่อนไข'); td.colSpan = 10; tr.append(td); tb.append(tr); }
+      if (!rows.length) t.append(el('p', 'count', 'ไม่พบรายการตามเงื่อนไข'));
     });
   }
 })();
