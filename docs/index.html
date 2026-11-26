@@ -75,7 +75,7 @@ tr.detail td{background:#f6f8ff;padding:10px 14px 14px}
 .dbox{max-width:760px}
 .dhead{font-size:14px;margin-bottom:8px}
 .itab{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:8px}
-.itab th{background:#eef2ff!important;color:var(--ink)!important;position:static!important;font-weight:600;padding:6px 10px;text-align:left}
+.itab th{white-space:normal!important;background:#eef2ff!important;color:var(--ink)!important;position:static!important;font-weight:600;padding:6px 10px;text-align:left}
 .itab th.n,.itab td.n{text-align:right;width:84px}
 .itab td{padding:6px 10px;border-top:1px solid #eef2f6;position:relative}
 .itab td .ibar{position:absolute;left:0;top:4px;bottom:4px;background:linear-gradient(90deg,rgba(224,56,62,.16),rgba(224,56,62,.06));border-radius:0 4px 4px 0}
@@ -307,6 +307,43 @@ main.wrap{padding:22px 24px 60px}
 .kt tr.sub td:first-child{padding-left:22px;color:#aab6cc;font-size:13px}
 .mx td small.bc{color:var(--muted);font-size:10.5px}
 .dt td.bcount{font-weight:600}
+
+/* ---- tables fit without sideways scroll ---- */
+.tw{overflow-x:auto;max-width:100%}
+table.dt{table-layout:auto}
+.dt td,.dt th{white-space:normal}
+.dt th{white-space:nowrap}
+.who b{display:block;font-weight:600;color:var(--text)}
+.who small{display:block;color:var(--muted);font-size:12px}
+.whocell{min-width:180px}
+.mc{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.mc-top{display:flex;align-items:center;gap:6px}
+.mc .tr{position:relative;width:54px;height:6px;background:var(--track);border-radius:3px}
+.mc .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.mc .tr em{position:absolute;top:-3px;bottom:-3px;border-left:1.5px solid var(--text);opacity:.45}
+.mc small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.dt td.dl{white-space:nowrap;font-weight:600}
+.rchips{max-width:none}
+.mx{width:100%}
+@media (max-width:600px){.mx{font-size:12px;border-spacing:2px}.mx td{padding:5px 4px}.mx td:not(.nm){min-width:0}.mx td.nm{white-space:normal;max-width:120px}.mx tr.ar td.nm{padding-left:8px}.mx td small.bc{display:none}}
+@media (max-width:900px){.itab td,.itab th{padding:5px 6px!important;font-size:12.5px}.itab th.n,.itab td.n{width:auto;white-space:nowrap}.dbox{max-width:100%}.rc{white-space:normal}}
+@media (max-width:900px){
+  .tw{border:none;box-shadow:none}
+  table.dt.stack,table.dt.stack > tbody{display:block;background:none}
+  table.dt.stack > thead{display:none}
+  table.dt.stack > tbody > tr{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  table.dt.stack > tbody > tr.sel{border-color:var(--blue)}
+  table.dt.stack > tbody > tr > td{display:flex;justify-content:space-between;align-items:center;gap:10px;border:0;padding:3px 0;grid-column:1 / -1;text-align:left}
+  table.dt.stack > tbody > tr > td::before{content:attr(data-l);color:var(--muted);font-size:12px;flex:0 0 auto}
+  table.dt.stack > tbody > tr > td:first-child,table.dt.stack > tbody > tr > td.whocell{grid-column:auto}
+  table.dt.stack > tbody > tr > td:first-child::before,table.dt.stack > tbody > tr > td.whocell::before{content:none}
+  table.dt.stack > tbody > tr > td.whocell{min-width:0}
+  table.dt.stack .mc{align-items:flex-end}
+  table.dt.stack > tbody > tr.detail{display:block;padding:0;border:0;background:none;margin:-6px 0 12px}
+  table.dt.stack > tbody > tr.detail > td{display:block}
+  table.dt.stack > tbody > tr.detail > td::before{content:none}
+  .rchips{justify-content:flex-end}
+}
 </style>
 </head>
 <body class="locked">
@@ -1004,13 +1041,13 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     const mine = d.data.filter((x) => x.shop_code === r.shop_code && x.staff_id === r.staff_id);
     const box = el('div', 'dbox');
     const head = el('div', 'dhead'); head.append(el('b', null, `${NAMES[r.staff_id] || 'Staff ' + r.staff_id}`), ` · ${r.shop} · เอกสารไม่สมบูรณ์ ${num(r.cur_bad || 0)} จาก ${num(r.cur_total)} ฉบับใน ${ml(M.cur)}`);
-    box.append(head);
+    box.append(head, el('p', 'count', 'เอกสาร 1 ฉบับอาจมีหลายสาเหตุ'));
     const months = M.prev ? [M.prev, M.cur] : [M.cur];
     const items = [...new Set(mine.filter((x) => months.includes(x.month)).map((x) => x.item))];
     const cnt = (m, it) => d3.sum(mine.filter((x) => x.month === m && x.item === it), (x) => +x.n);
     items.sort((a, b) => cnt(M.cur, b) - cnt(M.cur, a) || (M.prev ? cnt(M.prev, b) - cnt(M.prev, a) : 0));
     if (!items.length) { box.append(el('p', 'count', 'ไม่มีรายละเอียดสาเหตุในเดือนที่เลือก')); td.append(box); return tr; }
-    const t = el('table', 'itab'); const hr = el('tr'); hr.append(el('th', null, 'รายละเอียดสาเหตุ (เอกสาร 1 ฉบับอาจมีหลายข้อ)')); months.forEach((m) => hr.append(el('th', 'n', ml(m)))); if (M.prev) hr.append(el('th', 'n', 'เปลี่ยน'));
+    const t = el('table', 'itab'); const hr = el('tr'); hr.append(el('th', null, 'รายละเอียดสาเหตุ')); months.forEach((m) => hr.append(el('th', 'n', ml(m)))); if (M.prev) hr.append(el('th', 'n', 'เปลี่ยน'));
     t.append(hr);
     const max = d3.max(items, (it) => Math.max(...months.map((m) => cnt(m, it)))) || 1;
     items.forEach((it) => { const row = el('tr'); const lab = el('td');
@@ -1045,31 +1082,51 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       P(s.count).textContent = `แสดง ${num(Math.min(rows.length, s.limit))} จาก ${num(rows.length)} ${s.unit}`;
       P(s.more).hidden = rows.length <= s.limit;
       const t = P(s.table); t.replaceChildren();
-      const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
-      H.forEach((h) => hd.append(el('th', null, h)));
-      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['ไม่สมบูรณ์ ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['ไม่สมบูรณ์ ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุที่ไม่สมบูรณ์ (เดือนนี้)', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['ไม่สมบูรณ์', 1], ['% ' + ml(M.cur), 1], ['สาเหตุที่ไม่สมบูรณ์', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      const showHist = M.all.length > 2;
+      const heads = [['สถานะ', ''], [k === 'shop' ? 'Shop' : 'Staff', '']];
+      if (M.prev) heads.push([ml(M.prev), 'n']);
+      heads.push([ml(M.cur), 'n']);
+      if (M.prev) heads.push(['เปลี่ยน', 'n']);
+      heads.push(['สาเหตุที่ไม่สมบูรณ์ (' + ml(M.cur) + ')', '']);
+      if (showHist) heads.push(['ย้อนหลัง', '']);
+      const hd = el('tr'); heads.forEach(([h, cls]) => hd.append(el('th', cls || null, h)));
+      t.classList.add('stack');
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
+      const monthCell = (pc, bad, tot, isCur) => {
+        const w = el('div', 'mc'); const top = el('div', 'mc-top'); top.append(el('b', null, pct(pc)));
+        const bar = el('span', 'tr'); const fill = el('i'); fill.style.width = (pc || 0) + '%';
+        fill.style.background = pc == null ? 'transparent' : pc >= GOAL ? 'var(--good)' : pc >= URGENT ? 'var(--warn)' : 'var(--bad)';
+        const gl = el('em'); gl.style.left = GOAL + '%'; bar.append(fill, gl); top.append(bar);
+        const sm = el('small', null, tot ? `ไม่สมบูรณ์ ${num(bad || 0)}/${num(tot)}` : 'ไม่มีงาน'); if (bad && isCur) sm.style.color = 'var(--bad)';
+        w.append(top, sm); return w;
+      };
       rows.slice(0, s.limit).forEach((r) => {
-        const tr = el('tr'); const c = (v, cls) => { const td = el('td', cls); if (v instanceof Node) td.append(v); else td.textContent = v; tr.append(td); return td; };
+        const tr = el('tr'); let ci = 0;
+        const c = (v, cls) => { const td = el('td', cls); td.dataset.l = heads[ci++][0]; if (v instanceof Node) td.append(v); else td.textContent = v; tr.append(td); return td; };
         c(el('span', 'pill ' + TCLS[r.tag], r.tag));
-        if (k === 'shop') { tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : ''); tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }); c(r.shop_code); c(r.shop); c(r.region); }
-        else { const key = r.shop_code + '|' + r.staff_id; tr.className = 'click' + (OPEN.has(key) ? ' sel' : '');
+        const who = el('div', 'who');
+        if (k === 'shop') {
+          tr.className = 'click' + (p.shop === r.shop_code ? ' sel' : '');
+          tr.addEventListener('click', () => { dash.setParams({ shop: p.shop === r.shop_code ? '' : r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); });
+          who.append(el('b', null, r.shop), el('small', null, `${r.shop_code} · ${r.region}`));
+        } else {
+          const key = r.shop_code + '|' + r.staff_id; tr.className = 'click' + (OPEN.has(key) ? ' sel' : '');
           tr.addEventListener('click', () => { OPEN.has(key) ? OPEN.delete(key) : OPEN.add(key); targets(M); });
-          const nm = el('span'); nm.append(el('span', 'caret', OPEN.has(key) ? '▾ ' : '▸ '), document.createTextNode(r.shop)); c(nm); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
-        if (M.prev) { c(num(r.prev_total), 'n'); c(num(r.prev_bad || 0), 'n'); c(pct(r.prev_pct), 'n'); } c(num(r.cur_total), 'n');
-        const bd = c(num(r.cur_bad || 0), 'n bcount'); if (r.cur_bad) bd.style.color = 'var(--bad)';
-        const mini = el('span', 'mini'); const tr_ = el('span', 'tr'); const fill = el('i'); fill.style.width = (r.cur_pct || 0) + '%';
-        fill.style.background = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)'; const gl = el('em'); gl.style.left = GOAL + '%'; tr_.append(fill, gl);
-        mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
-        if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
+          const nmb = el('b'); nmb.append(el('span', 'caret', OPEN.has(key) ? '▾ ' : '▸ '), document.createTextNode(NAMES[r.staff_id] || r.staff_id));
+          who.append(nmb, el('small', null, `${r.staff_id} · ${r.shop}`));
+        }
+        c(who, 'whocell');
+        if (M.prev) c(monthCell(r.prev_pct, r.prev_bad, r.prev_total, false), 'n');
+        c(monthCell(r.cur_pct, r.cur_bad, r.cur_total, true), 'n');
+        if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`, 'n dl ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
         const ch = el('span', 'rchips');
         if (!r.reasons.length) ch.append(el('span', 'none', r.cur_total ? 'ไม่มี' : '—'));
-        r.reasons.forEach(([k, n]) => { const x = el('span', 'rc', `${k.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[k] || '#8a97a8'); ch.append(x); });
+        r.reasons.forEach(([kk, n]) => { const x = el('span', 'rc', `${kk.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[kk] || '#8a97a8'); ch.append(x); });
         c(ch);
-        const hm = el('span', 'hist-mini'); r.hist.forEach((h) => { const sp = el('span', null, h.pct == null ? '–' : h.pct.toFixed(0) + '%');
+        if (showHist) { const hm = el('span', 'hist-mini'); r.hist.forEach((h) => { const sp = el('span', null, h.pct == null ? '–' : h.pct.toFixed(0) + '%');
           sp.style.background = h.pct == null ? '#f4f7fa' : h.pct >= GOAL ? '#d7f1ec' : h.pct >= URGENT ? '#fdf0cc' : '#fbd9da'; if (h.m === M.cur) sp.style.outline = '1.5px solid var(--ink)';
-          sp.title = `${ml(h.m)}: ${pct(h.pct)} (${num(h.n)} ฉบับ)`; hm.append(sp); }); c(hm);
+          sp.title = `${ml(h.m)}: ${pct(h.pct)} (${num(h.n)} ฉบับ)`; hm.append(sp); }); c(hm); }
         tb.append(tr);
         if (k === 'staff' && OPEN.has(r.shop_code + '|' + r.staff_id)) tb.append(staffDetail(r, M, tr.children.length));
       });
