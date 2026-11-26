@@ -198,6 +198,15 @@ table.dt{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff}
 .mini .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
 .mini .tr em{position:absolute;top:-3px;bottom:-3px;border-left:1.5px solid var(--text);opacity:.45}
 .more{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+.unlock{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:linear-gradient(90deg,#eef2ff,#fdf4ff);border:1px solid #d9dcfb;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:14px}
+.unlock.open{background:linear-gradient(90deg,#e9fbf6,#f0fdfa);border-color:#b7eadf}
+.unlock .lk{font-size:18px}
+.unlock .ut{flex:1 1 260px;color:var(--text)}
+.unlock input[type=password]{border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:16px;min-width:180px;background:#fff}
+.unlock .rem{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.unlock button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;background:linear-gradient(135deg,#4f46e5,#0d9488);color:#fff}
+.unlock button#pw-lock{background:#fff;color:var(--muted);border:1px solid var(--line)}
+.unlock .err{flex-basis:100%;font-size:13px}
 .names-note{font-size:13px;color:var(--muted);background:#fff8e6;border:1px solid #f3dfa6;border-radius:8px;padding:8px 12px;margin:0 0 10px}
 details.rules{font-size:13px;color:var(--muted);margin-top:12px}
 details.rules summary{cursor:pointer;color:var(--text)}
@@ -302,12 +311,19 @@ body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
   </section>
 
   <section id="staff">
-    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น</p></div>
-    <p class="names-note" id="names-note">ชื่อพนักงานไม่ได้เก็บไว้บนเว็บ เลือกไฟล์ <b>staff_names.csv</b> จากเครื่องของคุณเพื่อแสดงชื่อ (อ่านในเบราว์เซอร์เท่านั้น ไม่ถูกส่งไปที่ไหน)</p>
+    <div class="sec-h"><h2>ราย Staff</h2><p>เรียงตามความเร่งด่วน · คลิกแถวเพื่อดูรายละเอียดสาเหตุของ Staff คนนั้น · ค้นหาด้วยชื่อได้เมื่อปลดล็อกชื่อแล้ว</p></div>
+    <form class="unlock" id="unlock" autocomplete="off">
+      <span class="lk">🔒</span>
+      <span class="ut" id="unlock-text">ชื่อพนักงานถูกล็อกไว้ ใส่รหัสผ่านเพื่อแสดงชื่อ Staff</span>
+      <input id="pw" type="password" placeholder="รหัสผ่าน" aria-label="รหัสผ่านสำหรับแสดงชื่อพนักงาน">
+      <label class="rem"><input id="pw-rem" type="checkbox" checked> จำบนเครื่องนี้</label>
+      <button type="submit" id="pw-go">แสดงชื่อ</button>
+      <button type="button" id="pw-lock" hidden>ล็อกชื่อ</button>
+      <span class="err" id="pw-err" role="alert"></span>
+    </form>
     <div class="ctrl">
       <label>สถานะ <select id="ft-tag"></select></label>
       <label>ค้นหา <input id="ft-q" type="search" placeholder="รหัส ชื่อ Staff หรือสาขา"></label>
-      <label>รายชื่อพนักงาน <input id="f-names" type="file" accept=".csv,text/csv"></label>
     </div>
     <p class="count" id="ft-count"></p>
     <div class="tw"><table class="dt" id="t-staff"></table></div>
@@ -922,9 +938,29 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       t.append(row); });
     box.append(t); td.append(box); return tr;
   }
-  const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^﻿/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; P('names-note').hidden = Object.keys(m).length > 0; };
-  try { const s = localStorage.getItem('tmh_staff_names'); if (s) setNames(s); } catch (e) {}
-  P('f-names').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { setNames(t); try { localStorage.setItem('tmh_staff_names', t); } catch (x) {} targets(D('M')); }); });
+  const KEEP = 'tmh_staff_names_v2';
+  const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^﻿/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; return Object.keys(m).length; };
+  const showUnlocked = (n) => { const u = P('unlock'); u.classList.toggle('open', n > 0); P('pw').hidden = P('pw-go').hidden = n > 0; P('pw-rem').parentElement.hidden = n > 0; P('pw-lock').hidden = !n;
+    P('unlock-text').textContent = n ? `แสดงชื่อพนักงานแล้ว (${num(n)} คน)` : 'ชื่อพนักงานถูกล็อกไว้ ใส่รหัสผ่านเพื่อแสดงชื่อ Staff'; u.querySelector('.lk').textContent = n ? '🔓' : '🔒'; };
+  const b64 = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
+  async function unlock(pw) {
+    const enc = await fetch('data/staff_names.enc.json').then((r) => { if (!r.ok) throw new Error('nofile'); return r.json(); });
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(enc.salt), iterations: enc.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(enc.iv) }, key, b64(enc.ct));
+    return new TextDecoder().decode(plain);
+  }
+  try { const s0 = localStorage.getItem(KEEP); if (s0) showUnlocked(setNames(s0)); } catch (e) {}
+  P('unlock').addEventListener('submit', async (e) => {
+    e.preventDefault(); const pw = P('pw').value; P('pw-err').textContent = ''; if (!pw) return;
+    P('pw-go').disabled = true; P('pw-go').textContent = 'กำลังตรวจ…';
+    try { const t = await unlock(pw); const n = setNames(t); P('pw').value = '';
+      try { if (P('pw-rem').checked) localStorage.setItem(KEEP, t); } catch (x) {}
+      showUnlocked(n); targets(D('M'));
+    } catch (err) { P('pw-err').textContent = String(err.message) === 'nofile' ? 'ไม่พบไฟล์รายชื่อบนเว็บ' : 'รหัสผ่านไม่ถูกต้อง'; }
+    P('pw-go').disabled = false; P('pw-go').textContent = 'แสดงชื่อ';
+  });
+  P('pw-lock').addEventListener('click', () => { NAMES = {}; try { localStorage.removeItem(KEEP); localStorage.removeItem('tmh_staff_names'); } catch (e) {} showUnlocked(0); targets(D('M')); });
   Object.values(S).forEach((s) => {
     P(s.tag).replaceChildren(new Option('ทุกสถานะ', ''), ...TAGS.map((t) => new Option(t, t)));
     P(s.tag).addEventListener('change', () => { s.limit = s.step; targets(D('M')); });

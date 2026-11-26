@@ -49,4 +49,13 @@ Settings → Pages → Build and deployment → Source: **Deploy from a branch**
 Repo นี้เป็น Public จึงเก็บเฉพาะยอดรวม ไม่มีชื่อ เบอร์ BAN หรือ SIM ของลูกค้า
 Staff แสดงเป็น Sales ID Code และผู้ตรวจแสดงเป็นรหัส ไม่มีชื่อพนักงานใน repo
 
-**ดูชื่อ Staff:** ในส่วน "รายละเอียดรายสาขา ราย Staff" กด "รายชื่อพนักงาน (ไฟล์ในเครื่อง)" แล้วเลือกไฟล์ `staff_names.csv` (คอลัมน์ `staff_id,staff`) ไฟล์จะถูกอ่านในเบราว์เซอร์ของคุณเท่านั้น ไม่ถูกส่งขึ้นเว็บ และเบราว์เซอร์จะจำไว้ครั้งต่อไป สร้างไฟล์นี้ด้วยอาร์กิวเมนต์ที่ 3 ของ `scripts/build_data.py`
+**ดูชื่อ Staff:** ชื่อพนักงานเก็บใน `docs/data/staff_names.enc.json` แบบเข้ารหัส (AES-256-GCM, PBKDF2 600,000 รอบ) ในหน้าเว็บส่วน "ราย Staff" ใส่รหัสผ่านเพื่อแสดงชื่อ ถ้าไม่มีรหัสผ่านจะอ่านไฟล์นี้ไม่ได้
+
+เปลี่ยนรหัสผ่านหรืออัปเดตรายชื่อ:
+
+```bash
+pip install cryptography
+TMH_NAMES_PASSWORD='รหัสผ่านใหม่' python scripts/encrypt_names.py private/staff_names.csv docs/data/staff_names.enc.json
+```
+
+ใช้รหัสผ่านยาวและเดายาก เพราะใครก็ดาวน์โหลดไฟล์ที่เข้ารหัสไปลองเดาได้
