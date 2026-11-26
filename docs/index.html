@@ -630,7 +630,7 @@ table.dt.clean{font-size:14.5px}
 <script>
 /* ---------- settings ---------- */
 const GOAL = 90, URGENT = 80, DROP = 5, MIN_SHOP = 10, MIN_STAFF = 5;
-const DATA_NOTE = 'ไฟล์ DPS 01Oct–17Nov 2026 (ส่ง 25/11/26)';
+let DATA_NOTE = 'ไฟล์ DPS';  // replaced by the note inside the data (meta.csv), set by scripts/update.py
 
 /* ---------- helpers ---------- */
 const TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -818,7 +818,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     if (!ok('M', 'kpi')) return;
     const M = D('M'), K = D('kpi');
     P('period').textContent = (M.prev ? `เทียบ ${ml(M.cur)} กับ ${ml(M.prev)}` : `ดู ${ml(M.cur)} (ไม่มีเดือนก่อนหน้าในข้อมูลให้เทียบ)`) + ` · ${scope()} · ${DATA_NOTE}`;
-    P('foot').textContent = `ข้อมูล: ${DATA_NOTE} · เดือนล่าสุดอาจยังไม่ครบเดือน · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้าและชื่อพนักงาน`;
+    P('foot').textContent = `${DATA_NOTE} · เดือนล่าสุดอาจยังไม่ครบเดือน · สรุปเป็นยอดรวม ไม่มีข้อมูลลูกค้า · ข้อมูลบนเว็บเข้ารหัส`;
     gauge(K, M); verdict(K, M); insights(K, M);
     if (ok('rrCmp')) rrCards(D('rrCmp'), M);
     if (ok('monthly')) history(D('monthly'), M);
@@ -1380,6 +1380,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   }
   function enter(files) {
     document.body.classList.remove('locked');
+    if (files['meta.csv']) { const m = d3.csvParse(files['meta.csv']).find((r) => r.key === 'note'); if (m) DATA_NOTE = m.value; }
     window.TMH_setNames(files['staff_names.csv']);
     dash.__load(files);
   }

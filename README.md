@@ -17,19 +17,24 @@ Dashboard ผลตรวจเอกสาร DPS (TMH Postpaid): % สมบ�
 
 หน้าเว็บเปิดด้วยหน้าใส่รหัสผ่าน ข้อมูลทั้งหมด (รวมชื่อ Staff) อยู่ใน `docs/data/site.enc.json` แบบเข้ารหัส (gzip + AES-256-GCM, คีย์จาก PBKDF2-SHA256 600,000 รอบ) ใส่รหัสถูกแล้วเบราว์เซอร์ถอดรหัสและแสดงข้อมูลทันที ไม่มีไฟล์ข้อมูลแบบอ่านได้บนเว็บ
 
-## อัปเดตข้อมูลรอบใหม่ (ข้อมูลเก่าถูกเก็บไว้)
+## อัปเดตข้อมูลรอบใหม่ (หน้าตาเหมือนเดิม ข้อมูลเก่าไม่หาย)
+
+คำสั่งเดียว:
 
 ```bash
 pip install pyxlsb pandas cryptography
-python scripts/build_data.py "DPS_xxx.xlsb" private/data private/staff_names.csv
-TMH_PASSWORD='รหัสผ่าน' python scripts/encrypt_site.py private/data private/staff_names.csv docs/data/site.enc.json
+TMH_PASSWORD='<รหัสผ่านเว็บ>' python scripts/update.py "DPS_xxx.xlsb"
 git add docs/data/site.enc.json && git commit -m "อัปเดตข้อมูล DPS รอบ ..." && git push
 ```
 
-- `private/` เก็บไฟล์ข้อมูลแบบอ่านได้ ไม่ถูก commit (อยู่ใน `.gitignore`) ต้องเก็บโฟลเดอร์นี้ไว้เพื่อให้ข้อมูลเดือนเก่าต่อเนื่อง
-- เปลี่ยนรหัสผ่าน: รันคำสั่ง `encrypt_site.py` ด้วยรหัสใหม่ แล้ว push รหัสเก่าจะใช้ไม่ได้ทันที
-- แก้ `DATA_NOTE` ใน `docs/index.html` ให้ตรงกับไฟล์รอบใหม่
+- **เปลี่ยนเฉพาะไฟล์ข้อมูล** `docs/data/site.enc.json` ไม่แตะ `docs/index.html` หน้าตา สี และทุกส่วนจึงเหมือนเดิม
+- **ข้อมูลเก่าไม่หาย:** สคริปต์เปิดข้อมูลเดิมบนเว็บด้วยรหัสผ่าน เก็บเดือนเก่าไว้ และแทนที่เฉพาะเดือนที่อยู่ในไฟล์ใหม่ (ไฟล์ DPS แต่ละรอบมีประมาณ 2 เดือน)
+- รายชื่อ Staff รวมของเดิมกับไฟล์ใหม่ ชื่อจากไฟล์ใหม่มาก่อน
+- ข้อความช่วงข้อมูลและชื่อไฟล์บนหน้าเว็บอัปเดตเอง
+- ใส่รหัสผิด สคริปต์จะหยุดโดยไม่เปลี่ยนอะไร
 - อย่า commit ไฟล์ DPS ต้นฉบับ (`.xlsb`)
+
+เปลี่ยนรหัสผ่าน: เปิดข้อมูลด้วยรหัสเดิมแล้วเข้ารหัสใหม่ด้วย `scripts/encrypt_site.py` (สคริปต์ `build_data.py` และ `encrypt_site.py` เป็นขั้นย่อยที่ `update.py` เรียกใช้)
 
 ## เกณฑ์ชี้เป้า
 
