@@ -370,6 +370,31 @@ table.dt{table-layout:auto}
 .tbrow .tv small.up{color:var(--good)}.tbrow .tv small.down{color:var(--bad)}
 .tbrow .tbr{grid-column:2 / -1;justify-content:flex-start}
 .tbrow .tbr .rc{font-size:11px}
+
+/* ---- improvement plan ---- */
+.plan-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-bottom:14px}
+.ps{background:linear-gradient(135deg,#4f46e5,#0d9488);color:#fff;border-radius:14px;padding:12px 16px;display:flex;flex-direction:column}
+.ps:nth-child(2){background:linear-gradient(135deg,#7c3aed,#db2777)}
+.ps:nth-child(3){background:linear-gradient(135deg,#1b2f6b,#3a6fd8)}
+.ps .pl{font-size:13px;opacity:.9}.ps b{font-size:26px;line-height:1.2}.ps small{font-size:12.5px;opacity:.9}
+.pcol{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+.pcol-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.pcol-h h3{margin:0;font-size:17px}
+.copy{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--blue);white-space:nowrap}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.plist li.empty{color:var(--good);padding:8px}
+.pi{border:1px solid var(--line);border-left:5px solid var(--tc,var(--faint));border-radius:10px;padding:10px 12px;cursor:pointer;background:linear-gradient(90deg,color-mix(in srgb,var(--tc,#ccc) 7%,#fff),#fff 60%)}
+.pi:hover{border-color:#b9c3d6;border-left-color:var(--tc)}
+.pi-h{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center}
+.pi .rk{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12.5px;color:#fff;background:var(--tc,var(--muted))}
+.pi-w{min-width:0}.pi-w b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi-w small{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi-v{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+.pi-v b{font-size:17px}.pi-v small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.pi-v small.up{color:var(--good)}.pi-v small.down{color:var(--bad)}
+.pi-why{margin:6px 0 0 38px;font-size:13px}
+.pi-act{margin:4px 0 0 38px;font-size:13px;color:var(--ink);background:#eef2ff;border-radius:8px;padding:6px 10px}
+@media (max-width:600px){.pi-why,.pi-act{margin-left:0}}
 </style>
 </head>
 <body class="locked">
@@ -414,6 +439,16 @@ table.dt{table-layout:auto}
   <section id="insights">
     <div class="sec-h"><h2>ดีขึ้นหรือแย่ลง และต้องทำอะไร</h2><p>สรุปจากการเทียบเดือนนี้กับเดือนก่อน เปลี่ยนตามตัวกรอง</p></div>
     <ul class="ins" id="ins"></ul>
+  </section>
+
+  <section id="plan">
+    <div class="sec-h"><h2>แผนพัฒนา: สาขาและ Staff ที่ต้อง Improve</h2><p id="plan-sub"></p></div>
+    <div class="plan-sum" id="plan-sum"></div>
+    <div class="tbgrid">
+      <div class="pcol"><div class="pcol-h"><h3>🏪 สาขาที่ต้อง Improve ก่อน</h3><button class="copy" type="button" data-copy="shop">คัดลอกรายการ</button></div><ol class="plist" id="plan-shop"></ol></div>
+      <div class="pcol"><div class="pcol-h"><h3>👤 Staff ที่ต้อง Coach ก่อน</h3><button class="copy" type="button" data-copy="staff">คัดลอกรายการ</button></div><ol class="plist" id="plan-staff"></ol></div>
+    </div>
+    <details class="rules"><summary>วิธีเลือกและจัดลำดับ</summary><p id="plan-rules"></p></details>
   </section>
 
   <section id="rr">
@@ -724,6 +759,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     if (ok('tatCmp')) tatBox(D('tatCmp'), M, K);
     targets(M);
     topBottom(M);
+    plan(M, K);
   }
 
   /* hero gauge */
@@ -1101,6 +1137,68 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     P(s.more).addEventListener('click', () => { s.limit += s.step; targets(D('M')); });
   });
   P('rules').textContent = `เร่งด่วน: % สมบูรณ์เดือนนี้ต่ำกว่า ${URGENT}% · แย่ลง: ลดลงตั้งแต่ ${DROP} จุด · ต่ำกว่าเป้า: ต่ำกว่า ${GOAL}% · ดีขึ้น: เพิ่มขึ้นตั้งแต่ ${DROP} จุด · ผ่านเป้า: ${GOAL}% ขึ้นไป · เอกสารน้อย: สาขาน้อยกว่า ${MIN_SHOP} ฉบับ หรือ Staff น้อยกว่า ${MIN_STAFF} ฉบับในเดือนนี้ (% ยังไม่นิ่ง)`;
+
+  const ACT = {
+    'เอกสารหลัก_ไม่แนบ': 'ทวนขั้นตอนสแกนและแนบเอกสารหลัก (บัตรประชาชน/Passport) ใช้ checklist ตรวจไฟล์แนบก่อนกดส่งทุกรายการ',
+    'เอกสารหลัก_ไม่ผ่านเงื่อนไข': 'อบรมเงื่อนไขเอกสารหลัก: บัตรหมดอายุ ภาพไม่ชัด ข้อมูลไม่ตรงกับใบสมัคร ให้ตรวจซ้ำก่อนส่ง',
+    'เอกสารหลัก_ไม่เซ็น': 'ให้ลูกค้าเซ็นรับรองสำเนาเอกสารหลักทุกครั้งก่อนปิดการขาย',
+    'ใบสมัคร_ไม่เซ็น': 'ให้ลูกค้าเซ็นใบสมัครครบทุกจุดก่อนปิดการขาย หรือใช้ E-signature',
+    'ใบสมัคร_ไม่แนบ': 'แนบใบสมัครทุกรายการ และเช็กในระบบว่าไฟล์ขึ้นครบก่อนส่ง',
+    'ใบสมัคร_ไม่ผ่านเงื่อนไข': 'ทบทวนการกรอกใบสมัครให้ครบถ้วนและตรงกับเอกสารหลัก',
+    'อื่นๆ': 'ดูรายละเอียดสาเหตุรายกรณีและ coach ตามเรื่องที่พลาด'
+  };
+  const PLAN_N = 10; const PLAN_TXT = { shop: '', staff: '' };
+  function plan(M, K) {
+    const ds = dash.data('shopCmp'), dt = dash.data('staffCmp'), di = dash.data('staff_items');
+    if (ds.status !== 'ok' || dt.status !== 'ok' || !ds.data || !dt.data) return;
+    const all = K.cur.total || 1;
+    const need = (r, min) => r.cur_total >= min && r.cur_pct != null && r.cur_pct < GOAL && (r.cur_bad || 0) > 0;
+    const shops = ds.data.filter((r) => need(r, MIN_SHOP)).sort((a, b) => (b.cur_bad - a.cur_bad) || (a.cur_pct - b.cur_pct)).slice(0, PLAN_N);
+    const staff = dt.data.filter((r) => need(r, MIN_STAFF)).sort((a, b) => (b.cur_bad - a.cur_bad) || (a.cur_pct - b.cur_pct)).slice(0, PLAN_N);
+    const shopBad = d3.sum(shops, (r) => r.cur_bad), staffBad = d3.sum(staff, (r) => r.cur_bad);
+    P('plan-sub').textContent = `${ml(M.cur)} · ${scope()} · เลือกรายที่ต่ำกว่าเป้า ${GOAL}% แล้วเรียงตามจำนวนเอกสารไม่สมบูรณ์ แก้ได้แล้ว % สมบูรณ์รวมขึ้นมากที่สุด`;
+    const sum = P('plan-sum'); sum.replaceChildren();
+    const card = (t, v, sm) => { const d = el('div', 'ps'); d.append(el('span', 'pl', t), el('b', null, v), el('small', null, sm)); sum.append(d); };
+    card('แก้ 10 สาขานี้ได้', `+${(100 * shopBad / all).toFixed(1)} จุด`, `ลดเอกสารไม่สมบูรณ์ ${num(shopBad)} ฉบับ จาก ${num(K.cur.bad)}`);
+    card('Coach 10 คนนี้ได้', `+${(100 * staffBad / all).toFixed(1)} จุด`, `ลดเอกสารไม่สมบูรณ์ ${num(staffBad)} ฉบับ`);
+    card('% สมบูรณ์ตอนนี้', pct(K.cur.pct), K.cur.pct < GOAL ? `ต่ำกว่าเป้า ${GOAL}% อยู่ ${(GOAL - K.cur.pct).toFixed(1)} จุด` : `ผ่านเป้า ${GOAL}%`);
+    const items = di.status === 'ok' ? di.data.filter((x) => x.month === M.cur) : [];
+    const topItems = (r) => { const g = d3.rollup(items.filter((x) => x.shop_code === r.shop_code && (!r.staff_id || x.staff_id === r.staff_id)), (v) => d3.sum(v, (x) => +x.n), (x) => x.item);
+      return [...g].filter(([k]) => k !== 'อื่นๆ').sort((a, b) => b[1] - a[1]).slice(0, 3); };
+    const build = (ol, rows, kind) => {
+      ol.replaceChildren(); const lines = [];
+      if (!rows.length) { ol.append(el('li', 'empty', `ไม่มี${kind === 'shop' ? 'สาขา' : ' Staff'}ที่ต่ำกว่าเป้าในตัวกรองนี้ 👍`)); PLAN_TXT[kind] = ''; return; }
+      rows.forEach((r, i) => {
+        const main = r.reasons[0] ? r.reasons[0][0] : 'อื่นๆ'; const ti = topItems(r);
+        const li = el('li', 'pi ' + TCLS[r.tag]);
+        const head = el('div', 'pi-h'); head.append(el('span', 'rk', String(i + 1)));
+        const who = el('div', 'pi-w');
+        if (kind === 'shop') who.append(el('b', null, r.shop), el('small', null, `${r.shop_code} · ${r.region}`));
+        else who.append(el('b', null, NAMES[r.staff_id] || r.staff_id), el('small', null, NAMES[r.staff_id] ? `${r.staff_id} · ${r.shop}` : r.shop));
+        const v = el('div', 'pi-v'); const big = el('b', null, pct(r.cur_pct)); big.style.color = r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)';
+        v.append(big, el('small', null, `ไม่สมบูรณ์ ${num(r.cur_bad)}/${num(r.cur_total)}`));
+        if (M.prev && r.delta != null) v.append(el('small', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+        head.append(who, v); li.append(head);
+        const why = el('p', 'pi-why'); why.append(el('span', 'pill ' + TCLS[r.tag], r.tag), ' ', el('b', null, 'พลาดเรื่อง: '), main.replace('_', ' ') + (r.reasons[0] ? ` (${r.reasons[0][1]})` : ''));
+        if (ti.length) why.append(' · ' + ti.map(([k, n]) => `${k} ${n}`).join(', '));
+        li.append(why, el('p', 'pi-act', '→ ' + (ACT[main] || ACT['อื่นๆ'])));
+        li.addEventListener('click', () => {
+          if (kind === 'shop') { dash.setParams({ shop: r.shop_code }); P('staff').scrollIntoView({ behavior: 'smooth' }); }
+          else { P(S.staff.tag).value = ''; P(S.staff.q).value = r.staff_id; OPEN.add(r.shop_code + '|' + r.staff_id); S.staff.limit = S.staff.step; targets(M); P('staff').scrollIntoView({ behavior: 'smooth' }); }
+        });
+        ol.append(li);
+        lines.push(`${i + 1}. ${kind === 'shop' ? r.shop + ' (' + r.shop_code + ', ' + r.region + ')' : (NAMES[r.staff_id] || r.staff_id) + ' (' + r.staff_id + ', ' + r.shop + ')'} | % สมบูรณ์ ${pct(r.cur_pct)}${M.prev && r.delta != null ? ' (' + sgn(r.delta, ' จุด') + ')' : ''} | ไม่สมบูรณ์ ${r.cur_bad}/${r.cur_total} | พลาดเรื่อง ${main.replace('_', ' ')}${ti.length ? ': ' + ti.map(([k, n]) => k + ' ' + n).join(', ') : ''} | ทำ: ${ACT[main] || ACT['อื่นๆ']}`);
+      });
+      PLAN_TXT[kind] = `${kind === 'shop' ? 'สาขาที่ต้อง Improve' : 'Staff ที่ต้อง Coach'} · ${ml(M.cur)} · ${scope()}\n` + lines.join('\n');
+    };
+    build(P('plan-shop'), shops, 'shop'); build(P('plan-staff'), staff, 'staff');
+    P('plan-rules').textContent = `เลือกสาขาที่มีเอกสารเดือนนี้ตั้งแต่ ${MIN_SHOP} ฉบับ และ Staff ตั้งแต่ ${MIN_STAFF} ฉบับ ที่ % สมบูรณ์ต่ำกว่า ${GOAL}% แล้วเรียงจากจำนวนเอกสารไม่สมบูรณ์มากไปน้อย (ถ้าเท่ากัน % ต่ำกว่ามาก่อน) เพราะแก้รายที่มีเอกสารไม่สมบูรณ์มากจะดัน % สมบูรณ์รวมขึ้นมากที่สุด · "+x จุด" คือ % สมบูรณ์รวมที่จะเพิ่มถ้าแก้เอกสารไม่สมบูรณ์ของรายการเหล่านี้ได้ทั้งหมด · คำแนะนำมาจากสาเหตุหลักของแต่ละราย`;
+  }
+  document.querySelectorAll('#plan .copy').forEach((b) => b.addEventListener('click', async () => {
+    const t = PLAN_TXT[b.dataset.copy]; if (!t) return;
+    try { await navigator.clipboard.writeText(t); b.textContent = 'คัดลอกแล้ว ✓'; } catch (e) { b.textContent = 'คัดลอกไม่ได้'; }
+    setTimeout(() => { b.textContent = 'คัดลอกรายการ'; }, 1800);
+  }));
 
   const TB_MIN = 10;
   function topBottom(M) {
