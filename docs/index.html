@@ -29,7 +29,7 @@ button,select,input{font:inherit}
 .hero h1{font-size:28px;font-weight:700;margin:0;letter-spacing:-.01em}
 .hero .sub{color:#aab6cc;margin:4px 0 0;font-size:14px}
 .hero-grid{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:28px;align-items:center;margin-top:18px}
-@media (max-width:820px){.hero-grid{grid-template-columns:1fr}}
+@media (max-width:960px){.hero-grid{grid-template-columns:1fr}.gauge{max-width:360px;margin:0 auto;width:100%}}
 .gauge{position:relative}
 .gauge svg{display:block;width:100%;height:auto}
 .gauge .center{position:absolute;left:0;right:0;top:30%;text-align:center}
@@ -248,6 +248,40 @@ body.locked .hero,body.locked main{display:none}
 #gate-go{font:inherit;font-weight:600;font-size:16px;border:0;border-radius:12px;padding:12px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#4f46e5,#0d9488)}
 #gate-go:disabled{opacity:.6;cursor:wait}
 .gate-err{color:var(--bad)!important;min-height:20px}
+
+/* ---- phone & tablet ---- */
+.filterbar select{max-width:100%;min-width:0}
+.filterbar label{min-width:0}
+@media (max-width:820px){
+  .hero{padding:20px 14px 0}
+  main{padding:18px 12px 48px}
+  .hero-grid{gap:16px}
+  .gauge{max-width:340px;margin:0 auto;width:100%}
+  .verdict{padding:14px}
+  .kt{font-size:13px}.kt th,.kt td{padding:6px 5px}
+}
+@media (max-width:600px){
+  .filterbar{position:static}
+  .filterbar .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 10px}
+  .filterbar label{display:flex;flex-direction:column;align-items:stretch;gap:3px}
+  .filterbar label select{width:100%;font-size:16px}
+  .filterbar label:nth-of-type(3){grid-column:1 / -1}
+  .filterbar .reset{align-self:end;min-height:44px}
+  .mtabs .mt{padding:6px 14px}
+  .sec-h h2{font-size:19px}
+  .panel{padding:14px 12px}
+  .rrc .cur{font-size:34px}
+  .ins{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tile .n{font-size:22px}
+  .ctrl label,.ctrl select,.ctrl input{width:100%}
+  .ctrl label{flex:1 1 100%}
+  .pb .row{grid-template-columns:minmax(0,1fr) 80px 70px}
+  .kt td:nth-child(5),.kt th:nth-child(5){display:none}
+  .gate-card{padding:24px 18px}
+  .mx{font-size:12.5px}.mx td:not(.nm){min-width:78px}
+}
+@media (hover:none){.db .row:hover,.dt tr.click:hover td{background:none}}
 </style>
 </head>
 <body class="locked">
@@ -1023,7 +1057,12 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(bundle.salt), iterations: bundle.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
     let plain;
     try { plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(bundle.iv) }, key, b64(bundle.ct)); } catch (e) { throw new Error('badpw'); }
-    const txt = await new Response(new Blob([plain]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    let txt;
+    if (typeof DecompressionStream === 'function') txt = await new Response(new Blob([plain]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+    else {
+      if (!window.pako) await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js'; sc.onload = ok; sc.onerror = () => no(new Error('nogzip')); document.head.append(sc); });
+      txt = window.pako.ungzip(new Uint8Array(plain), { to: 'string' });
+    }
     return JSON.parse(txt);
   }
   function enter(files) {
@@ -1040,7 +1079,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     e.preventDefault(); const pw = $('gate-pw').value; if (!pw) return;
     $('gate-err').textContent = ''; $('gate-go').disabled = true; $('gate-go').textContent = 'กำลังเปิด…';
     try { await tryPw(pw, $('gate-rem').checked); $('gate-pw').value = ''; }
-    catch (err) { $('gate-err').textContent = err.message === 'badpw' ? 'รหัสผ่านไม่ถูกต้อง' : err.message === 'nofile' ? 'ไม่พบไฟล์ข้อมูล' : 'เปิดข้อมูลไม่สำเร็จ ลองใช้เบราว์เซอร์รุ่นใหม่'; $('gate-pw').select(); }
+    catch (err) { $('gate-err').textContent = err.message === 'badpw' ? 'รหัสผ่านไม่ถูกต้อง' : err.message === 'nofile' ? 'ไม่พบไฟล์ข้อมูล' : 'เปิดข้อมูลไม่สำเร็จ ลองอัปเดตเบราว์เซอร์หรือ iOS เป็นรุ่นล่าสุด'; $('gate-pw').select(); }
     $('gate-go').disabled = false; $('gate-go').textContent = 'เข้าสู่ Dashboard';
   });
   $('logout').addEventListener('click', () => { try { localStorage.removeItem(KEY); localStorage.removeItem('tmh_staff_names'); localStorage.removeItem('tmh_staff_names_v2'); } catch (e) {} location.reload(); });
