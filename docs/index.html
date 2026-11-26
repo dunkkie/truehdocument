@@ -282,6 +282,28 @@ body.locked .hero,body.locked main{display:none}
   .mx{font-size:12.5px}.mx td:not(.nm){min-width:78px}
 }
 @media (hover:none){.db .row:hover,.dt tr.click:hover td{background:none}}
+
+/* ---- desktop fit ---- */
+.wrap{max-width:1320px}
+.hero{padding:22px 0 0}
+.hero > .wrap{padding:0 24px}
+main.wrap{padding:22px 24px 60px}
+.filterbar{margin-top:18px}
+.filterbar .wrap{padding:10px 24px;flex-wrap:wrap}
+.filterbar #f-shop{width:min(320px,40vw)}
+.filterbar #f-region{max-width:220px}
+.filterbar #logout{margin-left:auto}
+.hero-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px}
+.hero-top .mtabs{margin-top:0}
+.hero-grid{grid-template-columns:minmax(240px,300px) 1fr;gap:24px;margin-top:12px}
+.gauge{max-width:300px}
+.gauge .big{font-size:44px}
+.verdict{padding:14px 18px}
+.verdict h2{font-size:18px;margin-bottom:4px}
+.verdict p{margin-bottom:2px;font-size:14px}
+.kt{margin-top:8px}.kt td,.kt th{padding:5px 8px}
+@media (max-width:960px){.hero-grid{grid-template-columns:1fr}.gauge{margin:0 auto}}
+@media (max-width:600px){.hero > .wrap{padding:0 14px}main.wrap{padding:18px 12px 48px}.filterbar .wrap{padding:10px 14px}.filterbar #f-shop,.filterbar #f-region{width:100%;max-width:none}.filterbar #logout{margin-left:0}}
 </style>
 </head>
 <body class="locked">
@@ -299,9 +321,11 @@ body.locked .hero,body.locked main{display:none}
 
 <div class="hero">
   <div class="wrap">
-    <h1>ผลตรวจเอกสาร TMH Postpaid</h1>
-    <p class="sub" id="period">กำลังโหลดข้อมูล…</p>
-    <div class="mtabs" role="tablist" aria-label="เลือกเดือน" id="mtabs"></div>
+    <div class="hero-top">
+      <div><h1>ผลตรวจเอกสาร TMH Postpaid</h1>
+      <p class="sub" id="period">กำลังโหลดข้อมูล…</p></div>
+      <div class="mtabs" role="tablist" aria-label="เลือกเดือน" id="mtabs"></div>
+    </div>
     <div class="hero-grid">
       <div class="gauge" id="gauge" aria-label="เกจ % สมบูรณ์เดือนนี้"></div>
       <div class="verdict" id="verdict"><h2>กำลังสรุปผล…</h2></div>
