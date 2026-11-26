@@ -344,6 +344,32 @@ table.dt{table-layout:auto}
   table.dt.stack > tbody > tr.detail > td::before{content:none}
   .rchips{justify-content:flex-end}
 }
+
+/* ---- top / bottom staff ---- */
+.tbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px}
+.tbcol{border-radius:16px;padding:14px 14px 8px;border:1px solid var(--line)}
+.tbcol.top{background:linear-gradient(180deg,#e7faf4,#fff 45%)}
+.tbcol.bot{background:linear-gradient(180deg,#fff0f0,#fff 45%)}
+.tbcol h3{margin:2px 4px 10px;font-size:17px}
+.tbl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tbl li.empty{color:var(--muted);font-size:14px;padding:8px}
+.tbrow{all:unset;box-sizing:border-box;width:100%;cursor:pointer;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px 10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tbrow:hover{border-color:#b9c3d6}.tbrow:focus-visible{outline:2px solid var(--blue)}
+.tbrow .rk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff}
+.top .tbrow .rk{background:linear-gradient(135deg,#10b981,#0d9488)}
+.bot .tbrow .rk{background:linear-gradient(135deg,#f43f5e,#ea580c)}
+.top li:nth-child(1) .rk{background:linear-gradient(135deg,#f5c542,#e0a100)}
+.top li:nth-child(2) .rk{background:linear-gradient(135deg,#cfd6e0,#98a4b5)}
+.top li:nth-child(3) .rk{background:linear-gradient(135deg,#e7a46b,#b8733d)}
+.tbrow .tw2{min-width:0}
+.tbrow .tw2 b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbrow .tw2 small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbrow .tv{display:flex;flex-direction:column;align-items:flex-end;font-variant-numeric:tabular-nums}
+.tbrow .tv b{font-size:17px}
+.tbrow .tv small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.tbrow .tv small.up{color:var(--good)}.tbrow .tv small.down{color:var(--bad)}
+.tbrow .tbr{grid-column:2 / -1;justify-content:flex-start}
+.tbrow .tbr .rc{font-size:11px}
 </style>
 </head>
 <body class="locked">
@@ -431,6 +457,14 @@ table.dt{table-layout:auto}
     <p class="count" id="fs-count"></p>
     <div class="tw"><table class="dt" id="t-shop"></table></div>
     <button class="more" id="fs-more" type="button">แสดงเพิ่มอีก 30 แถว</button>
+  </section>
+
+  <section id="topbottom">
+    <div class="sec-h"><h2>Top 10 และ Bottom 10 Staff</h2><p id="tb-sub">เรียงตาม % สมบูรณ์ เฉพาะ Staff ที่มีเอกสารตั้งแต่ 10 ฉบับ · คลิกชื่อเพื่อดูรายละเอียดสาเหตุ</p></div>
+    <div class="tbgrid">
+      <div class="tbcol top"><h3>🏆 Top 10 ทำได้ดีที่สุด</h3><ol class="tbl" id="tb-top"></ol></div>
+      <div class="tbcol bot"><h3>⚠️ Bottom 10 ต้องติดตาม</h3><ol class="tbl" id="tb-bot"></ol></div>
+    </div>
   </section>
 
   <section id="staff">
@@ -689,6 +723,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     if (ok('daily')) daily(P('daily'), D('daily'), M);
     if (ok('tatCmp')) tatBox(D('tatCmp'), M, K);
     targets(M);
+    topBottom(M);
   }
 
   /* hero gauge */
@@ -1058,7 +1093,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     box.append(t); td.append(box); return tr;
   }
   const setNames = (t) => { const m = {}; d3.csvParse(t.replace(/^\ufeff/, '')).forEach((r) => { if (r.staff_id) m[String(r.staff_id).trim()] = (r.staff || '').trim(); }); NAMES = m; };
-  window.TMH_setNames = (t) => { setNames(t || 'staff_id,staff\n'); if (ok('M')) targets(D('M')); };
+  window.TMH_setNames = (t) => { setNames(t || 'staff_id,staff\n'); if (ok('M')) { targets(D('M')); topBottom(D('M')); } };
   Object.values(S).forEach((s) => {
     P(s.tag).replaceChildren(new Option('ทุกสถานะ', ''), ...TAGS.map((t) => new Option(t, t)));
     P(s.tag).addEventListener('change', () => { s.limit = s.step; targets(D('M')); });
@@ -1066,6 +1101,33 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     P(s.more).addEventListener('click', () => { s.limit += s.step; targets(D('M')); });
   });
   P('rules').textContent = `เร่งด่วน: % สมบูรณ์เดือนนี้ต่ำกว่า ${URGENT}% · แย่ลง: ลดลงตั้งแต่ ${DROP} จุด · ต่ำกว่าเป้า: ต่ำกว่า ${GOAL}% · ดีขึ้น: เพิ่มขึ้นตั้งแต่ ${DROP} จุด · ผ่านเป้า: ${GOAL}% ขึ้นไป · เอกสารน้อย: สาขาน้อยกว่า ${MIN_SHOP} ฉบับ หรือ Staff น้อยกว่า ${MIN_STAFF} ฉบับในเดือนนี้ (% ยังไม่นิ่ง)`;
+
+  const TB_MIN = 10;
+  function topBottom(M) {
+    const d = dash.data('staffCmp'); if (d.status !== 'ok' || !d.data) return;
+    const pool = d.data.filter((r) => r.cur_total >= TB_MIN && r.cur_pct != null);
+    P('tb-sub').textContent = `${ml(M.cur)} · ${scope()} · เรียงตาม % สมบูรณ์ เฉพาะ Staff ที่มีเอกสารตั้งแต่ ${TB_MIN} ฉบับ (${num(pool.length)} คน) · คลิกเพื่อดูรายละเอียดสาเหตุ`;
+    const top = [...pool].sort((a, b) => b.cur_pct - a.cur_pct || b.cur_total - a.cur_total).slice(0, 10);
+    const bot = [...pool].sort((a, b) => a.cur_pct - b.cur_pct || b.cur_total - a.cur_total).slice(0, 10);
+    const fill = (ol, rows, kind) => {
+      ol.replaceChildren();
+      if (!rows.length) { ol.append(el('li', 'empty', `ไม่มี Staff ที่มีเอกสารถึง ${TB_MIN} ฉบับในตัวกรองนี้`)); return; }
+      rows.forEach((r, i) => {
+        const li = el('li'); const b = el('button', 'tbrow'); b.type = 'button';
+        const rk = el('span', 'rk', String(i + 1));
+        const who = el('span', 'tw2'); who.append(el('b', null, NAMES[r.staff_id] || r.staff_id), el('small', null, NAMES[r.staff_id] ? `${r.staff_id} · ${r.shop}` : r.shop));
+        const val = el('span', 'tv'); const big = el('b', null, pct(r.cur_pct));
+        big.style.color = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)';
+        val.append(big, el('small', null, `ไม่สมบูรณ์ ${num(r.cur_bad || 0)}/${num(r.cur_total)}`));
+        if (M.prev) val.append(el('small', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', r.delta == null ? 'ไม่มีข้อมูลเดือนก่อน' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
+        b.append(rk, who, val);
+        if (kind === 'bot' && r.reasons.length) { const ch = el('span', 'rchips tbr'); r.reasons.slice(0, 3).forEach(([kk, n]) => { const x = el('span', 'rc', `${kk.replace('_', ' ')} ${n}`); x.style.setProperty('--c', RCOL[kk] || '#8a97a8'); ch.append(x); }); b.append(ch); }
+        b.addEventListener('click', () => { P(S.staff.tag).value = ''; P(S.staff.q).value = r.staff_id; OPEN.add(r.shop_code + '|' + r.staff_id); S.staff.limit = S.staff.step; targets(M); P('staff').scrollIntoView({ behavior: 'smooth' }); });
+        li.append(b); ol.append(li);
+      });
+    };
+    fill(P('tb-top'), top, 'top'); fill(P('tb-bot'), bot, 'bot');
+  }
 
   function targets(M) {
     if (!M) return;
