@@ -304,6 +304,9 @@ main.wrap{padding:22px 24px 60px}
 .kt{margin-top:8px}.kt td,.kt th{padding:5px 8px}
 @media (max-width:960px){.hero-grid{grid-template-columns:1fr}.gauge{margin:0 auto}}
 @media (max-width:600px){.hero > .wrap{padding:0 14px}main.wrap{padding:18px 12px 48px}.filterbar .wrap{padding:10px 14px}.filterbar #f-shop,.filterbar #f-region{width:100%;max-width:none}.filterbar #logout{margin-left:0}}
+.kt tr.sub td:first-child{padding-left:22px;color:#aab6cc;font-size:13px}
+.mx td small.bc{color:var(--muted);font-size:10.5px}
+.dt td.bcount{font-weight:600}
 </style>
 </head>
 <body class="locked">
@@ -492,7 +495,7 @@ dash.calc('monthly', { inputs: ['facts', 'allMonths'], fn: (facts, ms) => {
   const rows = filt(facts, dash.params());
   return ms.map((m) => { const g = rows.filter((r) => r.month === m); const o = tally(g);
     const byRR = {}; ['BMA', 'UPC1', 'UPC2'].forEach((rr) => { byRR[rr] = tally(facts.filter((r) => r.month === m && r.rr === rr)).pct; });
-    return { month: m, total: o.total, pct: o.pct, pct_x: o.total ? r1(100 * o.xflag / o.total) : null, byRR }; });
+    return { month: m, total: o.total, bad: o.bad, pct: o.pct, pct_x: o.total ? r1(100 * o.xflag / o.total) : null, byRR }; });
 } });
 
 dash.calc('kpi', { inputs: ['facts', 'M'], fn: (facts, M) => {
@@ -501,7 +504,7 @@ dash.calc('kpi', { inputs: ['facts', 'M'], fn: (facts, M) => {
     const late = d3.sum(mr.filter((r) => r.tat_bucket === '8-14 วัน' || r.tat_bucket === '15+ วัน'), (r) => +r.n);
     return Object.assign(o, { pct_x: o.total ? r1(100 * o.xflag / o.total) : null, pct_inc: o.total ? r1(100 * o.incomplete / o.total) : null,
       avg_tat: o.total ? r1(o.tat / o.total) : null, late: r1(100 * late / tt) }); };
-  const empty = { total: null, complete: null, bad: null, pct: null, pct_x: null, pct_inc: null, avg_tat: null, late: null };
+  const empty = { total: null, complete: null, bad: null, xflag: null, incomplete: null, pct: null, pct_x: null, pct_inc: null, avg_tat: null, late: null };
   return { prev: M.prev ? one(M.prev) : empty, cur: one(M.cur) };
 } });
 
@@ -509,7 +512,7 @@ dash.calc('regionCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
   const rows = filt(facts, dash.params(), { noRegion: true, noShop: true });
   return [...d3.group(rows, (r) => r.region)].map(([region, g]) => {
     const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
-    return { key: region, label: region, sub: g[0].rr, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
+    return { key: region, label: region, sub: `${g[0].rr} · ไม่สมบูรณ์ ${num(b.bad)} ฉบับ`, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, prev_bad: a.bad, cur_bad: b.bad, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
   }).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
 } });
 
@@ -519,7 +522,7 @@ dash.calc('rrCmp', { inputs: ['facts', 'staff', 'M'], fn: (facts, staff, M) => {
     const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
     const areas = [...d3.group(g, (r) => r.region)].map(([, h]) => { const x = tally(h.filter((r) => r.month === M.prev)), y = tally(h.filter((r) => r.month === M.cur)); return x.pct != null && y.pct != null ? y.pct - x.pct : 0; });
     const shops = compare(staff.filter((r) => r.rr === rr), (r) => r.shop_code, (r) => ({ shop_code: r.shop_code, shop: r.shop, region: r.region }), MIN_SHOP, M);
-    return { rr, prev: a.pct, cur: b.pct, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null, prev_n: a.total, cur_n: b.total,
+    return { rr, prev_bad: a.bad, cur_bad: b.bad, prev: a.pct, cur: b.pct, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null, prev_n: a.total, cur_n: b.total,
       prev_x: a.total ? r1(100 * a.xflag / a.total) : null, cur_x: b.total ? r1(100 * b.xflag / b.total) : null,
       areas: areas.length, areas_worse: areas.filter((d) => d < 0).length,
       urgent: shops.filter((x) => x.tag === 'เร่งด่วน').length, worse: shops.filter((x) => x.tag === 'แย่ลง').length, below: shops.filter((x) => x.tag === 'ต่ำกว่าเป้า').length };
@@ -531,7 +534,7 @@ dash.calc('dimCmp', { inputs: ['facts', 'M'], fn: (facts, M) => {
   ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => {
     out[k] = [...d3.group(rows, (r) => r[k])].map(([v, g]) => {
       const a = tally(g.filter((r) => r.month === M.prev)), b = tally(g.filter((r) => r.month === M.cur));
-      return { key: v, label: v, sub: num(b.total) + ' ฉบับ', prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
+      return { key: v, label: v, sub: `${num(b.total)} ฉบับ · ไม่สมบูรณ์ ${num(b.bad)}`, prev: a.pct, cur: b.pct, prev_n: a.total, cur_n: b.total, delta: a.pct != null && b.pct != null ? r1(b.pct - a.pct) : null };
     }).filter((r) => r.cur_n + r.prev_n >= (dash.params().shop ? 5 : 30)).sort((x, y) => (x.cur ?? 999) - (y.cur ?? 999));
   });
   return out;
@@ -551,7 +554,7 @@ dash.calc('itemCmp', { inputs: ['reasons_detail', 'kpi', 'M'], fn: (rd, kpi, M) 
 dash.calc('matrix', { inputs: ['facts', 'allMonths'], fn: (facts, ms) => {
   const p = dash.params(); const rows = filt(facts, p, { noRegion: true, noShop: true }); const out = [];
   const line = (kind, key, label, g) => { const vals = ms.map((m) => tally(g.filter((r) => r.month === m)));
-    out.push({ kind, key, label, cells: vals.map((o, i) => ({ month: ms[i], pct: o.pct, n: o.total, delta: i && o.pct != null && vals[i - 1].pct != null ? r1(o.pct - vals[i - 1].pct) : null })) }); };
+    out.push({ kind, key, label, cells: vals.map((o, i) => ({ month: ms[i], pct: o.pct, n: o.total, bad: o.bad, delta: i && o.pct != null && vals[i - 1].pct != null ? r1(o.pct - vals[i - 1].pct) : null })) }); };
   line('all', '', p.rr ? p.rr : 'ทุก Region', rows);
   ['BMA', 'UPC1', 'UPC2'].filter((rr) => !p.rr || rr === p.rr).forEach((rr) => {
     const g = rows.filter((r) => r.rr === rr); if (!p.rr) line('rr', rr, rr, g);
@@ -591,7 +594,7 @@ function compare(rows, keyFn, info, min, M) {
     const reasons = [...rs].sort((a, b) => b[1] - a[1]); const top = reasons[0];
     const hist = M.all.map((m) => { const x = tally(g.filter((r) => r.month === m)); return { m, pct: x.pct, n: x.total }; });
     const o = Object.assign(info(g[0]), { hist, prev_total: p.total, prev_pct: p.pct, cur_total: c.total, cur_pct: c.pct,
-      delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, reasons, cur_bad: c.bad, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
+      delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, reasons, cur_bad: c.bad, prev_bad: p.bad, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
     o.tag = tagOf(o, min); o.rank = TAGS.indexOf(o.tag); return o;
   }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
 }
@@ -691,7 +694,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const p2 = el('p', null, `เอกสารไม่สมบูรณ์ ${num(K.cur.bad)} จาก ${num(K.cur.total)} ฉบับ · ไม่มีเดือนก่อนหน้าในข้อมูลให้เทียบ`);
       v.append(p1, p2);
       const t = el('table', 'kt'); const hr = el('tr'); ['', ml(M.cur), 'เทียบเป้า'].forEach((h) => hr.append(el('th', null, h))); t.append(hr);
-      [['% สมบูรณ์', pct(K.cur.pct), K.cur.pct >= GOAL ? ['g', 'ผ่านเป้า'] : ['r', 'ต่ำกว่าเป้า']], ['% X Flag (ไม่แนบ/ไม่ครบ)', pct(K.cur.pct_x), ['z', '—']], ['% ไม่ผ่านเงื่อนไข', pct(K.cur.pct_inc), ['z', '—']],
+      [['% สมบูรณ์', pct(K.cur.pct), K.cur.pct >= GOAL ? ['g', 'ผ่านเป้า'] : ['r', 'ต่ำกว่าเป้า']], ['เอกสารไม่สมบูรณ์ (ฉบับ)', num(K.cur.bad), ['z', '—']], ['X Flag (ฉบับ)', num(K.cur.xflag), ['z', '—']], ['ไม่ผ่านเงื่อนไข (ฉบับ)', num(K.cur.incomplete), ['z', '—']], ['% X Flag (ไม่แนบ/ไม่ครบ)', pct(K.cur.pct_x), ['z', '—']], ['% ไม่ผ่านเงื่อนไข', pct(K.cur.pct_inc), ['z', '—']],
        ['% ตรวจเกิน 7 วัน', pct(K.cur.late), ['z', '—']], ['วันตรวจเฉลี่ย', K.cur.avg_tat == null ? '—' : K.cur.avg_tat.toFixed(1), ['z', '—']], ['จำนวนเอกสาร', num(K.cur.total), ['z', '—']]]
         .forEach(([n, val, [c, m]]) => { const tr = el('tr'); tr.append(el('td', null, n), el('td', null, val), el('td', 'd ' + c, m)); t.append(tr); });
       v.append(t); return;
@@ -711,6 +714,9 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     ['', ml(M.prev), ml(M.cur), 'เปลี่ยน', 'ความหมาย'].forEach((h) => hr.append(el('th', null, h))); t.append(hr);
     const rows = [
       ['% สมบูรณ์', K.prev.pct, K.cur.pct, true, pct],
+      ['เอกสารไม่สมบูรณ์ (ฉบับ)', K.prev.bad, K.cur.bad, 'count', num],
+      ['  X Flag (ฉบับ)', K.prev.xflag, K.cur.xflag, 'count', num],
+      ['  ไม่ผ่านเงื่อนไข (ฉบับ)', K.prev.incomplete, K.cur.incomplete, 'count', num],
       ['% X Flag (ไม่แนบ/ไม่ครบ)', K.prev.pct_x, K.cur.pct_x, false, pct],
       ['% ไม่ผ่านเงื่อนไข', K.prev.pct_inc, K.cur.pct_inc, false, pct],
       ['% ตรวจเกิน 7 วัน', K.prev.late, K.cur.late, false, pct],
@@ -718,13 +724,14 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       ['จำนวนเอกสาร', K.prev.total, K.cur.total, null, num]
     ];
     rows.forEach(([name, a, b, higherGood, f]) => {
-      const tr = el('tr'); const dd = a != null && b != null ? r1(b - a) : null;
-      tr.append(el('td', null, name), el('td', null, f(a)), el('td', null, f(b)));
+      const tr = el('tr', higherGood === 'count' && name.startsWith('  ') ? 'sub' : null); const dd = a != null && b != null ? r1(b - a) : null;
+      tr.append(el('td', null, name.trim()), el('td', null, f(a)), el('td', null, f(b)));
       let cls = 'z', mean = '—';
       if (higherGood === null) { mean = 'เดือนนี้อาจยังไม่ครบเดือน'; }
+      else if (higherGood === 'count') { mean = 'ดู % ประกอบ'; }
       else if (dd != null && Math.abs(dd) >= 0.1) { const good = higherGood ? dd > 0 : dd < 0; cls = good ? 'g' : 'r'; mean = good ? 'ดีขึ้น' : 'แย่ลง'; }
       else mean = 'ทรงตัว';
-      tr.append(el('td', 'd ' + cls, higherGood === null ? (dd == null ? '—' : (dd > 0 ? '+' : '') + num(dd)) : dd == null ? '—' : arrow(dd) + ' ' + Math.abs(dd).toFixed(1)), el('td', 'd ' + cls, mean));
+      tr.append(el('td', 'd ' + cls, higherGood === null || higherGood === 'count' ? (dd == null ? '—' : (dd > 0 ? '+' : '') + num(dd)) : dd == null ? '—' : arrow(dd) + ' ' + Math.abs(dd).toFixed(1)), el('td', 'd ' + cls, mean));
       t.append(tr);
     });
     v.append(t);
@@ -808,7 +815,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     const main = rows.filter((r) => r.pct != null);
     svg.append('path').datum(main).attr('fill', 'none').style('stroke', 'var(--ink)').attr('stroke-width', 3).attr('d', d3.line().x((r) => x(r.month)).y((r) => y(r.pct)));
     svg.append('g').selectAll('circle').data(main).join('circle').attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r.pct)).attr('r', 6).style('fill', 'var(--ink)').style('stroke', '#fff').attr('stroke-width', 2).style('cursor', 'pointer')
-      .on('mousemove', (ev, r) => tp.show(ev, [[ml(r.month)], ['% สมบูรณ์', pct(r.pct)], ['X Flag', pct(r.pct_x)], ['เอกสาร', num(r.total)], ...Object.entries(r.byRR).map(([k, v]) => [k, pct(v)])]))
+      .on('mousemove', (ev, r) => tp.show(ev, [[ml(r.month)], ['% สมบูรณ์', pct(r.pct)], ['X Flag', pct(r.pct_x)], ['เอกสาร', num(r.total)], ['ไม่สมบูรณ์', num(r.bad) + ' ฉบับ'], ...Object.entries(r.byRR).map(([k, v]) => [k, pct(v)])]))
       .on('mouseleave', () => tp.hide()).on('click', (ev, r) => dash.setParams({ cur: r.month, prev: '' }));
     svg.append('g').selectAll('text').data(main).join('text').attr('x', (r) => x(r.month)).attr('y', (r) => y(r.pct) - 12).attr('text-anchor', 'middle').style('fill', 'var(--ink)').style('font-weight', 700).text((r) => pct(r.pct));
     const rd = P('read-hist'); rd.replaceChildren();
@@ -832,7 +839,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       r.cells.forEach((c) => { const td = el('td', c.month === M.cur ? 'cur' : null); td.style.background = bg(c.pct);
         td.append(document.createTextNode(pct(c.pct)));
         if (c.delta != null) { const sm = el('small', c.delta > 0 ? 'up' : c.delta < 0 ? 'down' : '', `${arrow(c.delta)} ${Math.abs(c.delta).toFixed(1)}`); td.append(sm); }
-        td.title = `${r.label} ${ml(c.month)}: ${pct(c.pct)} จาก ${num(c.n)} ฉบับ`; tr.append(td); });
+        td.title = `${r.label} ${ml(c.month)}: ${pct(c.pct)} จาก ${num(c.n)} ฉบับ · ไม่สมบูรณ์ ${num(c.bad)} ฉบับ`; if (c.n) td.append(el('small', 'bc', `ไม่สมบูรณ์ ${num(c.bad)}`)); tr.append(td); });
       t.append(tr);
     });
   }
@@ -857,6 +864,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const fact = (label, val) => { const d = el('span'); d.append(label + ' ', el('b', null, val)); facts.append(d); };
       fact('X Flag', M.prev ? `${pct(r.prev_x)} → ${pct(r.cur_x)}` : pct(r.cur_x));
       if (M.prev) fact('Area แย่ลง', `${r.areas_worse} จาก ${r.areas}`); else fact('จำนวน Area', String(r.areas));
+      fact('ไม่สมบูรณ์', M.prev ? `${num(r.prev_bad)} → ${num(r.cur_bad)} ฉบับ` : `${num(r.cur_bad)} ฉบับ`);
       fact('Shop เร่งด่วน', num(r.urgent));
       if (M.prev) fact('Shop แย่ลง', num(r.worse)); else fact('Shop ต่ำกว่าเป้า', num(r.below));
       b.append(facts, el('span', 'go', p.rr === r.rr ? 'กดอีกครั้งเพื่อดูทุก Region' : 'ดู Area ของ ' + r.rr));
@@ -890,7 +898,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const val = el('div', 'val'); val.append(el('b', null, pct(r.cur)), document.createElement('br'));
       val.append(el('span', r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : '', r.delta == null ? (M.prev ? 'ไม่มีข้อมูลเดือนก่อน' : '') : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)} จุด`));
       row.append(lab, lane, val);
-      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.label], [ml(M.prev), `${pct(r.prev)} (${num(r.prev_n)} ฉบับ)`], [ml(M.cur), `${pct(r.cur)} (${num(r.cur_n)} ฉบับ)`], ['เปลี่ยน', sgn(r.delta, ' จุด')]]));
+      row.addEventListener('mousemove', (ev) => tp.show(ev, [[r.label], [ml(M.prev), `${pct(r.prev)} (${num(r.prev_n)} ฉบับ` + (r.prev_bad != null ? `, ไม่สมบูรณ์ ${num(r.prev_bad)})` : ')')], [ml(M.cur), `${pct(r.cur)} (${num(r.cur_n)} ฉบับ` + (r.cur_bad != null ? `, ไม่สมบูรณ์ ${num(r.cur_bad)})` : ')')], ['เปลี่ยน', sgn(r.delta, ' จุด')]]));
       row.addEventListener('mouseleave', () => tp.hide());
       if (onClick) row.addEventListener('click', () => onClick(r)); else row.style.cursor = 'default';
       box.append(row);
@@ -1039,7 +1047,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const t = P(s.table); t.replaceChildren();
       const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
       H.forEach((h) => hd.append(el('th', null, h)));
-      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุที่ไม่สมบูรณ์ (เดือนนี้)', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุที่ไม่สมบูรณ์', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['ไม่สมบูรณ์ ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['ไม่สมบูรณ์ ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุที่ไม่สมบูรณ์ (เดือนนี้)', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['ไม่สมบูรณ์', 1], ['% ' + ml(M.cur), 1], ['สาเหตุที่ไม่สมบูรณ์', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
       rows.slice(0, s.limit).forEach((r) => {
@@ -1049,7 +1057,8 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
         else { const key = r.shop_code + '|' + r.staff_id; tr.className = 'click' + (OPEN.has(key) ? ' sel' : '');
           tr.addEventListener('click', () => { OPEN.has(key) ? OPEN.delete(key) : OPEN.add(key); targets(M); });
           const nm = el('span'); nm.append(el('span', 'caret', OPEN.has(key) ? '▾ ' : '▸ '), document.createTextNode(r.shop)); c(nm); c(r.staff_id); c(NAMES[r.staff_id] || '—'); }
-        if (M.prev) { c(num(r.prev_total), 'n'); c(pct(r.prev_pct), 'n'); } c(num(r.cur_total), 'n');
+        if (M.prev) { c(num(r.prev_total), 'n'); c(num(r.prev_bad || 0), 'n'); c(pct(r.prev_pct), 'n'); } c(num(r.cur_total), 'n');
+        const bd = c(num(r.cur_bad || 0), 'n bcount'); if (r.cur_bad) bd.style.color = 'var(--bad)';
         const mini = el('span', 'mini'); const tr_ = el('span', 'tr'); const fill = el('i'); fill.style.width = (r.cur_pct || 0) + '%';
         fill.style.background = r.cur_pct >= GOAL ? 'var(--good)' : r.cur_pct >= URGENT ? 'var(--warn)' : 'var(--bad)'; const gl = el('em'); gl.style.left = GOAL + '%'; tr_.append(fill, gl);
         mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
