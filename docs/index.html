@@ -6,7 +6,7 @@
 <title>ผลตรวจเอกสาร TMH Postpaid: เทียบเดือนก่อน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="d3.v7.min.js"></script>
 <script src="dash-runtime.js"></script>
 <style>
 :root{
@@ -49,6 +49,23 @@ button,select,input{font:inherit}
 .kt td{padding:7px 8px;border-bottom:1px solid #22345a;text-align:right;font-variant-numeric:tabular-nums}
 .kt td.d{font-weight:600}
 .kt .g{color:#4fd6c1}.kt .r{color:#ff8a8e}.kt .z{color:#aab6cc}
+.mtabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:14px}
+.mtabs .mt-l{color:#aab6cc;font-size:13px;margin-right:6px}
+.mt{font:inherit;font-size:15px;font-weight:600;color:#d5dbe6;background:#22345a;border:1px solid #33476f;border-radius:999px;padding:5px 16px;cursor:pointer}
+.mt:hover{background:#2b4070}
+.mt.on{background:#fff;color:var(--ink);border-color:#fff}
+.mx{border-collapse:separate;border-spacing:3px;width:auto;min-width:min(100%,520px);font-size:13.5px}
+.mx td:not(.nm){min-width:96px}
+.mx th{font-weight:600;color:var(--muted);text-align:center;padding:4px 6px;white-space:nowrap}
+.mx th:first-child,.mx td:first-child{text-align:left}
+.mx td{padding:6px 8px;border-radius:6px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mx td.nm{background:none;font-weight:500;cursor:pointer}
+.mx tr.rr td.nm{font-weight:700}
+.mx tr.ar td.nm{padding-left:22px;color:var(--muted)}
+.mx td small{display:block;font-size:11px;opacity:.85}
+.mx td.cur{outline:2px solid var(--ink);outline-offset:-2px}
+.hist-mini{display:inline-flex;gap:3px}
+.hist-mini span{font-size:11.5px;padding:1px 5px;border-radius:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .filterbar{position:sticky;top:0;z-index:10;background:var(--ink);border-top:1px solid #22345a;margin-top:22px}
 .filterbar .wrap{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 0}
 .filterbar label{color:#aab6cc;font-size:13px;display:flex;align-items:center;gap:8px}
@@ -173,6 +190,27 @@ details.rules summary{cursor:pointer;color:var(--text)}
 .err{color:var(--bad)}
 @media (max-width:560px){.db .row,.db .axis{grid-template-columns:96px 1fr 92px}.hero h1{font-size:23px}.gauge .big{font-size:46px}}
 @media (prefers-reduced-motion:no-preference){.gauge .arc-cur{transition:stroke-dashoffset .9s ease-out}}
+
+/* ---- colour pass ---- */
+.hero{background:radial-gradient(1200px 400px at 85% -10%,rgba(20,184,166,.35),transparent 60%),radial-gradient(900px 380px at 0% 0%,rgba(99,102,241,.45),transparent 55%),linear-gradient(135deg,#101a3a 0%,#1b2f6b 55%,#123a4f 100%)}
+.verdict{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(4px)}
+.filterbar{background:rgba(16,26,58,.92);backdrop-filter:blur(6px)}
+.mt.on{background:linear-gradient(135deg,#ffffff,#e0f2fe);color:#1b2f6b}
+body{background:linear-gradient(180deg,#eef2f8 0%,#f5f3fb 100%) fixed}
+.sec-h h2 .step{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:#fff;font-size:15px;margin-right:8px;vertical-align:2px;background:linear-gradient(135deg,#6366f1,#14b8a6)}
+.panel{box-shadow:0 1px 2px rgba(19,32,58,.04),0 8px 24px -12px rgba(19,32,58,.12)}
+.rrc{--rc:var(--blue);border-top:6px solid var(--rc);background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 9%,#fff) 0%,#fff 55%);box-shadow:0 10px 28px -16px color-mix(in srgb,var(--rc) 60%,transparent)}
+.rrc .name{color:var(--rc)}
+.rrc.on{box-shadow:0 0 0 2px var(--rc),0 10px 28px -14px color-mix(in srgb,var(--rc) 70%,transparent)}
+.ins li{border-left-width:6px}
+.ins li.bad{background:linear-gradient(90deg,#fff1f1,#fff 70%)}
+.ins li.good{background:linear-gradient(90deg,#e9fbf6,#fff 70%)}
+.ins li.warn{background:linear-gradient(90deg,#fff7e3,#fff 70%)}
+.tile[class*=" t"]{background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 12%,#fff),#fff 70%)}
+.dt th{background:#1b2f6b;color:#fff}
+.tw{box-shadow:0 8px 24px -14px rgba(19,32,58,.18)}
+.read{background:linear-gradient(90deg,#eef2ff,#f0fdfa);border-left:4px solid #6366f1}
+.divider h2{background:linear-gradient(90deg,#4f46e5,#0d9488);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
 </head>
 <body>
@@ -181,6 +219,7 @@ details.rules summary{cursor:pointer;color:var(--text)}
   <div class="wrap">
     <h1>ผลตรวจเอกสาร TMH Postpaid</h1>
     <p class="sub" id="period">กำลังโหลดข้อมูล…</p>
+    <div class="mtabs" role="tablist" aria-label="เลือกเดือน" id="mtabs"></div>
     <div class="hero-grid">
       <div class="gauge" id="gauge" aria-label="เกจ % สมบูรณ์เดือนนี้"></div>
       <div class="verdict" id="verdict"><h2>กำลังสรุปผล…</h2></div>
@@ -191,10 +230,8 @@ details.rules summary{cursor:pointer;color:var(--text)}
       <label>Region <select id="f-rr"><option value="">ทั้งหมด</option><option>BMA</option><option>UPC1</option><option>UPC2</option></select></label>
       <label>Area <select id="f-region"><option value="">ทั้งหมด</option></select></label>
       <label>สาขา <select id="f-shop"><option value="">ทุกสาขา</option></select></label>
-      <label>เดือน <select id="f-cur"></select></label>
       <label>เทียบกับ <select id="f-prev"></select></label>
       <button class="reset" id="f-reset" type="button">ล้างตัวกรอง</button>
-      <span class="note" id="f-note"></span>
     </div>
   </div>
 </div>
@@ -207,18 +244,21 @@ details.rules summary{cursor:pointer;color:var(--text)}
   </section>
 
   <section id="rr">
-    <div class="sec-h"><h2>1. ราย Region: BMA · UPC1 · UPC2</h2><p>เดือนก่อน → เดือนนี้ · คลิกการ์ดเพื่อเจาะดู Area ของ Region นั้น</p></div>
+    <div class="sec-h"><h2><span class="step">1</span>ราย Region: BMA · UPC1 · UPC2</h2><p>เดือนก่อน → เดือนนี้ · คลิกการ์ดเพื่อเจาะดู Area ของ Region นั้น</p></div>
     <div class="rrgrid" id="rr-cards"></div>
     <p class="read" id="read-rr"></p>
   </section>
 
   <section id="history">
     <div class="sec-h"><h2>ย้อนหลังรายเดือน</h2><p>% สมบูรณ์ทุกเดือนที่มีข้อมูล · คลิกจุดเพื่อเลือกเป็นเดือนที่ดู</p></div>
-    <div class="panel"><div class="legend" id="hist-legend"></div><div class="chart" id="hist" style="min-height:240px"></div><p class="read" id="read-hist"></p></div>
+    <div class="panel"><div class="legend" id="hist-legend"></div><div class="chart" id="hist" style="min-height:240px"></div><p class="read" id="read-hist"></p>
+      <h3 class="tg-h" style="margin-top:18px">ตารางผลงานย้อนหลัง: % สมบูรณ์ ราย Region และ Area</h3>
+      <p class="count">สีเขียวคือผ่านเป้า เหลืองคือต่ำกว่าเป้า แดงคือต่ำกว่า <span id="mx-urgent"></span> · ตัวเล็กคือเปลี่ยนจากเดือนก่อน · กรอบเข้มคือเดือนที่เลือก · คลิกชื่อเพื่อกรอง</p>
+      <div class="tw" style="border:none"><table class="mx" id="mx"></table></div></div>
   </section>
 
   <section id="regions">
-    <div class="sec-h"><h2>2. ราย Area</h2><p>เดือนก่อน → เดือนนี้ · คลิก Area เพื่อเจาะดูสาขา</p></div>
+    <div class="sec-h"><h2><span class="step">2</span>ราย Area</h2><p>เดือนก่อน → เดือนนี้ · คลิก Area เพื่อเจาะดูสาขา</p></div>
     <div class="panel">
       <div class="legend"><span><i style="background:var(--prev)"></i><span class="m-prev">เดือนก่อน</span></span><span><i style="background:var(--good)"></i>เดือนนี้ ดีขึ้น</span><span><i style="background:var(--bad)"></i>เดือนนี้ แย่ลง</span><span><i class="sq" style="background:none;border-left:2px dashed var(--faint);border-radius:0;width:2px"></i>เป้าหมาย</span></div>
       <div class="db" id="db-region"></div>
@@ -227,7 +267,7 @@ details.rules summary{cursor:pointer;color:var(--text)}
   </section>
 
   <section id="targets">
-    <div class="sec-h"><h2>3. ชี้เป้าราย Shop และราย Staff</h2><p>สถานะจาก % สมบูรณ์เดือนนี้และการเปลี่ยนจากเดือนก่อน · กดการ์ดเพื่อกรองตาราง</p></div>
+    <div class="sec-h"><h2><span class="step">3</span>ชี้เป้าราย Shop และราย Staff</h2><p>สถานะจาก % สมบูรณ์เดือนนี้และการเปลี่ยนจากเดือนก่อน · กดการ์ดเพื่อกรองตาราง</p></div>
     <div class="grid2">
       <div><h3 class="tg-h">สาขา</h3><div class="tiles" id="tiles-shop"></div></div>
       <div><h3 class="tg-h">Staff</h3><div class="tiles" id="tiles-staff"></div></div>
@@ -403,6 +443,18 @@ function rateCmp(src, key, kpi, M, p) {
 dash.calc('reasonCmp', { inputs: ['facts', 'kpi', 'M'], fn: (facts, kpi, M) => rateCmp(facts.filter((r) => r.result !== 'complete'), 'reason', kpi, M, dash.params()).sort((a, b) => b.cur - a.cur) });
 dash.calc('itemCmp', { inputs: ['reasons_detail', 'kpi', 'M'], fn: (rd, kpi, M) => rateCmp(rd, 'item', kpi, M, dash.params()).filter((r) => r.key !== 'อื่นๆ').sort((a, b) => b.cur - a.cur).slice(0, 12) });
 
+dash.calc('matrix', { inputs: ['facts', 'allMonths'], fn: (facts, ms) => {
+  const p = dash.params(); const rows = filt(facts, p, { noRegion: true, noShop: true }); const out = [];
+  const line = (kind, key, label, g) => { const vals = ms.map((m) => tally(g.filter((r) => r.month === m)));
+    out.push({ kind, key, label, cells: vals.map((o, i) => ({ month: ms[i], pct: o.pct, n: o.total, delta: i && o.pct != null && vals[i - 1].pct != null ? r1(o.pct - vals[i - 1].pct) : null })) }); };
+  line('all', '', p.rr ? p.rr : 'ทุก Region', rows);
+  ['BMA', 'UPC1', 'UPC2'].filter((rr) => !p.rr || rr === p.rr).forEach((rr) => {
+    const g = rows.filter((r) => r.rr === rr); if (!p.rr) line('rr', rr, rr, g);
+    [...d3.group(g, (r) => r.region)].sort((a, b) => a[0].localeCompare(b[0])).forEach(([a, h]) => line('ar', a, a, h));
+  });
+  return out;
+} });
+
 dash.calc('daily', { inputs: ['facts', 'M'], fn: (facts, M) => {
   const m = new Map();
   filt(facts, dash.params()).filter((r) => r.month === M.prev || r.month === M.cur).forEach((r) => { let o = m.get(r.date); if (!o) { o = { date: r.date, month: r.month, total: 0, complete: 0 }; m.set(r.date, o); } o.total += +r.n; if (r.result === 'complete') o.complete += +r.n; });
@@ -432,7 +484,8 @@ function compare(rows, keyFn, info, min, M) {
     const c = tally(g.filter((r) => r.month === M.cur)), p = tally(g.filter((r) => r.month === M.prev));
     const rs = d3.rollup(g.filter((r) => r.month === M.cur && r.result !== 'complete'), (v) => d3.sum(v, (r) => +r.n), (r) => r.reason);
     const top = [...rs].sort((a, b) => b[1] - a[1])[0];
-    const o = Object.assign(info(g[0]), { prev_total: p.total, prev_pct: p.pct, cur_total: c.total, cur_pct: c.pct,
+    const hist = M.all.map((m) => { const x = tally(g.filter((r) => r.month === m)); return { m, pct: x.pct, n: x.total }; });
+    const o = Object.assign(info(g[0]), { hist, prev_total: p.total, prev_pct: p.pct, cur_total: c.total, cur_pct: c.pct,
       delta: c.pct != null && p.pct != null ? r1(c.pct - p.pct) : null, top_reason: top ? top[0] + ' (' + top[1] + ')' : '' });
     o.tag = tagOf(o, min); o.rank = TAGS.indexOf(o.tag); return o;
   }).sort((a, b) => a.rank - b.rank || (a.cur_pct ?? 101) - (b.cur_pct ?? 101) || b.cur_total - a.cur_total);
@@ -456,17 +509,17 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
   P('f-region').addEventListener('change', (e) => dash.setParams({ region: e.target.value, shop: '' }));
   P('f-shop').addEventListener('change', (e) => dash.setParams({ shop: e.target.value }));
   P('f-reset').addEventListener('click', () => dash.resetParams());
-  P('f-cur').addEventListener('change', (e) => dash.setParams({ cur: e.target.value, prev: '' }));
   P('f-prev').addEventListener('change', (e) => dash.setParams({ prev: e.target.value }));
 
   dash.onData(() => {
     const p = dash.params(); P('f-rr').value = p.rr || '';
     if (ok('regionList')) { const s = P('f-region'); s.replaceChildren(new Option('ทั้งหมด', ''), ...D('regionList').map((r) => new Option(r, r))); s.value = p.region || ''; }
     if (ok('shopList')) { const s = P('f-shop'); s.replaceChildren(new Option('ทุกสาขา', ''), ...D('shopList').map(([c, n]) => new Option(n + ' (' + c + ')', c))); s.value = p.shop || ''; }
-    P('f-note').textContent = 'ตัวกรองมีผลทั้งหน้า';
     if (ok('M')) {
       const M = D('M');
-      const fc = P('f-cur'); fc.replaceChildren(...M.all.slice().reverse().map((m) => new Option(ml(m), m))); fc.value = M.cur;
+      const tabs = P('mtabs'); tabs.replaceChildren(el('span', 'mt-l', 'เลือกเดือน'), ...M.all.map((m) => {
+        const b = el('button', 'mt' + (m === M.cur ? ' on' : ''), ml(m)); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(m === M.cur));
+        b.addEventListener('click', () => dash.setParams({ cur: m, prev: '' })); return b; }));
       const fp = P('f-prev'); fp.replaceChildren(...M.all.filter((m) => m !== M.cur).reverse().map((m) => new Option(ml(m), m))); fp.value = M.prev || '';
       fp.disabled = M.all.length < 2;
       document.querySelectorAll('.m-prev').forEach((e) => { e.textContent = ml(M.prev); e.parentElement.hidden = !M.prev; });
@@ -483,6 +536,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
     gauge(K, M); verdict(K, M); insights(K, M);
     if (ok('rrCmp')) rrCards(D('rrCmp'), M);
     if (ok('monthly')) history(D('monthly'), M);
+    if (ok('matrix')) matrix(D('matrix'), M);
     if (ok('regionCmp')) { dumbbell(P('db-region'), D('regionCmp'), M, (r) => dash.setParams({ region: dash.params().region === r.key ? '' : r.key, shop: '' }), dash.params().region); readRegion(D('regionCmp')); }
     if (ok('dimCmp')) { const dc = D('dimCmp'); ['channel', 'order_type', 'smartdoc', 'delivery'].forEach((k) => dumbbell(P('db-' + k), dc[k], M)); }
     if (ok('reasonCmp')) { paired(P('pb-reason'), D('reasonCmp')); readReason(D('reasonCmp'), M); }
@@ -658,11 +712,32 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       rd.append('อ่านผล: ดีที่สุด ', el('b', null, `${ml(best.month)} ${pct(best.pct)}`), ` · แย่ที่สุด ${ml(worst.month)} ${pct(worst.pct)}`); }
   }
 
+  function matrix(rows, M) {
+    const t = P('mx'); t.replaceChildren(); P('mx-urgent').textContent = URGENT + '%'; const p = dash.params();
+    const hr = el('tr'); hr.append(el('th', null, '')); M.all.forEach((m) => hr.append(el('th', null, ml(m)))); t.append(hr);
+    const bg = (v) => (v == null ? '#f4f7fa' : v >= GOAL ? '#d7f1ec' : v >= URGENT ? '#fdf0cc' : '#fbd9da');
+    rows.forEach((r) => {
+      const tr = el('tr', r.kind); const nm = el('td', 'nm', r.label);
+      if (r.kind === 'rr') nm.addEventListener('click', () => dash.setParams({ rr: r.key, region: '', shop: '' }));
+      if (r.kind === 'ar') nm.addEventListener('click', () => dash.setParams({ region: p.region === r.key ? '' : r.key, shop: '' }));
+      if (r.kind === 'all') nm.style.fontWeight = 700;
+      if (r.kind === 'rr') nm.style.color = { BMA: '#3a6fd8', UPC1: '#0e9f8a', UPC2: '#ec6a1e' }[r.key];
+      if (r.kind === 'ar' && p.region === r.key) nm.style.color = 'var(--blue)';
+      tr.append(nm);
+      r.cells.forEach((c) => { const td = el('td', c.month === M.cur ? 'cur' : null); td.style.background = bg(c.pct);
+        td.append(document.createTextNode(pct(c.pct)));
+        if (c.delta != null) { const sm = el('small', c.delta > 0 ? 'up' : c.delta < 0 ? 'down' : '', `${arrow(c.delta)} ${Math.abs(c.delta).toFixed(1)}`); td.append(sm); }
+        td.title = `${r.label} ${ml(c.month)}: ${pct(c.pct)} จาก ${num(c.n)} ฉบับ`; tr.append(td); });
+      t.append(tr);
+    });
+  }
+
   /* region cards */
   function rrCards(rows, M) {
     const box = P('rr-cards'); box.replaceChildren(); const p = dash.params();
     rows.forEach((r) => {
       const b = el('button', 'rrc' + (p.rr === r.rr ? ' on' : p.rr ? ' dim' : '')); b.type = 'button';
+      b.style.setProperty('--rc', { BMA: '#3a6fd8', UPC1: '#0e9f8a', UPC2: '#ec6a1e' }[r.rr]);
       b.setAttribute('aria-pressed', String(p.rr === r.rr));
       const top = el('div', 'top'); top.append(el('span', 'name', r.rr), el('span', 'vol', `${num(r.cur_n)} ฉบับเดือนนี้`));
       const col = r.cur >= GOAL ? 'var(--good)' : r.cur >= URGENT ? 'var(--warn)' : 'var(--bad)';
@@ -836,7 +911,7 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
       const t = P(s.table); t.replaceChildren();
       const hd = el('tr'); const H = k === 'shop' ? ['สถานะ', 'รหัส', 'Shop', 'Area'] : ['สถานะ', 'Shop', 'รหัส Staff', 'ชื่อ'];
       H.forEach((h) => hd.append(el('th', null, h)));
-      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุหลัก', 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
+      (M.prev ? [['เอกสาร ' + ml(M.prev), 1], ['% ' + ml(M.prev), 1], ['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['เปลี่ยน', 1], ['สาเหตุหลักเดือนนี้', 0]] : [['เอกสาร ' + ml(M.cur), 1], ['% ' + ml(M.cur), 1], ['สาเหตุหลัก', 0]]).concat([['ย้อนหลัง ' + M.all.map(ml).join(' · '), 0]]).forEach(([h, n]) => hd.append(el('th', n ? 'n' : null, h)));
       const th = el('thead'); th.append(hd); const tb = el('tbody'); t.append(th, tb);
       const p = dash.params();
       rows.slice(0, s.limit).forEach((r) => {
@@ -850,6 +925,9 @@ dash.calc('regionList', { inputs: ['facts'], fn: (facts) => [...new Set(filt(fac
         mini.append(el('b', null, pct(r.cur_pct)), tr_); c(mini, 'n');
         if (M.prev) c(r.delta == null ? '—' : `${arrow(r.delta)} ${Math.abs(r.delta).toFixed(1)}`, 'n ' + (r.delta > 0 ? 'up' : r.delta < 0 ? 'down' : ''));
         c(r.top_reason || '—');
+        const hm = el('span', 'hist-mini'); r.hist.forEach((h) => { const sp = el('span', null, h.pct == null ? '–' : h.pct.toFixed(0) + '%');
+          sp.style.background = h.pct == null ? '#f4f7fa' : h.pct >= GOAL ? '#d7f1ec' : h.pct >= URGENT ? '#fdf0cc' : '#fbd9da'; if (h.m === M.cur) sp.style.outline = '1.5px solid var(--ink)';
+          sp.title = `${ml(h.m)}: ${pct(h.pct)} (${num(h.n)} ฉบับ)`; hm.append(sp); }); c(hm);
         tb.append(tr);
       });
       if (!rows.length) { const tr = el('tr'); const td = el('td', null, 'ไม่พบรายการตามเงื่อนไข'); td.colSpan = 10; tr.append(td); tb.append(tr); }
